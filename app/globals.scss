@@ -4537,3 +4537,773 @@ option {
     }
   }
 }
+/* --- PREMIUM IMAGE GENERATION STUDIO --- */
+
+.gen-page-container {
+  height: calc(100vh - 2rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  font-family: 'Inter', sans-serif;
+}
+
+/* 1. ÜST SEKME (TABS) */
+.gen-tabs-wrapper {
+  display: flex;
+  justify-content: center;
+  
+  .gen-tabs {
+    display: flex;
+    background: rgba(20, 20, 20, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0.3rem;
+    border-radius: 16px;
+    gap: 0.3rem;
+
+    .tab-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 0.6rem 1.2rem;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: left;
+      min-width: 180px;
+
+      .icon-box {
+        width: 36px; height: 36px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        color: #a1a1aa;
+        transition: all 0.3s;
+      }
+
+      .text-box {
+        display: flex; flex-direction: column;
+        .title { font-size: 0.85rem; font-weight: 600; color: #e4e4e7; }
+        .desc { font-size: 0.65rem; color: #71717a; }
+      }
+
+      &:hover {
+        background: rgba(255,255,255,0.03);
+        .icon-box { color: white; background: rgba(255,255,255,0.1); }
+      }
+
+      &.active {
+        background: rgba(124, 58, 237, 0.1);
+        border-color: rgba(124, 58, 237, 0.3);
+        .icon-box { background: #7c3aed; color: white; box-shadow: 0 0 15px rgba(124, 58, 237, 0.4); }
+        .text-box .title { color: white; }
+      }
+    }
+  }
+}
+
+/* 2. GRID DÜZENİ */
+.gen-workspace {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 300px 1fr 320px;
+  gap: 1rem;
+  min-height: 0;
+
+  .glass-panel {
+    background: rgba(12, 12, 12, 0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    h3 { font-size: 0.9rem; font-weight: 700; color: white; letter-spacing: 0.5px; }
+  }
+
+  .panel-content {
+    flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 1rem;
+  }
+}
+
+/* SOL PANEL */
+.gen-sidebar.left {
+  /* Portföy Kartları */
+  .portfolio-item {
+    display: flex; align-items: center; gap: 0.8rem;
+    padding: 0.8rem; border-radius: 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid transparent;
+    cursor: pointer; transition: all 0.2s;
+    position: relative; overflow: hidden;
+
+    .p-icon { color: #71717a; }
+    .p-info {
+      flex: 1; overflow: hidden;
+      h4 { font-size: 0.85rem; color: #e4e4e7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      span { font-size: 0.75rem; color: #71717a; display: block; margin-top: 2px; }
+    }
+    
+    &:hover { background: rgba(255,255,255,0.06); }
+    &.active {
+      background: rgba(124, 58, 237, 0.15); border-color: #7c3aed;
+      .p-icon { color: #a78bfa; }
+      .p-check { position: absolute; right: 0.5rem; top: 0.5rem; color: #7c3aed; }
+    }
+  }
+
+  /* Stil Grid */
+  .style-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;
+    .style-card {
+      position: relative; aspect-ratio: 1; border-radius: 12px; overflow: hidden;
+      border: 2px solid transparent; cursor: pointer; transition: transform 0.2s;
+      
+      .style-img {
+        width: 100%; height: 100%; background-size: cover; background-position: center;
+        filter: brightness(0.6); transition: filter 0.3s;
+      }
+      .style-label {
+        position: absolute; bottom: 0; width: 100%; padding: 6px;
+        background: rgba(0,0,0,0.7); color: white; font-size: 0.7rem; font-weight: 600; text-align: center;
+      }
+      
+      &:hover { transform: scale(1.02); .style-img { filter: brightness(0.8); } }
+      &.active {
+        border-color: var(--accent-color, #7c3aed);
+        .style-img { filter: brightness(1); }
+        .style-check { 
+          position: absolute; top: 6px; right: 6px; 
+          background: var(--accent-color); color: black; 
+          border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; 
+        }
+      }
+    }
+  }
+}
+
+/* ORTA PANEL */
+.gen-canvas {
+  display: flex; align-items: center; justify-content: center; padding: 1.5rem;
+  background: radial-gradient(circle at center, rgba(124, 58, 237, 0.05), transparent 70%);
+
+  .upload-zone {
+    width: 100%; max-width: 400px; aspect-ratio: 1;
+    border: 2px dashed rgba(255,255,255,0.15); border-radius: 24px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: all 0.3s; background: rgba(255,255,255,0.02);
+    
+    &:hover { border-color: #7c3aed; background: rgba(124, 58, 237, 0.05); }
+    label { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
+    
+    .icon-circle { 
+      width: 64px; height: 64px; background: rgba(255,255,255,0.05); border-radius: 50%; 
+      display: flex; align-items: center; justify-content: center; color: #a1a1aa; margin-bottom: 1rem; 
+    }
+    .head { font-size: 1rem; font-weight: 600; color: white; margin-bottom: 0.25rem; .opt{color:#71717a; font-weight:400; font-size:0.8rem;} }
+    .sub { font-size: 0.8rem; color: #71717a; }
+
+    &.has-image {
+      border: none; padding: 0; overflow: hidden;
+      img { width: 100%; height: 100%; object-fit: contain; border-radius: 20px; }
+      .remove-btn {
+        position: absolute; top: 1rem; right: 1rem; background: rgba(0,0,0,0.6); color: white; 
+        width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer;
+        &:hover { background: #ef4444; }
+      }
+    }
+  }
+
+  .text-mode-placeholder {
+    text-align: center; color: #52525b;
+    .icon-circle { width: 80px; height: 80px; background: rgba(255,255,255,0.03); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; }
+  }
+
+  .result-view {
+    position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    img { 
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
+      &.ratio-post { max-height: 80%; aspect-ratio: 4/5; }
+      &.ratio-story { max-height: 90%; aspect-ratio: 9/16; }
+    }
+    .result-actions { margin-top: 1.5rem; display: flex; gap: 1rem; }
+    .btn-brand { background: #7c3aed; color: white; padding: 0.6rem 1.2rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: flex; gap: 6px; transition: transform 0.2s; &:hover{transform: translateY(-2px);} }
+    .btn-glass { background: rgba(255,255,255,0.1); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; display: flex; gap: 6px; &:hover{background: rgba(255,255,255,0.2);} }
+  }
+
+  .canvas-loader {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.8); z-index: 50; backdrop-filter: blur(10px);
+    display: flex; align-items: center; justify-content: center;
+    .loader-box { text-align: center; color: #a78bfa; .spin { animation: spin 1s linear infinite; margin-bottom: 1rem; } }
+  }
+}
+
+/* SAĞ PANEL */
+.gen-sidebar.right {
+  .format-selector {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;
+    .format-btn {
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;
+      padding: 1rem; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+      color: #a1a1aa; cursor: pointer; transition: all 0.2s;
+      span { font-size: 0.75rem; }
+      &:hover { background: rgba(255,255,255,0.06); color: white; }
+      &.active { background: rgba(124, 58, 237, 0.15); border-color: #7c3aed; color: white; }
+    }
+  }
+
+  .chat-input-wrapper {
+    height: 100%; display: flex; flex-direction: column; position: relative;
+    textarea {
+      flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
+      padding: 1rem; color: white; resize: none; outline: none; font-size: 0.9rem; line-height: 1.5;
+      &:focus { border-color: #7c3aed; }
+    }
+    .hint { position: absolute; bottom: 1rem; right: 1rem; font-size: 0.7rem; color: #71717a; display: flex; align-items: center; gap: 4px; pointer-events: none; }
+  }
+
+  .panel-footer {
+    padding: 1.25rem; border-top: 1px solid rgba(255,255,255,0.06);
+    .btn-generate {
+      width: 100%; padding: 1rem; border-radius: 12px; border: none; font-weight: 700; font-size: 1rem;
+      background: linear-gradient(135deg, #7c3aed, #f97316); color: white; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+      box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3); transition: all 0.3s;
+      &:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(124, 58, 237, 0.5); }
+      &:disabled { opacity: 0.5; cursor: not-allowed; background: #333; box-shadow: none; }
+      .spin { animation: spin 1s linear infinite; }
+    }
+  }
+}
+
+/* Mobil Uyumluluk */
+@media (max-width: 1024px) {
+  .gen-workspace { grid-template-columns: 1fr; grid-template-rows: auto 500px auto; }
+  .gen-page-container { height: auto; }
+  .gen-tabs-wrapper .gen-tabs { flex-wrap: wrap; justify-content: center; width: 100%; }
+  .gen-tabs .tab-btn { flex: 1; min-width: 140px; }
+}
+/* --- PREMIUM V2: VISUAL FEAST STUDIO --- */
+
+.premium-gen-container {
+  height: calc(100vh - 2rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-bottom: 1rem;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+}
+
+/* 1. BACKGROUND FX */
+.ambient-glow {
+  position: absolute; width: 800px; height: 800px; border-radius: 50%; filter: blur(120px); opacity: 0.15; z-index: 0; pointer-events: none;
+  &.purple { top: -20%; left: 10%; background: #7c3aed; animation: float 10s infinite ease-in-out; }
+  &.orange { bottom: -20%; right: 10%; background: #f97316; animation: float 12s infinite ease-in-out reverse; }
+}
+@keyframes float { 0%,100%{transform:translate(0,0)} 50%{transform:translate(50px, -50px)} }
+
+.grid-pattern {
+  position: absolute; inset: 0; z-index: 0; opacity: 0.15;
+  background-image: linear-gradient(#333 1px, transparent 1px), linear-gradient(90deg, #333 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(circle at center, black 40%, transparent 80%);
+}
+
+/* 2. TOP NAV (ISLAND) */
+.nav-island-wrapper {
+  display: flex; justify-content: center; position: relative; z-index: 10;
+  .nav-island {
+    display: flex; gap: 0.5rem; padding: 0.4rem; border-radius: 99px;
+    background: rgba(20, 20, 20, 0.6); backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+    
+    .nav-btn {
+      position: relative; padding: 0.6rem 1.5rem; border: none; background: transparent; cursor: pointer; border-radius: 99px;
+      .active-bg { position: absolute; inset: 0; background: rgba(255,255,255,0.1); border-radius: 99px; border: 1px solid rgba(255,255,255,0.1); }
+    }
+  }
+}
+
+/* 3. STAGE LAYOUT */
+.stage-grid {
+  flex: 1; display: grid; grid-template-columns: 320px 1fr 320px; gap: 1.5rem; min-height: 0; position: relative; z-index: 5;
+  
+  .side-panel { display: flex; flex-direction: column; overflow: hidden; }
+  
+  /* Glass Box (Ortak Panel Yapısı) */
+  .glass-box {
+    background: rgba(18, 18, 18, 0.7); backdrop-filter: blur(24px);
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 24px;
+    display: flex; flex-direction: column; overflow: hidden; height: 100%;
+    box-shadow: 0 20px 40px -10px rgba(0,0,0,0.6);
+  }
+
+  .box-header {
+    padding: 1.5rem 1.5rem 1rem;
+    h3 { font-size: 1rem; font-weight: 700; color: white; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
+    .header-line { width: 40px; height: 3px; background: linear-gradient(90deg, #7c3aed, transparent); border-radius: 2px; }
+  }
+
+  .box-content { flex: 1; overflow-y: auto; padding: 0 1.5rem 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
+}
+
+/* SOL PANEL İÇERİĞİ */
+.portfolio-list {
+  display: flex; flex-direction: column; gap: 0.8rem;
+  .portfolio-card {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 16px; padding: 1rem; cursor: pointer; transition: all 0.3s;
+    display: flex; gap: 1rem; align-items: center; position: relative; overflow: hidden;
+    
+    &:hover { background: rgba(255,255,255,0.06); transform: translateY(-2px); }
+    
+    &.selected {
+      background: linear-gradient(90deg, rgba(124, 58, 237, 0.15), transparent);
+      border-color: #7c3aed;
+      .p-indicator { background: #7c3aed; height: 100%; }
+    }
+
+    .p-indicator { width: 4px; height: 0%; background: #71717a; position: absolute; left: 0; top: 0; transition: height 0.3s; border-radius: 0 4px 4px 0; }
+    
+    .p-details {
+      flex: 1;
+      h4 { color: white; font-size: 0.9rem; font-weight: 600; margin-bottom: 2px; line-height: 1.2; }
+      .p-meta { 
+        color: #9ca3af; font-size: 0.75rem; display: flex; align-items: center; gap: 6px; 
+        .separator { color: #444; } .price { color: #d8b4fe; font-weight: 500; }
+      }
+    }
+    .check-icon { color: #7c3aed; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+  }
+}
+
+.style-grid-v2 {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+  .style-tile {
+    position: relative; aspect-ratio: 1; border-radius: 16px; overflow: hidden; cursor: pointer;
+    .tile-bg { width: 100%; height: 100%; background-size: cover; background-position: center; transition: transform 0.5s; }
+    .tile-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); }
+    .tile-label { position: absolute; bottom: 10px; left: 0; width: 100%; text-align: center; font-size: 0.75rem; font-weight: 600; color: white; z-index: 2; }
+    .tile-border { position: absolute; inset: 0; border: 3px solid transparent; border-radius: 16px; z-index: 3; }
+    
+    &:hover .tile-bg { transform: scale(1.1); }
+    &.selected .tile-border { border-color: inherit; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
+  }
+}
+
+/* ORTA PANEL: CANVAS */
+.center-stage {
+  height: 100%; display: flex; flex-direction: column;
+  .canvas-wrapper {
+    position: relative; align-items: center; justify-content: center;
+    background: radial-gradient(circle at center, #1a1a1a 0%, #0a0a0a 100%);
+    .canvas-dots { position: absolute; inset: 0; background-image: radial-gradient(#333 1px, transparent 1px); background-size: 20px 20px; opacity: 0.3; }
+  }
+  
+  .canvas-state {
+    position: relative; z-index: 5; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+    
+    &.upload {
+      .drop-zone {
+        width: 100%; max-width: 420px; aspect-ratio: 1.2; border: 2px dashed rgba(255,255,255,0.1);
+        border-radius: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s;
+        background: rgba(255,255,255,0.02);
+        &:hover { border-color: #7c3aed; background: rgba(124, 58, 237, 0.05); .icon-pulse { transform: scale(1.1); color: #7c3aed; } }
+        
+        label { display: flex; flex-direction: column; align-items: center; text-align: center; width: 100%; height: 100%; justify-content: center;}
+        .icon-pulse { width: 80px; height: 80px; background: rgba(255,255,255,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #71717a; margin-bottom: 1.5rem; transition: all 0.3s; }
+        h3 { color: white; font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; }
+        p { color: #71717a; font-size: 0.9rem; }
+        
+        &.filled {
+          border: none; padding: 0; overflow: hidden; position: relative;
+          .preview-img img { width: 100%; height: 100%; object-fit: contain; border-radius: 16px; }
+          .close-btn { position: absolute; top: 1rem; right: 1rem; width: 36px; height: 36px; background: rgba(0,0,0,0.6); border-radius: 50%; color: white; border:none; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); &:hover{background:#ef4444} }
+        }
+      }
+      .text-mode-visual { text-align: center; .glowing-icon { color: #7c3aed; filter: drop-shadow(0 0 20px rgba(124,58,237,0.5)); margin-bottom: 1.5rem; } h3 { color: white; font-size: 1.5rem; font-weight: 700; } p { color: #9ca3af; margin-top: 0.5rem; line-height: 1.5; } }
+    }
+
+    &.result {
+      flex-direction: column; gap: 2rem;
+      .result-frame {
+        position: relative; border-radius: 12px; padding: 8px; background: linear-gradient(135deg, #333, #111);
+        box-shadow: 0 25px 60px -15px rgba(0,0,0,0.7);
+        img { display: block; border-radius: 4px; max-height: 60vh; }
+        &.story img { aspect-ratio: 9/16; }
+        &.post img { aspect-ratio: 4/5; }
+      }
+      .floating-actions {
+        display: flex; gap: 1rem; background: rgba(30,30,30,0.8); padding: 0.5rem; border-radius: 16px; backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1);
+        .action-btn {
+          display: flex; align-items: center; gap: 0.5rem; padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s;
+          &.glass { background: rgba(255,255,255,0.05); color: white; &:hover{background: rgba(255,255,255,0.1);} }
+          &.primary { background: #f97316; color: white; box-shadow: 0 0 20px rgba(249, 115, 22, 0.4); &:hover{transform: translateY(-2px);} }
+        }
+      }
+    }
+
+    &.loading {
+      .scanner-line { position: absolute; width: 100%; height: 2px; background: #7c3aed; box-shadow: 0 0 15px #7c3aed; top: 0; animation: scan 2s infinite ease-in-out alternate; }
+      .loading-content { text-align: center; p { margin-top: 1rem; color: #d8b4fe; letter-spacing: 1px; font-weight: 500; } }
+    }
+  }
+}
+@keyframes scan { from{top:10%} to{top:90%} }
+@keyframes popIn { 0%{transform:scale(0)} 70%{transform:scale(1.2)} 100%{transform:scale(1)} }
+
+/* SAĞ PANEL İÇERİĞİ */
+.side-panel.right {
+  .control-section {
+    margin-bottom: 2rem;
+    label { display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #71717a; margin-bottom: 0.8rem; .badge-opt { color: #7c3aed; font-weight: 500; } }
+    
+    .format-toggles {
+      display: flex; gap: 0.5rem;
+      .fmt-btn {
+        flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 1rem;
+        background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #71717a; cursor: pointer; transition: all 0.2s;
+        &:hover { background: rgba(255,255,255,0.06); color: white; }
+        &.active { background: rgba(124, 58, 237, 0.1); border-color: #7c3aed; color: white; }
+        span { font-size: 0.7rem; }
+      }
+    }
+
+    .chat-box {
+      position: relative; height: 200px; background: rgba(0,0,0,0.2); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1);
+      display: flex; flex-direction: column; overflow: hidden; transition: border-color 0.3s;
+      &:focus-within { border-color: #7c3aed; }
+      
+      textarea {
+        flex: 1; background: transparent; border: none; padding: 1rem; color: white; resize: none; font-size: 0.9rem; line-height: 1.5; outline: none;
+        &::placeholder { color: #52525b; }
+      }
+      .chat-footer { padding: 0.5rem 1rem; background: rgba(255,255,255,0.03); display: flex; align-items: center; gap: 6px; font-size: 0.7rem; color: #7c3aed; font-weight: 600; }
+    }
+  }
+
+  .box-footer {
+    padding: 1.5rem; border-top: 1px solid rgba(255,255,255,0.06); margin-top: auto;
+    
+    .generate-btn-v2 {
+  width: 100%; 
+  padding: 1rem; 
+  border: none; 
+  border-radius: 16px; 
+  cursor: pointer; 
+  position: relative; 
+  overflow: hidden;
+  color: white; 
+  font-weight: 700; 
+  font-size: 1rem; 
+  transition: transform 0.2s;
+  
+  /* Buton içeriğini ortala */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* 1. Arka Plan Katmanı (En altta) */
+  .btn-bg { 
+    position: absolute; 
+    inset: 0; 
+    background: linear-gradient(90deg, #7c3aed, #f97316); 
+    transition: filter 0.3s; 
+    z-index: 0; /* Zemin katman */
+  }
+
+  /* 2. Yazı ve İkon Katmanı (En üstte) */
+  & > span {
+    position: relative; 
+    z-index: 1; /* Arkaplanın üstüne çıkması için */
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* İkon ve yazı arası boşluk */
+  }
+
+  /* Efektler */
+  &:hover { 
+    transform: scale(1.02); 
+    .btn-bg { filter: brightness(1.1); } 
+  }
+  
+  &:disabled { 
+    opacity: 0.6; 
+    cursor: not-allowed; 
+    filter: grayscale(1); 
+  }
+  
+  .spin-icon { animation: spin 1s linear infinite; }
+}
+  }
+}
+
+/* MOBİL DÜZENLEME */
+@media (max-width: 1024px) {
+  .stage-grid { grid-template-columns: 1fr; grid-template-rows: auto 500px auto; }
+  .premium-gen-container { height: auto; overflow-y: auto; }
+}
+/* 2. TOP NAV (ISLAND) */
+.nav-island-wrapper {
+  display: flex; 
+  justify-content: center; 
+  position: relative; 
+  z-index: 10;
+
+  .nav-island {
+    display: flex; 
+    gap: 0.5rem; 
+    padding: 0.4rem; 
+    border-radius: 99px;
+    background: rgba(20, 20, 20, 0.6); 
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.1); 
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+    
+    .nav-btn {
+      position: relative; 
+      padding: 0.6rem 1.5rem; 
+      border: none; 
+      background: transparent; 
+      cursor: pointer; 
+      border-radius: 99px;
+      
+      /* --- DÜZELTME BURADA: Renkleri Elle Tanımlıyoruz --- */
+      color: #a1a1aa; /* Pasif durum rengi (Açık Gri) */
+      transition: all 0.3s ease;
+      font-weight: 500;
+      font-size: 0.9rem;
+
+      /* İçindeki ikon ve yazı hizalaması */
+      span {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        position: relative;
+        z-index: 2; /* Arkaplan efektinin üstünde kalsın */
+      }
+
+      /* Hover Durumu */
+      &:hover {
+        color: #ffffff;
+        background: rgba(255,255,255,0.05);
+      }
+
+      /* Aktif Durumu */
+      &.active {
+        color: #ffffff; /* Aktifken Beyaz */
+        font-weight: 600;
+        
+        .active-bg { 
+          position: absolute; 
+          inset: 0; 
+          background: rgba(255,255,255,0.15); 
+          border-radius: 99px; 
+          border: 1px solid rgba(255,255,255,0.1); 
+          z-index: 1;
+        }
+      }
+    }
+  }
+}
+/* MEVCUT SCSS DOSYASININ EN ALTINA EKLEYİN - SIDE-BY-SIDE STİLİ */
+
+/* --- ENHANCER RESULT VIEW (NEW) --- */
+.result-view {
+  width: 100%;
+  max-width: 1000px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.5rem;
+  position: relative;
+  z-index: 10;
+}
+
+.comparison-grid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 2rem;
+  }
+}
+
+/* Image Card (Shared Styles) */
+.image-card {
+  flex: 1;
+  position: relative;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 20px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  /* Görüntü Oranı */
+  aspect-ratio: 4/3; 
+  display: flex;
+  flex-direction: column;
+
+  /* Badge (Etiket) */
+  .card-badge {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    color: #9ca3af;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 10;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+
+    &.success {
+      background: rgba(34, 197, 94, 0.2); /* Yeşil tint */
+      color: #4ade80; /* Canlı Yeşil */
+      border-color: rgba(34, 197, 94, 0.3);
+      box-shadow: 0 0 15px rgba(34, 197, 94, 0.2);
+    }
+  }
+
+  .img-wrapper {
+    width: 100%;
+    height: 100%;
+    border-radius: 14px;
+    overflow: hidden;
+    position: relative;
+    background: #000;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+  }
+
+  &:hover {
+    transform: translateY(-5px);
+    .img-wrapper img { transform: scale(1.05); }
+  }
+
+  /* AFTER CARD SPECIALS */
+  &.after {
+    border-color: rgba(34, 197, 94, 0.3); /* Yeşil Sınır */
+    box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.5);
+
+    .shine-effect {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%);
+      transform: translateX(-150%);
+      animation: shine 3s infinite;
+      pointer-events: none;
+    }
+  }
+  
+  .success-indicator {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #4ade80;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: rgba(0,0,0,0.8);
+    padding: 6px 12px;
+    border-radius: 99px;
+    backdrop-filter: blur(4px);
+  }
+}
+
+/* Divider Arrow */
+.divider-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+
+  .arrow-circle {
+    width: 48px;
+    height: 48px;
+    background: #1f2937;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    
+    @media (max-width: 768px) {
+      transform: rotate(90deg); /* Mobilde aşağı baksın */
+    }
+  }
+}
+
+/* Action Buttons */
+.result-actions {
+  display: flex;
+  gap: 1rem;
+  
+  button {
+    padding: 0.85rem 2.5rem;
+    border-radius: 14px;
+    font-weight: 600;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+
+  .btn-secondary {
+    background: rgba(255,255,255,0.05);
+    color: #e5e7eb;
+    border: 1px solid rgba(255,255,255,0.1);
+    &:hover { background: rgba(255,255,255,0.1); color: white; }
+  }
+
+  .btn-primary {
+    background: #22c55e; /* Yeşil */
+    color: #000;
+    &.glow-btn {
+      box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
+      &:hover { 
+        transform: translateY(-2px);
+        box-shadow: 0 0 30px rgba(34, 197, 94, 0.6);
+        background: #4ade80;
+      }
+    }
+  }
+}
+
+@keyframes shine {
+  0% { transform: translateX(-150%) skewX(-15deg); }
+  50%, 100% { transform: translateX(150%) skewX(-15deg); }
+}
