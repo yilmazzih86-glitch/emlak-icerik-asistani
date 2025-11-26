@@ -4,12 +4,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
   LayoutDashboard, PlusCircle, LogOut, Image as ImageIcon, 
-  Video, Wand2, Lock, Crown, Users, FileBarChart, FileText, Contact, Settings 
+  Video, Wand2, Lock, Crown, Users, FileBarChart, FileText, Contact, Settings,
+  ChevronRight, Sparkles
 } from "lucide-react";
 
 export default function Sidebar({ user, profile }: { user: any, profile: any }) {
   const pathname = usePathname();
-  const plan = profile?.plan_type || 'free';
+  const plan = profile?.plan_type || 'free'; // Kullanıcının planı
+
+  // Paket İsimlendirmesi
+  const planLabels: any = {
+    free: "Demo Paket",
+    freelance: "Freelance",
+    pro: "Pro Plan",
+    office: "Ofis / Ekip"
+  };
 
   // Erişim Kontrolü
   const hasAccess = (requiredPlans: string[]) => {
@@ -38,75 +47,85 @@ export default function Sidebar({ user, profile }: { user: any, profile: any }) 
     { name: "Ofis Raporları", href: "/dashboard/reports", icon: FileBarChart, allowed: ['office'] },
   ];
 
+  // Ortak Link Render Fonksiyonu
+  const renderNavLink = (item: any) => {
+    const isActive = pathname === item.href;
+    const isLocked = item.allowed ? !hasAccess(item.allowed) : false;
+    const finalHref = isLocked ? "/dashboard/pricing" : item.href;
+
+    return (
+      <Link 
+        key={item.name} 
+        href={finalHref} 
+        className={`${isActive ? "active" : ""} ${isLocked ? "opacity-60 cursor-not-allowed" : ""} group relative`}
+      >
+        <item.icon size={18} className={isLocked ? "text-gray-600" : ""} />
+        <span className="text-sm font-medium">{item.name}</span>
+        {isLocked && <Lock size={14} className="absolute right-3 text-gray-600 group-hover:text-orange-500 transition-colors" />}
+      </Link>
+    );
+  };
+
   return (
     <aside className="sidebar flex flex-col h-full">
       
-      {/* --- YENİ ÜST ALAN (Profil & Çıkış) --- */}
-      <div className="sidebar-header">
-        
-        {/* SOL: Profil Bilgisi */}
-        <div className="header-left">
-          <div className="avatar-circle avatar-sm shrink-0">
-            {profile?.avatar_url ? (
-              <img src={profile.avatar_url} alt="Profil" />
-            ) : (
-              <span className="text-xs font-bold text-white">
-                {profile?.full_name?.charAt(0) || user.email?.charAt(0).toUpperCase()}
-              </span>
-            )}
-          </div>
-
-          <div className="user-info">
-            <h3 title={profile?.full_name}>{profile?.full_name || "Kullanıcı"}</h3>
-            <p title={profile?.agency_name}>{profile?.agency_name || "Freelance"}</p>
-          </div>
-        </div>
-
-        {/* SAĞ: Çıkış Butonu (Kritik Düzeltme: action="/signout") */}
-        <form action="/signout" method="post">
-          <button 
-            type="submit" 
-            className="logout-btn" 
-            title="Güvenli Çıkış"
-          >
-            <LogOut size={16} />
-          </button>
-        </form>
+      {/* --- HEADER (GENİŞLETİLMİŞ PROFİL) --- */}
+      <div className="sidebar-header expanded">
+  <div className="user-profile-card">
+    
+    {/* YENİ WRAPPER: Avatar ve İsim için Flex Yapısı */}
+    <div className="profile-top">
+      <div className="avatar-circle avatar-md">
+        {profile?.avatar_url ? (
+          <img src={profile.avatar_url} alt="Profil" />
+        ) : (
+          <span className="text-sm font-bold text-white">
+            {profile?.full_name?.charAt(0) || user.email?.charAt(0).toUpperCase()}
+          </span>
+        )}
       </div>
+      
+      <div className="user-info-expanded">
+        <h3 title={profile?.full_name || "Kullanıcı"}>
+          {profile?.full_name || "Kullanıcı"}
+        </h3>
+        <p title={profile?.agency_name || "Freelance"}>
+          {profile?.agency_name || "Freelance Danışman"}
+        </p>
+      </div>
+    </div>
 
-      {/* MENÜLER */}
-      <nav className="menu flex-1 overflow-y-auto custom-scrollbar space-y-8 pr-2 mt-4">
+    {/* Alt Kısım: Paket Rozeti */}
+    <div className="plan-badge-container">
+       <div className={`plan-pill ${plan}`}>
+          <Sparkles size={10} className="fill-current" />
+          <span>{planLabels[plan] || 'Paket Seçilmedi'}</span>
+       </div>
+       
+       {plan !== 'office' && (
+         <Link href="/dashboard/pricing" className="upgrade-link">
+            Yükselt <ChevronRight size={10} />
+         </Link>
+       )}
+    </div>
+
+  </div>
+</div>
+
+      {/* MENÜLER (SCROLL AREA) */}
+      <nav className="menu flex-1 overflow-y-auto custom-scrollbar space-y-6 pr-2 mt-2">
         
         <div>
           <p className="text-[10px] font-bold text-gray-500 uppercase px-3 mb-2 tracking-widest opacity-70">Yönetim</p>
           <div className="space-y-1">
-            {mainNav.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Link key={item.href} href={item.href} className={isActive ? "active" : ""}>
-                  <item.icon size={18} />
-                  {item.name}
-                </Link>
-              );
-            })}
+            {mainNav.map((item) => renderNavLink(item))}
           </div>
         </div>
 
         <div>
           <p className="text-[10px] font-bold text-gray-500 uppercase px-3 mb-2 tracking-widest opacity-70">Müşteriler</p>
           <div className="space-y-1">
-            {crmNav.map((item) => {
-              const isActive = pathname === item.href;
-              const isLocked = !hasAccess(item.allowed);
-              const finalHref = isLocked ? "/dashboard/pricing" : item.href;
-              return (
-                <Link key={item.name} href={finalHref} className={`group relative flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 ${isActive ? "bg-blue-500/10 text-blue-400 border-l-2 border-blue-500" : "text-gray-400 hover:text-white hover:bg-white/5"} ${isLocked ? "opacity-70 cursor-not-allowed" : ""}`}>
-                  <item.icon size={18} className={isLocked ? "text-gray-600" : (isActive ? "text-blue-400" : "text-gray-400 group-hover:text-white")} />
-                  <span className="text-sm font-medium">{item.name}</span>
-                  {isLocked && <Lock size={14} className="absolute right-3 text-gray-600 group-hover:text-orange-500 transition-colors" />}
-                </Link>
-              );
-            })}
+            {crmNav.map((item) => renderNavLink(item))}
           </div>
         </div>
 
@@ -116,40 +135,29 @@ export default function Sidebar({ user, profile }: { user: any, profile: any }) 
             {plan === 'free' && <Crown size={12} className="text-orange-400 animate-pulse" />}
           </div>
           <div className="space-y-1">
-            {aiToolsNav.map((item) => {
-              const isActive = pathname === item.href;
-              const isLocked = !hasAccess(item.allowed);
-              const finalHref = isLocked ? "/dashboard/pricing" : item.href;
-              return (
-                <Link key={item.name} href={finalHref} className={`group relative flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 ${isActive ? "bg-purple-500/10 text-purple-400 border-l-2 border-purple-500" : "text-gray-400 hover:text-white hover:bg-white/5"} ${isLocked ? "opacity-70 cursor-not-allowed" : ""}`}>
-                  <item.icon size={18} className={isLocked ? "text-gray-600" : (isActive ? "text-purple-400" : "text-gray-400 group-hover:text-white")} />
-                  <span className="text-sm font-medium">{item.name}</span>
-                  {isLocked && <Lock size={14} className="absolute right-3 text-gray-600 group-hover:text-orange-500 transition-colors" />}
-                </Link>
-              );
-            })}
+            {aiToolsNav.map((item) => renderNavLink(item))}
           </div>
         </div>
 
         <div>
           <p className="text-[10px] font-bold text-gray-500 uppercase px-3 mb-2 tracking-widest opacity-70">Ofis</p>
           <div className="space-y-1">
-            {officeNav.map((item) => {
-              const isActive = pathname === item.href;
-              const isLocked = !hasAccess(item.allowed);
-              const finalHref = isLocked ? "/dashboard/pricing" : item.href;
-              return (
-                <Link key={item.name} href={finalHref} className={`group relative flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 ${isActive ? "bg-orange-500/10 text-orange-400 border-l-2 border-orange-500" : "text-gray-400 hover:text-white hover:bg-white/5"}`}>
-                  <item.icon size={18} className={isLocked ? "text-gray-600" : (isActive ? "text-orange-400" : "text-gray-400 group-hover:text-white")} />
-                  <span className="text-sm font-medium">{item.name}</span>
-                  {isLocked && <Lock size={14} className="absolute right-3 text-gray-600 group-hover:text-orange-500 transition-colors" />}
-                </Link>
-              );
-            })}
+            {officeNav.map((item) => renderNavLink(item))}
           </div>
         </div>
 
       </nav>
+
+      {/* --- FOOTER (ÇIKIŞ BUTONU) --- */}
+      <div className="sidebar-footer">
+        <form action="/signout" method="post" className="w-full">
+          <button type="submit" className="logout-btn-full">
+            <LogOut size={16} />
+            <span>Güvenli Çıkış</span>
+          </button>
+        </form>
+      </div>
+
     </aside>
   );
 }

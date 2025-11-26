@@ -1,54 +1,13 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { 
   UploadCloud, Sparkles, Download, AlertCircle, 
-  Loader2, MoveRight, ImagePlus, X 
+  Loader2, MoveRight, ImagePlus, X, CheckCircle2 
 } from "lucide-react";
-import { motion, useMotionValue, useTransform } from "framer-motion";
-
-// --- SONUÇ SLIDER BİLEŞENİ ---
-function ResultSlider({ original, enhanced }: { original: string, enhanced: string }) {
-  const x = useMotionValue(0.5); 
-  const widthPercentage = useTransform(x, value => `${value * 100}%`);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  return (
-    <div className="compare-slider" ref={containerRef}>
-      {/* Sonrası (Alt Katman - Tam Boyut) */}
-      <div className="layer after">
-        <img src={enhanced} alt="Enhanced" />
-        <div className="label-badge right">SONRASI (4K)</div>
-      </div>
-      
-      {/* Öncesi (Üst Katman - Maskelenmiş) */}
-      <motion.div 
-        className="layer before" 
-        style={{ width: widthPercentage }}
-      >
-         <img src={original} alt="Original" />
-         <div className="label-badge left">ÖNCESİ</div>
-      </motion.div>
-
-      {/* Tutaç (Handle) */}
-      <motion.div className="slider-handle"
-        style={{ left: widthPercentage }}
-        drag="x" dragConstraints={containerRef} dragElastic={0} dragMomentum={false}
-        onDrag={(e, info) => {
-            if (!containerRef.current) return;
-            const rect = containerRef.current.getBoundingClientRect();
-            const newX = (info.point.x - rect.left) / rect.width;
-            x.set(Math.max(0, Math.min(1, newX)));
-        }}
-      >
-        <div className="handle-circle">
-          <MoveRight size={18} />
-        </div>
-      </motion.div>
-    </div>
-  );
-}
+// Slider animasyonlarını kaldırdık, sadece giriş animasyonu için motion kalsın
+import { motion } from "framer-motion";
 
 export default function EnhancerPage() {
   const supabase = createClient();
@@ -72,33 +31,33 @@ export default function EnhancerPage() {
     }
   };
 
-  // page.tsx içindeki handleEnhance fonksiyonunu bu şekilde güncelle:
-
-const handleEnhance = async () => {
+  const handleEnhance = async () => {
     if (!image || !preview) return;
     setLoading(true);
     setError(null);
 
     try {
-      // ... (Auth ve Kredi işlemleri aynı kalıyor) ...
+      // 1. Oturum Kontrolü
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Oturum açmalısınız.");
 
+      // 2. Kredi Kontrolü
       const { data: creditSuccess, error: creditError } = await supabase.rpc('deduct_credit', { 
         row_id: user.id, amount: 1, credit_type: 'image' 
       });
       if (creditError || creditSuccess === false) throw new Error("Yetersiz Görsel Kredisi!");
 
-      // ... (Upload işlemleri aynı kalıyor) ...
+      // 3. Dosya Yükleme
       const fileExt = image.name.split('.').pop();
       const fileName = `${user.id}-${Date.now()}.${fileExt}`;
       const { error: uploadError } = await supabase.storage.from('temp-uploads').upload(fileName, image);
       if (uploadError) throw new Error("Resim yüklenemedi.");
       const { data: { publicUrl } } = supabase.storage.from('temp-uploads').getPublicUrl(fileName);
 
-      // Webhook Çağrısı
+      // 4. Webhook Çağrısı (n8n)
       const webhookUrl = process.env.NEXT_PUBLIC_N8N_ENHANCER_WEBHOOK;
       
+      // --- DÜZELTME BURADA YAPILDI (constKZresponse -> const response) ---
       const response = await fetch(webhookUrl!, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -106,26 +65,16 @@ const handleEnhance = async () => {
       });
 
       if (!response.ok) {
-         // Eğer hata varsa (örneğin 500), text olarak okuyup hatayı görelim
          const errText = await response.text();
          throw new Error(`Servis hatası: ${errText.substring(0, 50)}...`);
       }
       
-      // --- DEĞİŞİKLİK BURADA: ARTIK BLOB BEKLİYORUZ ---
-      
-      // Binary (Dosya) olarak gelen veriyi al
+      // 5. Sonucu Alma (Blob)
       const imageBlob = await response.blob();
-      
-      // Eğer gelen veri çok küçükse (örn: 1kb altı) muhtemelen hata mesajıdır
-      if (imageBlob.size < 1000) {
-          throw new Error("Gelen dosya bozuk veya hatalı.");
-      }
+      if (imageBlob.size < 1000) throw new Error("Gelen dosya bozuk veya hatalı.");
 
-      // Blob'u tarayıcı URL'ine çevir
       const localImageUrl = URL.createObjectURL(imageBlob);
       setEnhancedUrl(localImageUrl);
-
-      // --- DEĞİŞİKLİK BİTTİ ---
 
     } catch (err: any) {
       console.error("Enhance Error:", err);
@@ -135,23 +84,19 @@ const handleEnhance = async () => {
     }
   };
 
-  // page.tsx içindeki handleDownload fonksiyonunu bu şekilde güncelle:
-
-const handleDownload = () => {
-  if (!enhancedUrl) return;
-  
-  try {
-    const link = document.createElement('a');
-    link.href = enhancedUrl; // Base64 URL zaten buradadır
-    link.download = `enhanced-spektrum-${Date.now()}.png`; // Dosya adı
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  } catch (e) {
-    console.error("İndirme hatası:", e);
-    window.open(enhancedUrl, '_blank');
-  }
-};
+  const handleDownload = () => {
+    if (!enhancedUrl) return;
+    try {
+      const link = document.createElement('a');
+      link.href = enhancedUrl;
+      link.download = `enhanced-spektrum-${Date.now()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (e) {
+      window.open(enhancedUrl, '_blank');
+    }
+  };
 
   return (
     <div className="enhancer-page animate-in fade-in">
@@ -167,15 +112,12 @@ const handleDownload = () => {
 
       {/* Main Work Area */}
       <div className="enhancer-workspace">
-        
-        {/* Arka Plan Efektleri */}
         <div className="glow-bg purple"></div>
         <div className="glow-bg orange"></div>
 
         {/* --- STATE 1: UPLOAD --- */}
         {!enhancedUrl && !loading && (
           <div className="upload-section">
-            
             {preview ? (
               <div className="preview-box">
                 <img src={preview} alt="Preview" />
@@ -223,22 +165,55 @@ const handleDownload = () => {
           </div>
         )}
 
-        {/* --- STATE 3: SONUÇ --- */}
+        {/* --- STATE 3: SONUÇ (YENİ YAN YANA GÖRÜNÜM) --- */}
         {enhancedUrl && preview && !loading && (
-          <div className="result-section animate-in zoom-in">
-            <div className="slider-wrapper">
-              <ResultSlider original={preview} enhanced={enhancedUrl} />
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="result-view"
+          >
+            {/* Görsel Izgarası */}
+            <div className="comparison-grid">
+              
+              {/* Sol: Orijinal */}
+              <div className="image-card">
+                <div className="card-badge">ÖNCESİ</div>
+                <div className="img-wrapper">
+                  <img src={preview} alt="Original" />
+                </div>
+              </div>
+
+              {/* Orta: Ok İkonu */}
+              <div className="divider-arrow">
+                <div className="arrow-circle">
+                  <MoveRight size={24} />
+                </div>
+              </div>
+
+              {/* Sağ: İyileştirilmiş */}
+              <div className="image-card after">
+                <div className="shine-effect"></div>
+                <div className="card-badge success">SONRASI (4K)</div>
+                <div className="img-wrapper">
+                  <img src={enhancedUrl} alt="Enhanced" />
+                </div>
+                <div className="success-indicator">
+                  <CheckCircle2 size={16} /> İşlem Başarılı
+                </div>
+              </div>
+
             </div>
 
-            <div className="action-buttons">
+            {/* Aksiyon Butonları */}
+            <div className="result-actions">
               <button onClick={() => {setEnhancedUrl(null); setPreview(null); setImage(null)}} className="btn-secondary">
-                <ImagePlus size={18} /> Yeni İşlem
+                <ImagePlus size={18} /> Yeni Yükle
               </button>
-              <button onClick={handleDownload} className="btn-primary">
-                <Download size={18} /> İndir (4K)
+              <button onClick={handleDownload} className="btn-primary glow-btn">
+                <Download size={18} /> İndir (HD)
               </button>
             </div>
-          </div>
+          </motion.div>
         )}
 
       </div>

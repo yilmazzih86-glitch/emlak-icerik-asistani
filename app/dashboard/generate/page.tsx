@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PortfolioDetails } from "@/types";
-// CSS dosyasını import etmeyi unutma (aşağıda verdim)
 
 // --- TURKEY DATA ENTEGRASYONU ---
 import { 
@@ -132,16 +131,22 @@ export default function GeneratePage() {
   const nextStep = () => { if (validateStep(step)) setStep(step + 1); };
   const prevStep = () => setStep(step - 1);
 
+  // --- FORM GÖNDERİMİ (DOĞRUDAN n8n BAĞLANTISI) ---
   const handleSubmit = async () => {
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Oturum bulunamadı");
 
+      // 1. Kredi Kontrolü ve Düşümü
       const { data: creditSuccess, error: rpcError } = await supabase.rpc('deduct_credit', { row_id: user.id, amount: 1 });
       
       if (rpcError) throw rpcError;
-      if (!creditSuccess) { alert("Yetersiz Kredi! Lütfen paket yükseltin."); setLoading(false); return; }
+      if (!creditSuccess) { 
+        alert("Yetersiz Kredi! Lütfen paket yükseltin."); 
+        setLoading(false); 
+        return; 
+      }
 
       const webhookPayload = {
         ...formData,
@@ -149,30 +154,45 @@ export default function GeneratePage() {
         requestTime: new Date().toISOString()
       };
 
+      // 2. n8n Webhook Çağrısı (Doğrudan NEXT_PUBLIC_ Değişkeni İle)
       const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL;
-      const n8nResponse = await fetch(webhookUrl!, {
-        method: "POST", headers: { "Content-Type": "application/json" },
+
+      if (!webhookUrl) {
+        throw new Error("Webhook URL tanımlanmamış! (.env dosyasını kontrol edin)");
+      }
+
+      const n8nResponse = await fetch(webhookUrl, {
+        method: "POST", 
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(webhookPayload),
       });
 
-      if (!n8nResponse.ok) throw new Error("AI Servisi yanıt vermedi.");
+      if (!n8nResponse.ok) {
+        // Olası bir hatada mesajı okumaya çalışalım
+        const errText = await n8nResponse.text();
+        throw new Error(`AI Servisi yanıt vermedi. (${n8nResponse.status}: ${errText})`);
+      }
+      
       const n8nData = await n8nResponse.json();
 
+      // 3. Sonucu Veritabanına Kaydetme
       const { data, error } = await supabase.from("portfolios").insert({
           user_id: user.id,
           title: `${formData.city} ${formData.district} ${formData.roomCount} Fırsatı`,
           details: formData,
-          ai_output: n8nData.contents || n8nData.output,
+          // n8n çıktısının yapısına göre burayı "contents" veya "output" olarak alıyoruz
+          ai_output: n8nData.contents || n8nData.output, 
           status: "active",
       }).select().single();
 
       if (error) throw error;
       
+      // 4. Detay Sayfasına Yönlendirme
       router.push(`/dashboard/portfolios/${data.id}`);
 
     } catch (error: any) {
-      console.error(error);
-      alert("Hata: " + error.message);
+      console.error("İşlem Hatası:", error);
+      alert("Hata: " + (error.message || "Beklenmedik bir hata oluştu."));
       setLoading(false);
     }
   };
@@ -265,19 +285,18 @@ export default function GeneratePage() {
               <div className="form-grid">
                 
                 <div className="input-group full-width">
-  <label>İlan Başlığı / Referans</label>
-  <div className="input-wrapper">
-    <Hash size={18} className="input-icon" />
-    {/* AŞAĞIDAKİ SATIRDA "with-icon" eklemesi yapıldı */}
-    <input 
-      type="text" 
-      className="form-input with-icon" 
-      placeholder="Örn: #12345 - Sahile Yakın" 
-      value={formData.listingNo} 
-      onChange={(e) => handleChange("listingNo", e.target.value)} 
-    />
-  </div>
-</div>
+                  <label>İlan Başlığı / Referans</label>
+                  <div className="input-wrapper">
+                    <Hash size={18} className="input-icon" />
+                    <input 
+                      type="text" 
+                      className="form-input with-icon" 
+                      placeholder="Örn: #12345 - Sahile Yakın" 
+                      value={formData.listingNo} 
+                      onChange={(e) => handleChange("listingNo", e.target.value)} 
+                    />
+                  </div>
+                </div>
 
                 <div className="input-group">
                   <label>İl *</label>
