@@ -139,11 +139,18 @@ export default function GeneratePage() {
       if (!user) throw new Error("Oturum bulunamadı");
 
       // 1. Kredi Kontrolü ve Düşümü
-      const { data: creditSuccess, error: rpcError } = await supabase.rpc('deduct_credit', { row_id: user.id, amount: 1 });
+      const { data: success, error: rpcError } = await supabase.rpc('use_listing_credit', { 
+        p_user_id: user.id 
+      });
       
-      if (rpcError) throw rpcError;
-      if (!creditSuccess) { 
-        alert("Yetersiz Kredi! Lütfen paket yükseltin."); 
+      if (rpcError) {
+        console.error("RPC Error:", rpcError);
+        throw new Error("Kredi sistemi hatası.");
+      }
+      
+      if (!success) { 
+        // success false dönerse limit dolmuş demektir
+        alert("Yetersiz İlan Kredisi! Paket limitinize ulaştınız."); 
         setLoading(false); 
         return; 
       }

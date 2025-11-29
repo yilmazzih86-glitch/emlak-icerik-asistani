@@ -3,26 +3,33 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { 
-  LayoutTemplate, Image as ImageIcon, Type, 
-  UploadCloud, X, Sparkles, Loader2, 
-  Smartphone, Instagram, RefreshCcw, Download, Send, 
-  Wand2, CheckCircle2, Zap
+  LayoutTemplate, Image as ImageIcon, UploadCloud, X, Sparkles, Loader2, 
+  Smartphone, Instagram, RefreshCcw, Download, Wand2, CheckCircle2, Zap, Copy, Check, Edit
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Portfolio } from "@/types";
 
 // --- TİP TANIMLARI ---
-type GenMode = 'socialPost' | 'imageToImage' | 'textToImage';
 type FormatType = 'instagram_post' | 'instagram_story';
-type StylePreset = 'lux' | 'minimal' | 'clean' | 'family' | 'investment';
 
-const STYLES: { id: StylePreset; label: string; color: string; img: string }[] = [
-  { id: 'lux', label: 'Lüks & Premium', color: '#fbbf24', img: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=150&q=80' }, 
-  { id: 'minimal', label: 'Minimalist', color: '#e5e7eb', img: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=150&q=80' }, 
-  { id: 'clean', label: 'Kurumsal', color: '#3b82f6', img: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=150&q=80' }, 
-  { id: 'family', label: 'Sıcak Yuva', color: '#f97316', img: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b91d?w=150&q=80' }, 
-  { id: 'investment', label: 'Yatırım', color: '#10b981', img: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=150&q=80' }, 
-];
+interface Portfolio {
+  id: string;
+  title: string;
+  image_url?: string;
+  city?: string;
+  district?: string;
+  price?: number;
+  room_count?: string;
+  net_m2?: number;
+  gross_m2?: number;
+  details?: {
+    city?: string;
+    district?: string;
+    price?: number;
+    room_count?: string;
+    net_m2?: number;
+    gross_m2?: number;
+  }
+}
 
 const FORMATS: { id: FormatType; label: string; icon: any }[] = [
   { id: 'instagram_post', label: 'Post (4:5)', icon: Instagram },
@@ -32,17 +39,17 @@ const FORMATS: { id: FormatType; label: string; icon: any }[] = [
 export default function ImageGenPage() {
   const supabase = createClient();
   
-  const [mode, setMode] = useState<GenMode>('socialPost');
   const [loading, setLoading] = useState(false);
-  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [result, setResult] = useState<{image: string | null, caption: string | null}>({ image: null, caption: null });
+  const [copied, setCopied] = useState(false);
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   
   const [selectedPortfolio, setSelectedPortfolio] = useState<Portfolio | null>(null);
-  const [selectedStyle, setSelectedStyle] = useState<StylePreset>('lux');
   const [selectedFormat, setSelectedFormat] = useState<FormatType>('instagram_post');
+  const [prompt, setPrompt] = useState("");
+
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [prompt, setPrompt] = useState("");
 
   useEffect(() => {
     async function initData() {
@@ -59,71 +66,163 @@ export default function ImageGenPage() {
       const file = e.target.files[0];
       setUploadedImage(file);
       setImagePreview(URL.createObjectURL(file));
-      setGeneratedImage(null);
+      setResult({ image: null, caption: null });
     }
   };
 
+  const handleClearImage = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    setUploadedImage(null);
+    setImagePreview(null);
+  };
+
+  const handleCopy = () => {
+    if (result.caption) {
+      navigator.clipboard.writeText(result.caption);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  // --- GÜNCELLENEN GENERATE FONKSİYONU ---
+  // --- DÜZELTİLMİŞ GENERATE FONKSİYONU ---
   const handleGenerate = async () => {
-    if (mode === 'socialPost' && !selectedPortfolio) return alert("Lütfen bir portföy seçin.");
-    if (mode === 'imageToImage' && !uploadedImage) return alert("Lütfen bir görsel yükleyin.");
-    
+    // 1. Validasyonlar
+    if (!selectedPortfolio) return alert("Lütfen sol listeden bir portföy seçiniz.");
+    if (!uploadedImage) return alert("Lütfen portföye ait bir görsel yükleyiniz (Zorunlu).");
+
     setLoading(true);
-    setTimeout(() => {
-      setGeneratedImage("https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=1000&auto=format&fit=crop");
+    setResult({ image: null, caption: null });
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Oturum süresi dolmuş.");
+
+      // 2. Görseli Supabase Storage'a Yükle
+      const fileExt = uploadedImage.name.split('.').pop();
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('temp-uploads')
+        .upload(filePath, uploadedImage, {
+           cacheControl: '3600',
+           upsert: false
+        });
+
+      if (uploadError) {
+        throw new Error("Görsel yüklenirken hata oluştu: " + uploadError.message);
+      }
+
+      // 3. Yüklenen Görselin Public URL'ini Al
+      const { data: { publicUrl } } = supabase.storage
+        .from('temp-uploads')
+        .getPublicUrl(filePath);
+
+      if (!publicUrl) throw new Error("Görsel bağlantısı oluşturulamadı.");
+
+      // 4. Verileri Hazırla
+      const p = selectedPortfolio;
+      const city = p.city || p.details?.city || "";
+      const district = p.district || p.details?.district || "";
+      const price = p.price || p.details?.price || 0;
+      const room = p.room_count || p.details?.room_count || "";
+      const net = p.net_m2 || p.details?.net_m2 || 0;
+      const gross = p.gross_m2 || p.details?.gross_m2 || 0;
+
+      const payload = {
+        user_id: user.id,
+        mode: "socialPost",
+        portfolio: {
+          id: p.id,
+          title: p.title,
+          city: city,
+          district: district,
+          price: price,
+          room_count: room,
+          net_m2: net,
+          gross_m2: gross
+        },
+        image_url: publicUrl,
+        output_format: selectedFormat === 'instagram_story' ? 'post_4_5' : 'post_4_5',
+        prompt: prompt || "Sağ üst köşeye 'Fırsat' etiketi koy, fiyatı büyük yaz."
+      };
+
+      // 5. Webhook'a Gönder
+      const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_SOCIAL;
+      if (!webhookUrl) throw new Error("Webhook URL eksik.");
+
+      const response = await fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) throw new Error("Yapay zeka yanıt vermedi.");
+
+      // --- DÜZELTME BURADA BAŞLIYOR ---
+      const rawData = await response.json();
+      console.log("Webhook Ham Yanıt:", rawData); // Konsoldan kontrol etmek için
+
+      // n8n bazen Array ([...]) bazen Object ({...}) dönebilir.
+      // Eğer Array ise ilk elemanı al, değilse kendisini al.
+      const data = Array.isArray(rawData) ? rawData[0] : rawData;
+
+      if (data.status === 'success' && data.image_url) {
+        
+        // Açıklama null gelirse biz oluşturalım (Fallback Caption)
+        const fallbackCaption = `🏡 ${p.title}\n\n📍 ${district}/${city}\n💰 ${price?.toLocaleString()} ₺\n📐 ${room} | ${net}m²\n\nDetaylı bilgi için DM atın! 👇\n\n#emlak #${city?.toLowerCase()} #satılık`;
+
+        setResult({
+          image: data.image_url,
+          caption: data.description || fallbackCaption
+        });
+
+        // 6. Kullanım Sayacını Artır
+        const { data: profile } = await supabase.from('profiles').select('social_ui_used').eq('id', user.id).single();
+        if (profile) {
+           await supabase.from('profiles').update({ social_ui_used: (profile.social_ui_used || 0) + 1 }).eq('id', user.id);
+        }
+      } else {
+        throw new Error("Görsel oluşturma başarısız oldu veya veri formatı hatalı.");
+      }
+
+    } catch (error: any) {
+      console.error(error);
+      alert("Hata: " + error.message);
+    } finally {
       setLoading(false);
-    }, 3000);
+    }
   };
 
   return (
     <div className="premium-gen-container">
-      
-      {/* ARKA PLAN EFEKTİ */}
       <div className="ambient-glow purple"></div>
       <div className="ambient-glow orange"></div>
       <div className="grid-pattern"></div>
 
-      {/* --- 1. ÜST NAVİGASYON (Floating Island) --- */}
       <div className="nav-island-wrapper">
         <div className="nav-island">
-          {[
-            { id: 'socialPost', label: 'Portföy Postu', icon: LayoutTemplate },
-            { id: 'imageToImage', label: 'Görsel Düzenle', icon: Wand2 },
-            { id: 'textToImage', label: 'Metinden Üret', icon: Type },
-          ].map((m) => {
-            const isActive = mode === m.id;
-            return (
-              <button
-                key={m.id}
-                onClick={() => { setMode(m.id as GenMode); setGeneratedImage(null); }}
-                className={`nav-btn ${isActive ? 'active' : ''}`}
-              >
-                {isActive && (
-                  <motion.div layoutId="nav-indicator" className="active-bg" transition={{ type: "spring", bounce: 0.2, duration: 0.6 }} />
-                )}
-                <span className="z-10 flex items-center gap-2 relative">
-                  <m.icon size={16} className={isActive ? "text-white" : "text-gray-400"} />
-                  <span className={isActive ? "text-white font-semibold" : "text-gray-400"}>{m.label}</span>
-                </span>
-              </button>
-            )
-          })}
+          <button className="nav-btn active">
+            <motion.div layoutId="nav-indicator" className="active-bg" />
+            <span className="z-10 flex items-center gap-2 relative">
+              <LayoutTemplate size={16} className="text-white" />
+              <span className="text-white font-semibold">Portföy Postu</span>
+            </span>
+          </button>
         </div>
       </div>
 
-      {/* --- 2. ANA SAHNE (3 KOLON) --- */}
       <div className="stage-grid">
-        
-        {/* SOL PANEL: GİRDİLER */}
+        {/* SOL PANEL */}
         <motion.div initial={{x: -50, opacity: 0}} animate={{x: 0, opacity: 1}} className="side-panel left">
           <div className="glass-box h-full flex flex-col">
             <div className="box-header">
-              <h3>{mode === 'socialPost' ? 'Portföy Seçimi' : 'Stil Stüdyosu'}</h3>
+              <h3>Portföy Seçimi</h3>
               <div className="header-line"></div>
             </div>
-            
             <div className="box-content custom-scrollbar">
-              {mode === 'socialPost' ? (
-                portfolios.length > 0 ? (
+                {portfolios.length > 0 ? (
                   <div className="portfolio-list">
                     {portfolios.map((p) => (
                       <div 
@@ -135,156 +234,130 @@ export default function ImageGenPage() {
                         <div className="p-details">
                           <h4>{p.title}</h4>
                           <div className="p-meta">
-                            <span>{p.details.city}</span>
+                            <span>{p.city || p.details?.city}</span>
                             <span className="separator">•</span>
-                            <span className="price">{p.details.price?.toLocaleString()} ₺</span>
+                            <span className="price">{(p.price || p.details?.price)?.toLocaleString()} ₺</span>
                           </div>
                         </div>
                         {selectedPortfolio?.id === p.id && <CheckCircle2 size={18} className="check-icon"/>}
                       </div>
                     ))}
                   </div>
-                ) : <div className="empty-text">Henüz portföy yok.</div>
-              ) : (
-                <div className="style-grid-v2">
-                  {STYLES.map((s) => (
-                    <div 
-                      key={s.id} 
-                      onClick={() => setSelectedStyle(s.id)} 
-                      className={`style-tile ${selectedStyle === s.id ? 'selected' : ''}`}
-                    >
-                      <div className="tile-bg" style={{backgroundImage: `url(${s.img})`}}></div>
-                      <div className="tile-overlay"></div>
-                      <span className="tile-label">{s.label}</span>
-                      {selectedStyle === s.id && <div className="tile-border" style={{borderColor: s.color}}></div>}
-                    </div>
-                  ))}
-                </div>
-              )}
+                ) : <div className="empty-text">Henüz portföy yok.</div>}
             </div>
           </div>
         </motion.div>
 
-        {/* ORTA PANEL: TUVAL (CANVAS) */}
+        {/* ORTA PANEL */}
         <motion.div initial={{scale: 0.9, opacity: 0}} animate={{scale: 1, opacity: 1}} transition={{delay: 0.1}} className="center-stage">
           <div className="canvas-wrapper glass-box">
-            
-            {/* Canvas Arka Planı */}
             <div className="canvas-dots"></div>
-            
             <AnimatePresence mode="wait">
               {loading ? (
                 <motion.div key="loading" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="canvas-state loading">
                   <div className="scanner-line"></div>
                   <div className="loading-content">
                     <Loader2 size={50} className="animate-spin text-purple-500" />
-                    <p>Pikseller İşleniyor...</p>
+                    <p>Yapay Zeka Tasarlıyor...</p>
                   </div>
                 </motion.div>
-              ) : generatedImage ? (
-                <motion.div key="result" initial={{opacity:0, scale:0.9}} animate={{opacity:1, scale:1}} className="canvas-state result">
-                  <div className={`result-frame ${selectedFormat === 'instagram_story' ? 'story' : 'post'}`}>
-                    <img src={generatedImage} alt="AI Result" />
+              ) : result.image ? (
+                // SONUÇ EKRANI
+                <motion.div key="result" initial={{opacity:0, scale:0.95}} animate={{opacity:1, scale:1}} className="canvas-state result w-full h-full flex flex-col">
+                  <div className={`result-frame flex-1 flex items-center justify-center overflow-hidden p-4`}>
+                     <img src={result.image} alt="AI Result" className={`result-img ${selectedFormat === 'instagram_story' ? 'story' : 'post'}`}/>
                   </div>
-                  <div className="floating-actions">
-                    <button onClick={() => setGeneratedImage(null)} className="action-btn glass">
+                  <div className="px-6 mb-2 w-full">
+                     <div className="caption-box">
+                        <div className="cap-header">
+                           <span className="title"><Instagram size={12}/> Açıklama</span>
+                           <button onClick={handleCopy} className="copy-btn">
+                              {copied ? <Check size={12} className="text-green-400"/> : <Copy size={12}/>}
+                              {copied ? 'Kopyalandı' : 'Kopyala'}
+                           </button>
+                        </div>
+                        <p className="cap-text custom-scrollbar">{result.caption}</p>
+                     </div>
+                  </div>
+                  <div className="result-actions">
+                    <button onClick={() => setResult({image: null, caption: null})} className="action-btn glass">
                       <RefreshCcw size={18}/> <span className="text">Yeniden</span>
                     </button>
-                    <a href={generatedImage} download className="action-btn primary">
+                    <a href={result.image} download target="_blank" className="action-btn primary">
                       <Download size={18}/> <span className="text">İndir</span>
                     </a>
                   </div>
                 </motion.div>
               ) : (
+                // UPLOAD EKRANI
                 <motion.div key="upload" initial={{opacity:0}} animate={{opacity:1}} className="canvas-state upload">
-                  {(mode === 'socialPost' || mode === 'imageToImage') ? (
-                    <div className={`drop-zone ${imagePreview ? 'filled' : ''}`}>
-                      {imagePreview ? (
-                        <div className="preview-img">
-                          <img src={imagePreview} />
-                          <button onClick={() => {setUploadedImage(null); setImagePreview(null)}} className="close-btn"><X/></button>
+                  <div className={`drop-zone ${imagePreview ? 'filled' : ''}`}>
+                    {imagePreview ? (
+                      <div className="preview-container">
+                        <img src={imagePreview} className="preview-img" />
+                        
+                        {/* BUTONLAR */}
+                        <div className="preview-actions">
+                            <button onClick={handleClearImage} className="btn-remove" title="Görseli Kaldır">
+                                <X size={18} />
+                            </button>
+
+                            <label htmlFor="change-image-input" className="btn-change">
+                                <Edit size={14}/> Görseli Değiştir
+                            </label>
+                            
+                            <input id="change-image-input" type="file" hidden accept="image/*" onChange={handleImageUpload} />
                         </div>
-                      ) : (
-                        <label>
-                          <div className="icon-pulse">
-                            <UploadCloud size={40} />
-                          </div>
-                          <h3>Görseli Buraya Bırakın</h3>
-                          <p>{mode === 'socialPost' ? 'İsteğe bağlı: Evin fotoğrafını ekle' : 'Düzenlenecek görseli seç'}</p>
-                          <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
-                        </label>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="text-mode-visual">
-                      <div className="glowing-icon"><Type size={64}/></div>
-                      <h3>Hayal Et ve Yaz</h3>
-                      <p>Sağ paneldeki alana aklındakini yaz,<br/>AI senin için çizsin.</p>
-                    </div>
-                  )}
+                      </div>
+                    ) : (
+                      <label className="upload-label">
+                        <div className="icon-pulse mb-4">
+                          <UploadCloud size={48} className="icon-main"/>
+                        </div>
+                        <h3>Görsel Yükle</h3>
+                        <p>{selectedPortfolio ? "Seçilen portföy için fotoğraf yükleyin." : "Önce sol taraftan bir portföy seçin."}</p>
+                        <span className="badge-required">Zorunlu Alan</span>
+                        <input type="file" hidden accept="image/*" onChange={handleImageUpload} disabled={!selectedPortfolio} />
+                      </label>
+                    )}
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
         </motion.div>
 
-        {/* SAĞ PANEL: KONTROL */}
+        {/* SAĞ PANEL */}
         <motion.div initial={{x: 50, opacity: 0}} animate={{x: 0, opacity: 1}} transition={{delay: 0.2}} className="side-panel right">
           <div className="glass-box h-full flex flex-col">
             <div className="box-header">
-              <h3>Kontrol Merkezi</h3>
-              <div className="header-line"></div>
+               <h3>Kontrol Merkezi</h3>
+               <div className="header-line"></div>
             </div>
-
             <div className="box-content custom-scrollbar">
-              
-              {/* FORMAT SEÇİCİ */}
               <div className="control-section">
                 <label>Çıktı Formatı</label>
                 <div className="format-toggles">
                   {FORMATS.map((f) => (
-                    <button 
-                      key={f.id} 
-                      onClick={() => setSelectedFormat(f.id)}
-                      className={`fmt-btn ${selectedFormat === f.id ? 'active' : ''}`}
-                    >
-                      <f.icon size={18} />
-                      <span>{f.label}</span>
+                    <button key={f.id} onClick={() => setSelectedFormat(f.id)} className={`fmt-btn ${selectedFormat === f.id ? 'active' : ''}`}>
+                      <f.icon size={18} /><span>{f.label}</span>
                     </button>
                   ))}
                 </div>
               </div>
-
-              {/* CHAT ALANI */}
               <div className="control-section flex-1">
-                <label className="flex justify-between">
-                  Yapay Zeka Talimatı
-                  <span className="badge-opt">{mode === 'socialPost' ? 'Opsiyonel' : 'Gerekli'}</span>
-                </label>
+                <label className="flex justify-between">Yapay Zeka Talimatı<span className="badge-opt">Opsiyonel</span></label>
                 <div className="chat-box">
-                  <textarea 
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                    placeholder={
-                      mode === 'socialPost' ? "Örn: Sağ üst köşeye 'Fırsat' etiketi koy, fiyatı büyük yaz." :
-                      "Örn: Modern, havuzlu, gün batımında bir villa görseli..."
-                    }
-                  />
-                  <div className="chat-footer">
-                    <Sparkles size={14} className="text-purple-400 animate-pulse"/>
-                    <span>AI Assistant Hazır</span>
-                  </div>
+                  <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="Örn: Sağ üst köşeye 'Fırsat' etiketi koy..." />
+                  <div className="chat-footer"><Sparkles size={14}/><span>AI Assistant Hazır</span></div>
                 </div>
               </div>
-
             </div>
-
-            {/* ÜRET BUTONU */}
             <div className="box-footer">
               <button 
                 onClick={handleGenerate} 
-                disabled={loading || (mode === 'socialPost' && !selectedPortfolio)}
-                className="generate-btn-v2"
+                disabled={loading || !selectedPortfolio || !imagePreview}
+                className={`generate-btn-v2 ${(!selectedPortfolio || !imagePreview) ? 'disabled' : ''}`}
               >
                 <div className="btn-bg"></div>
                 <span className="relative flex items-center gap-2">
@@ -296,7 +369,6 @@ export default function ImageGenPage() {
             </div>
           </div>
         </motion.div>
-
       </div>
     </div>
   );

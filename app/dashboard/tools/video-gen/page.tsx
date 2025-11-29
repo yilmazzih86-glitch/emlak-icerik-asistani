@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createClient } from "@/lib/supabase/client"; // 1. EKLENDİ: Supabase client importu
 import { 
   Video, Sparkles, Clapperboard, Loader2, 
   Download, PlayCircle, Settings2, Clock, Monitor
@@ -18,29 +19,53 @@ const VIDEO_STYLES = [
 // En Boy Oranları
 const ASPECT_RATIOS = [
   { id: '16:9', label: 'Yatay (YouTube)', icon: Monitor },
-  { id: '9:16', label: 'Dikey (Reels/TikTok)', icon: Settings2 }, // İkonu temsilidir
+  { id: '9:16', label: 'Dikey (Reels/TikTok)', icon: Settings2 },
 ];
 
 export default function VideoGenPage() {
+  const supabase = createClient(); // 2. EKLENDİ: Supabase client başlatıldı
+  
   const [prompt, setPrompt] = useState("");
   const [selectedStyle, setSelectedStyle] = useState('cinematic');
   const [aspectRatio, setAspectRatio] = useState('16:9');
-  const [duration, setDuration] = useState(15); // Saniye
+  const [duration, setDuration] = useState(15);
   const [generating, setGenerating] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
 
+  // 3. GÜNCELLENDİ: Kredi Düşme Mantığı
   const handleGenerate = async () => {
     if (!prompt) return alert("Lütfen bir video senaryosu veya prompt girin.");
     
     setGenerating(true);
     setVideoUrl(null);
 
-    // --- SİMÜLASYON (API Yerine) ---
-    setTimeout(() => {
-      // Örnek bir video URL'i (Pexels veya benzeri telifsiz bir kaynak)
-      setVideoUrl("https://videos.pexels.com/video-files/7578546/7578546-uhd_2560_1440_30fps.mp4"); 
+    try {
+      // A. Kullanıcı Kontrolü
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Oturum açmalısınız.");
+
+      // B. Video Kredisi Düşme (RPC Çağrısı)
+      const { data: success, error: rpcError } = await supabase.rpc('use_video_ai_credit', {
+        p_user_id: user.id
+      });
+
+      if (rpcError) throw rpcError;
+      
+      if (!success) {
+        throw new Error("Yetersiz Video Kredisi! Paket limitinize ulaştınız.");
+      }
+
+      // C. Kredi Başarılıysa Üretime Başla (Simülasyon)
+      setTimeout(() => {
+        // Örnek bir video URL'i
+        setVideoUrl("https://videos.pexels.com/video-files/7578546/7578546-uhd_2560_1440_30fps.mp4"); 
+        setGenerating(false);
+      }, 4000); // 4 saniye bekleme süresi
+
+    } catch (error: any) {
+      alert(error.message);
       setGenerating(false);
-    }, 4000); // 4 saniye bekleme süresi
+    }
   };
 
   return (

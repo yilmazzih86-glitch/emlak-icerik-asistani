@@ -3,16 +3,24 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { PlusCircle, LayoutDashboard, Zap, FileText, ArrowRight, Clock, TrendingUp } from "lucide-react";
-import { motion } from "framer-motion";
+import { 
+  PlusCircle, LayoutDashboard, Zap, FileText, 
+  TrendingUp, Image as ImageIcon, Video, Share2, Sparkles, Crown, Star, Clock, ArrowRight,
+  FolderOpen, Search
+} from "lucide-react";
+import { motion, Variants } from "framer-motion"; // Variants eklendi
 
 export default function DashboardPage() {
-  // State yapısını yeni sisteme göre güncelledik
   const [stats, setStats] = useState({ 
+    fullName: "", 
     total: 0, 
     plan: 'free', 
-    limit: 0, 
-    used: 0, 
+    limits: {
+      listing: { limit: 0, used: 0 },
+      image: { limit: 0, used: 0 },
+      social: { limit: 0, used: 0 },
+      video: { limit: 0, used: 0 },
+    },
     recent: [] as any[] 
   });
   
@@ -25,19 +33,27 @@ export default function DashboardPage() {
       if (!user) return;
 
       const [profileRes, portfoliosRes, countRes] = await Promise.all([
-        // BURASI DEĞİŞTİ: Artık paket detaylarını çekiyoruz
-        supabase.from("profiles").select("plan_type, listing_limit, listing_used").eq("id", user.id).single(),
+        supabase.from("profiles")
+          .select("full_name, plan_type, listing_limit, listing_used, image_ai_limit, image_ai_used, social_ai_limit, social_ai_used, video_ai_limit, video_ai_used")
+          .eq("id", user.id)
+          .single(),
         
         supabase.from("portfolios").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5),
         supabase.from("portfolios").select("id", { count: "exact", head: true }).eq("user_id", user.id)
       ]);
 
+      const p = profileRes.data;
+
       setStats({
+        fullName: p?.full_name || "Değerli Üye",
         total: countRes.count ?? 0,
-        // Yeni verileri state'e işliyoruz (Varsayılan değerlerle)
-        plan: profileRes.data?.plan_type || 'free',
-        limit: profileRes.data?.listing_limit || 0,
-        used: profileRes.data?.listing_used || 0,
+        plan: p?.plan_type || 'free',
+        limits: {
+          listing: { limit: p?.listing_limit || 0, used: p?.listing_used || 0 },
+          image: { limit: p?.image_ai_limit || 0, used: p?.image_ai_used || 0 },
+          social: { limit: p?.social_ai_limit || 0, used: p?.social_ai_used || 0 },
+          video: { limit: p?.video_ai_limit || 0, used: p?.video_ai_used || 0 },
+        },
         recent: portfoliosRes.data ?? []
       });
       setLoading(false);
@@ -45,121 +61,177 @@ export default function DashboardPage() {
     fetchData();
   }, []);
 
-  // Animasyon Ayarları
-  const container = {
+  // Animasyon Varyantları
+  const container: Variants = {
     hidden: { opacity: 0 },
-    show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+    show: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.2 } }
   };
 
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 }
+  const itemAnim: Variants = {
+    hidden: { opacity: 0, y: 30, scale: 0.95 },
+    show: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 50 } }
   };
 
-  // Hesaplanmış Veri: Kazanılan Zaman
-  const timeSavedMinutes = stats.total * 45;
-  const timeSavedDisplay = timeSavedMinutes > 60 
-    ? `${(timeSavedMinutes / 60).toFixed(1)} Saat` 
-    : `${timeSavedMinutes} dk`;
+  const getPercent = (used: number, limit: number) => {
+    if (limit === 0) return 0;
+    return Math.min((used / limit) * 100, 100);
+  };
 
-  // Progress Bar Yüzdesi Hesaplama (0'a bölme hatasını önlemek için kontrol)
-  const progressPercent = stats.limit > 0 ? (stats.used / stats.limit) * 100 : 0;
+  const timeSavedDisplay = stats.total * 45 > 60 
+    ? `${((stats.total * 45) / 60).toFixed(1)} Saat` 
+    : `${stats.total * 45} dk`;
+
+  const formatPlanName = (plan: string) => {
+    switch(plan) {
+      case 'office': return 'Ofis / Ekip';
+      case 'pro': return 'Profesyonel';
+      case 'freelance': return 'Freelance';
+      default: return 'Demo';
+    }
+  };
 
   return (
     <div className="pt-6 pb-20">
-      {/* Başlık */}
-      <div className="dashboard-header">
-        <div>
-          <motion.h2 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
-            Genel Bakış
-          </motion.h2>
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-            Hoş geldin! Ajansının performans özeti burada.
-          </motion.p>
+      
+      {/* HEADER */}
+      <div className="dashboard-header-premium">
+        <div className="welcome-text">
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="greeting">
+            Hoş geldin, <span className="user-name">{stats.fullName}</span> 👋
+          </motion.div>
+          
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="plan-status">
+            Şu an <span className={`plan-badge ${stats.plan}`}>
+              {stats.plan === 'office' && <Crown size={12} />} 
+              {stats.plan === 'pro' && <Zap size={12} />}
+              {stats.plan === 'freelance' && <Star size={12} />}
+              {formatPlanName(stats.plan)}
+            </span> paketinin ayrıcalıklarını kullanıyorsun.
+          </motion.div>
         </div>
-        <Link href="/dashboard/generate" className="btn btn-primary shadow-lg shadow-purple-500/20">
-          <PlusCircle size={18} style={{ marginRight: '8px' }} />
+
+        <Link href="/dashboard/generate" className="btn btn-primary btn-glow">
+          <PlusCircle size={20} style={{ marginRight: '8px' }} />
           Yeni İçerik Üret
         </Link>
       </div>
 
-      {/* İstatistik Kartları (Grid) */}
+      {/* ÜST BÖLÜM: KPI KARTLARI */}
       <motion.div className="stats-grid" variants={container} initial="hidden" animate="show">
-        
-        {/* KART 1: TOPLAM PORTFÖY */}
-        <motion.div variants={item} className="premium-card" style={{ '--card-color': '#3b82f6' } as any}>
+        <motion.div variants={itemAnim} className="premium-card hover-lift" style={{ '--card-color': '#3b82f6' } as any}>
+          <div className="card-bg-glow blue"></div>
           <div className="card-header">
             <div>
               <div className="label">Toplam Portföy</div>
               <div className="value">{stats.total}</div>
             </div>
-            <div className="icon-box" style={{ background: 'rgba(59, 130, 246, 0.2)', color: '#60a5fa' }}>
-              <LayoutDashboard size={24} />
-            </div>
+            <div className="icon-box blue glass"><LayoutDashboard size={24} /></div>
           </div>
-          <div className="sub-text text-blue-300 bg-blue-500/10">
-             <TrendingUp size={12} className="inline mr-1" /> Aktif İlanlar
-          </div>
+          <div className="sub-text blue"><TrendingUp size={12} className="inline-icon" /> Sistemdeki İlanlar</div>
         </motion.div>
 
-        {/* KART 2: KAZANILAN ZAMAN */}
-        <motion.div variants={item} className="premium-card" style={{ '--card-color': '#a855f7' } as any}>
+        <motion.div variants={itemAnim} className="premium-card hover-lift" style={{ '--card-color': '#a855f7' } as any}>
+          <div className="card-bg-glow purple"></div>
           <div className="card-header">
             <div>
               <div className="label">Kazanılan Zaman</div>
               <div className="value">{timeSavedDisplay}</div>
             </div>
-            <div className="icon-box" style={{ background: 'rgba(168, 85, 247, 0.2)', color: '#c084fc' }}>
-              <Zap size={24} />
-            </div>
+            <div className="icon-box purple glass"><Zap size={24} /></div>
           </div>
-          <div className="sub-text text-purple-300 bg-purple-500/10">
-             ⚡ AI Verimliliği
-          </div>
+          <div className="sub-text purple">⚡ Yapay Zeka Verimliliği</div>
         </motion.div>
 
-        {/* KART 3: PAKET KULLANIMI (GÜNCELLENDİ) */}
-        <motion.div variants={item} className="premium-card" style={{ '--card-color': '#f97316' } as any}>
-          <div className="card-header mb-2"> {/* mb azaltıldı */}
+        <motion.div variants={itemAnim} className="premium-card hover-lift" style={{ '--card-color': '#f97316' } as any}>
+          <div className="card-bg-glow orange"></div>
+          <div className="card-header compact">
             <div>
-              <div className="label">Paket Kullanımı</div>
-              <div className="value text-2xl mt-1">
-                {stats.used} <span className="text-base text-gray-500 font-normal">/ {stats.limit}</span>
+              <div className="label small">İlan Oluşturma</div>
+              <div className="value large">
+                {stats.limits.listing.used} <span className="limit-span">/ {stats.limits.listing.limit}</span>
               </div>
             </div>
-            <div className="icon-box" style={{ background: 'rgba(249, 115, 22, 0.2)', color: '#fb923c' }}>
-              <FileText size={24} />
+            <div className="icon-box orange glass"><FileText size={24} /></div>
+          </div>
+          <div className="progress-bar-wrapper">
+            <motion.div className="progress-fill orange" initial={{ width: 0 }} animate={{ width: `${getPercent(stats.limits.listing.used, stats.limits.listing.limit)}%` }} transition={{ duration: 1.5, ease: "easeOut" }} />
+          </div>
+          <div className="sub-text orange mt-small">🔥 Ana Paket Kotası</div>
+        </motion.div>
+      </motion.div>
+
+      {/* ARA BAŞLIK */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="section-divider">
+        <h3><Sparkles size={18}/> AI Stüdyo Limitleri</h3>
+      </motion.div>
+
+      {/* ALT BÖLÜM: AI ARAÇLARI */}
+      <motion.div className="stats-grid" variants={container} initial="hidden" animate="show">
+        <motion.div variants={itemAnim} className="premium-card hover-lift" style={{ '--card-color': '#ec4899' } as any}>
+          <div className="card-header compact">
+            <div>
+              <div className="label small">Görsel İyileştirme</div>
+              <div className="value medium">
+                {stats.limits.image.used} <span className="limit-span">/ {stats.limits.image.limit}</span>
+              </div>
             </div>
+            <div className="icon-box pink glass"><ImageIcon size={20} /></div>
           </div>
-          
-          {/* Progress Bar */}
-          <div className="w-full bg-white/10 h-2 rounded-full mt-3 overflow-hidden">
-            <motion.div 
-              className="bg-orange-500 h-full rounded-full"
-              initial={{ width: 0 }}
-              animate={{ width: `${progressPercent}%` }}
-              transition={{ duration: 1, delay: 0.5 }}
-            />
-          </div>
-          
-          <div className="sub-text text-orange-300 bg-orange-500/10 mt-4">
-             Paket: <span className="uppercase font-bold tracking-wide">{stats.plan}</span>
+          <div className="progress-bar-wrapper small">
+            <motion.div className="progress-fill pink" initial={{ width: 0 }} animate={{ width: `${getPercent(stats.limits.image.used, stats.limits.image.limit)}%` }} transition={{ duration: 1.2 }} />
           </div>
         </motion.div>
 
+        <motion.div variants={itemAnim} className="premium-card hover-lift" style={{ '--card-color': '#6366f1' } as any}>
+          <div className="card-header compact">
+            <div>
+              <div className="label small">Sosyal Medya</div>
+              <div className="value medium">
+                {stats.limits.social.used} <span className="limit-span">/ {stats.limits.social.limit}</span>
+              </div>
+            </div>
+            <div className="icon-box indigo glass"><Share2 size={20} /></div>
+          </div>
+          <div className="progress-bar-wrapper small">
+            <motion.div className="progress-fill indigo" initial={{ width: 0 }} animate={{ width: `${getPercent(stats.limits.social.used, stats.limits.social.limit)}%` }} transition={{ duration: 1.2 }} />
+          </div>
+        </motion.div>
+
+        <motion.div variants={itemAnim} className="premium-card hover-lift" style={{ '--card-color': '#10b981' } as any}>
+          <div className="card-header compact">
+            <div>
+              <div className="label small">Sora Video</div>
+              <div className="value medium">
+                {stats.limits.video.used} <span className="limit-span">/ {stats.limits.video.limit}</span>
+              </div>
+            </div>
+            <div className="icon-box emerald glass"><Video size={20} /></div>
+          </div>
+          <div className="progress-bar-wrapper small">
+            <motion.div className="progress-fill emerald" initial={{ width: 0 }} animate={{ width: `${getPercent(stats.limits.video.used, stats.limits.video.limit)}%` }} transition={{ duration: 1.2 }} />
+          </div>
+        </motion.div>
       </motion.div>
 
-      {/* TABLO KISMI */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="mt-10">
-        {stats.total > 0 ? (
-          <div className="glass-panel rounded-xl p-6">
-            <div className="section-header"> 
-              <h3>Son Eklenenler</h3>
-              <Link href="/dashboard/portfolios">
-                Tümünü Gör
-              </Link>
-            </div>
-            
+      {/* --- SON EKLENENLER TABLOSU (GÜNCELLENDİ: HER ZAMAN GÖRÜNÜR) --- */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        transition={{ delay: 0.6 }} 
+        className="mt-10"
+      >
+        
+        {/* Glass Panel'e yeni 'premium-table-wrapper' sınıfını ekledik */}
+        <div className="glass-panel premium-table-wrapper rounded-xl">
+          
+          <div className="section-header"> 
+            <h3><FolderOpen size={18} className="text-purple-400"/> Son Portföyler</h3>
+            {stats.total > 0 && (
+              <Link href="/dashboard/portfolios">Tümünü Gör</Link>
+            )}
+          </div>
+          
+          {stats.total > 0 ? (
             <div className="table-container">
               <table className="dashboard-table">
                 <thead>
@@ -176,35 +248,32 @@ export default function DashboardPage() {
                     <tr key={item.id}>
                       <td>{item.title}</td>
                       <td>{item.details.district} / {item.details.city}</td>
-                      <td>
-                        <span className="badge-type">
-                          {item.details.propertyType}
-                        </span>
-                      </td>
-                      <td style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <Clock size={14} />
-                        {new Date(item.created_at).toLocaleDateString('tr-TR')}
-                      </td>
-                      <td style={{textAlign: 'right'}}>
-                        <Link href={`/dashboard/portfolios/${item.id}`}>
-                          Detay
-                        </Link>
-                      </td>
+                      <td><span className="badge-type">{item.details.propertyType}</span></td>
+                      <td className="date-cell"><Clock size={14} />{new Date(item.created_at).toLocaleDateString('tr-TR')}</td>
+                      <td style={{textAlign: 'right'}}><Link href={`/dashboard/portfolios/${item.id}`}>Detay</Link></td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          </div>
-        ) : (
-          <div className="empty-state">
-             <h3>Henüz portföy eklenmedi</h3>
-             <p>İlk portföyünüzü ekleyerek yapay zeka destekli içeriklerinizi oluşturmaya başlayın.</p>
-             <Link href="/dashboard/generate" className="btn btn-outline">
-               İlk Portföyü Ekle <ArrowRight size={16} style={{ marginLeft: '8px' }} />
-             </Link>
-          </div>
-        )}
+          ) : (
+            /* Empty State Premium */
+            <div className="empty-state-premium">
+               <div className="icon-stack">
+                 <div className="bg-circle">
+                   <Search size={32} className="main-icon"/>
+                 </div>
+               </div>
+               <h3>Henüz Kayıtlı Portföy Yok</h3>
+               <p>Sisteme ilk portföyünüzü ekleyerek yapay zeka destekli içerik üretimine başlayın.</p>
+               
+               <Link href="/dashboard/generate" className="btn btn-primary btn-glow">
+                 <PlusCircle size={18} className="mr-2"/> İlk Portföyünü Oluştur
+               </Link>
+            </div>
+          )}
+        </div>
+
       </motion.div>
     </div>
   );

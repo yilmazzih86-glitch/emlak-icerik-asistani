@@ -42,10 +42,17 @@ export default function EnhancerPage() {
       if (!user) throw new Error("Oturum açmalısınız.");
 
       // 2. Kredi Kontrolü
-      const { data: creditSuccess, error: creditError } = await supabase.rpc('deduct_credit', { 
-        row_id: user.id, amount: 1, credit_type: 'image' 
+      // 2. Kredi Kontrolü (Image AI Kredisi)
+      // Yeni SQL fonksiyonumuzu (use_image_ai_credit) kullanıyoruz.
+      const { data: success, error: rpcError } = await supabase.rpc('use_image_ai_credit', { 
+        p_user_id: user.id 
       });
-      if (creditError || creditSuccess === false) throw new Error("Yetersiz Görsel Kredisi!");
+
+      if (rpcError) throw rpcError;
+      
+      if (!success) {
+        throw new Error("Yetersiz Görsel İyileştirme Kredisi! Paket limitinize ulaştınız.");
+      }
 
       // 3. Dosya Yükleme
       const fileExt = image.name.split('.').pop();
