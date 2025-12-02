@@ -76,25 +76,92 @@ export interface Profile {
 export interface Portfolio {
   id: string;
   user_id: string;
-  title: string; // Genellikle "city + district + roomCount" birleşimi yapılabilir
-  details: PortfolioDetails; // JSONB sütunu bu yapıyı tutacak
-  ai_output: AiContent | null;
-  slug: string | null;
-  status: 'active' | 'sold' | 'passive';
+  title: string;
+  // Mevcut 'details' JSON'ı duruyor (Geriye dönük uyumluluk için)
+  details: any; 
+  // Yeni Eklenen Kolonlar
+  status: 'active' | 'passive' | 'sold' | 'rented';
+  listing_type: 'sale' | 'rent';
+  city?: string;
+  district?: string;
+  neighborhood?: string;
+  price?: number;
+  net_m2?: number;
+  gross_m2?: number;
+  room_count?: string;
+  floor?: string;
+  heating?: string;
+  credit_status?: string;
+  
+  ai_output: any; // Mevcut AI çıktıları
   image_urls: string[] | null;
-  is_public: boolean;
   created_at: string;
 }
 
+// types/index.ts
+
+// types/index.ts
+
+// Mevcut Customer tipini güncelleme
 export interface Customer {
   id: string;
   user_id: string;
-  name: string;
+  full_name: string;
   phone: string | null;
-  demand_type: 'buy' | 'rent';
-  budget_min: number | null;
-  budget_max: number | null;
-  location_interest: string | null;
-  notes: string | null;
+  email?: string | null;
+  type: 'buy' | 'rent' | 'sell';
+  budget_max?: number | null;
+  interested_districts?: string[] | null;
+  
+  // KRİTİK KISIM: Burası 'stage' olmalı
+  stage: 'new' | 'contacted' | 'viewing' | 'offer' | 'sold' | 'lost';
+  last_note?: string | null;
+  last_activity_at?: string | null;
+  owner_id?: string;
+  
   created_at: string;
+  avatar_url?: string | null;
+}
+
+export interface CrmTask {
+  id: string;
+  customer_id?: string | null;
+  assigned_to: string;
+  title: string;
+  description?: string | null;
+  due_date?: string | null;
+  is_completed: boolean;
+  created_at: string;
+  customers?: { full_name: string } | null; // Join ile gelen
+}
+
+export interface CrmAppointment {
+  id: string;
+  customer_id?: string | null;
+  created_by: string;
+  title: string;
+  appointment_date: string;
+  location?: string | null;
+  notes?: string | null;
+  created_at: string;
+  customers?: { full_name: string } | null; // Join ile gelen
+}
+export interface CrmActivity {
+  id: string;
+  customer_id: string;
+  type: 'note' | 'call' | 'whatsapp' | 'meeting' | 'task_done' | 'stage_change' | 'appointment';
+  description: string; // Ana metin
+  meta?: any;          // Ekstra veriler (örn: eski aşama -> yeni aşama)
+  created_at: string;
+  created_by?: string;
+}
+
+export interface CrmCustomerPortfolio {
+  id: string;
+  customer_id: string;
+  portfolio_id: string;
+  added_at: string;
+  notes?: string;
+  // Join ile gelecek veri
+  portfolios?: Portfolio;
 }

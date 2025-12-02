@@ -3,32 +3,35 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { 
-  LayoutTemplate, Image as ImageIcon, UploadCloud, X, Sparkles, Loader2, 
-  Smartphone, Instagram, RefreshCcw, Download, Wand2, CheckCircle2, Zap, Copy, Check, Edit
+  LayoutTemplate, UploadCloud, X, Sparkles, Loader2, 
+  Smartphone, Instagram, RefreshCcw, Download, CheckCircle2, Zap, Copy, Check, Edit,
+  Palette, ChevronDown, ChevronUp, Share2, Maximize2, Minimize2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+
+// Helper ve Tipleri İçe Aktar
+import { buildSocialMediaPayload } from "../../../../lib/n8n/payload-builder";
+import { BrandConfig, SocialMediaWebhookPayload } from "@/types/n8n";
 
 // --- TİP TANIMLARI ---
 type FormatType = 'instagram_post' | 'instagram_story';
 
+// Portfolio interface'i Supabase yapısına uygun şekilde genişletildi
 interface Portfolio {
   id: string;
   title: string;
   image_url?: string;
-  city?: string;
-  district?: string;
   price?: number;
   room_count?: string;
   net_m2?: number;
   gross_m2?: number;
-  details?: {
-    city?: string;
-    district?: string;
-    price?: number;
-    room_count?: string;
-    net_m2?: number;
-    gross_m2?: number;
-  }
+  ai_output?: {
+    instagram?: string;
+    portal?: string;
+    linkedin?: string;
+  };
+  // details JSONB kolonu için esnek yapı
+  details?: any; 
 }
 
 const FORMATS: { id: FormatType; label: string; icon: any }[] = [
@@ -39,24 +42,59 @@ const FORMATS: { id: FormatType; label: string; icon: any }[] = [
 export default function ImageGenPage() {
   const supabase = createClient();
   
+  // UI State
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{image: string | null, caption: string | null}>({ image: null, caption: null });
   const [copied, setCopied] = useState(false);
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
+  const [credits, setCredits] = useState({ limit: 0, used: 0 });
+  const [isCaptionExpanded, setIsCaptionExpanded] = useState(false);
   
+  // Form State
   const [selectedPortfolio, setSelectedPortfolio] = useState<Portfolio | null>(null);
   const [selectedFormat, setSelectedFormat] = useState<FormatType>('instagram_post');
   const [prompt, setPrompt] = useState("");
-
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
+  // Marka Ayarları State
+  const [showBrandSettings, setShowBrandSettings] = useState(false);
+  const [brandConfig, setBrandConfig] = useState<BrandConfig>({
+    name: "",
+    primary_color: "#0F172A",
+    secondary_color: "#E11D48",
+    background_color: "#020617",
+    accent_color: "#FFFFFF",
+    logo_url: "",
+    tone: "kurumsal",
+    cta_text: "Detaylı bilgi ve sunum için DM gönderin.",
+    hashtag_prefix: null
+  });
+
+  // 1. Verileri Çek
   useEffect(() => {
     async function initData() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data } = await supabase.from('portfolios').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
-      if (data) setPortfolios(data);
+
+      const { data: pData } = await supabase.from('portfolios').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+      if (pData) setPortfolios(pData);
+
+      const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+      if (profile) {
+        setCredits({ 
+          limit: profile.social_ai_limit || 0, 
+          used: profile.social_ai_used || 0 
+        });
+        
+        // Marka bilgilerini profilden al
+        setBrandConfig(prev => ({
+          ...prev,
+          name: profile.agency_name || "Emlak Ofisi",
+          logo_url: profile.avatar_url || "",
+          hashtag_prefix: profile.agency_name ? `#${profile.agency_name.replace(/\s+/g, '').toLowerCase()}` : null
+        }));
+      }
     }
     initData();
   }, []);
@@ -76,7 +114,8 @@ export default function ImageGenPage() {
     setImagePreview(null);
   };
 
-  const handleCopy = () => {
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (result.caption) {
       navigator.clipboard.writeText(result.caption);
       setCopied(true);
@@ -84,71 +123,82 @@ export default function ImageGenPage() {
     }
   };
 
-  // --- GÜNCELLENEN GENERATE FONKSİYONU ---
-  // --- DÜZELTİLMİŞ GENERATE FONKSİYONU ---
+  const handleDownload = async () => {
+    if (!result.image) return;
+    try {
+      const response = await fetch(result.image);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const fileName = `social-post-${Date.now()}.png`;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      window.open(result.image, '_blank');
+    }
+  };
+
+  // --- GENERATE (Görsel Oluştur) ---
   const handleGenerate = async () => {
-    // 1. Validasyonlar
+    // Validasyon
     if (!selectedPortfolio) return alert("Lütfen sol listeden bir portföy seçiniz.");
-    if (!uploadedImage) return alert("Lütfen portföye ait bir görsel yükleyiniz (Zorunlu).");
+    // Görsel zorunluluğu: Ya yeni yüklenen ya da portföyde var olan
+    const hasImage = uploadedImage || selectedPortfolio.image_url;
+    if (!hasImage) return alert("Lütfen bir görsel yükleyiniz veya kapak görseli olan bir portföy seçiniz.");
+    
+    if (credits.limit <= credits.used) return alert("Sosyal medya görsel limitiniz doldu.");
 
     setLoading(true);
     setResult({ image: null, caption: null });
+    setIsCaptionExpanded(false);
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Oturum süresi dolmuş.");
 
-      // 2. Görseli Supabase Storage'a Yükle
-      const fileExt = uploadedImage.name.split('.').pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-      const filePath = `${user.id}/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('temp-uploads')
-        .upload(filePath, uploadedImage, {
-           cacheControl: '3600',
-           upsert: false
-        });
-
-      if (uploadError) {
-        throw new Error("Görsel yüklenirken hata oluştu: " + uploadError.message);
+      // 1. Görsel URL Belirle
+      let finalImageUrl = "";
+      
+      if (uploadedImage) {
+        const fileExt = uploadedImage.name.split('.').pop();
+        const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+        const filePath = `${user.id}/${fileName}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('temp-uploads')
+          .upload(filePath, uploadedImage, { cacheControl: '3600', upsert: false });
+          
+        if (uploadError) throw new Error("Görsel yüklenemedi.");
+        
+        const { data: { publicUrl } } = supabase.storage
+          .from('temp-uploads')
+          .getPublicUrl(filePath);
+          
+        finalImageUrl = publicUrl;
+      } else if (selectedPortfolio.image_url) {
+        finalImageUrl = selectedPortfolio.image_url;
       }
 
-      // 3. Yüklenen Görselin Public URL'ini Al
-      const { data: { publicUrl } } = supabase.storage
-        .from('temp-uploads')
-        .getPublicUrl(filePath);
-
-      if (!publicUrl) throw new Error("Görsel bağlantısı oluşturulamadı.");
-
-      // 4. Verileri Hazırla
-      const p = selectedPortfolio;
-      const city = p.city || p.details?.city || "";
-      const district = p.district || p.details?.district || "";
-      const price = p.price || p.details?.price || 0;
-      const room = p.room_count || p.details?.room_count || "";
-      const net = p.net_m2 || p.details?.net_m2 || 0;
-      const gross = p.gross_m2 || p.details?.gross_m2 || 0;
-
-      const payload = {
-        user_id: user.id,
-        mode: "socialPost",
-        portfolio: {
-          id: p.id,
-          title: p.title,
-          city: city,
-          district: district,
-          price: price,
-          room_count: room,
-          net_m2: net,
-          gross_m2: gross
-        },
-        image_url: publicUrl,
-        output_format: selectedFormat === 'instagram_story' ? 'post_4_5' : 'post_4_5',
-        prompt: prompt || "Sağ üst köşeye 'Fırsat' etiketi koy, fiyatı büyük yaz."
+      // 2. Payload Oluştur (Helper Fonksiyonu ile)
+      const outputFormatMap: Record<FormatType, SocialMediaWebhookPayload['output_format']> = {
+        'instagram_post': 'post_4_5',
+        'instagram_story': 'story_9_16'
       };
 
-      // 5. Webhook'a Gönder
+      const payload = buildSocialMediaPayload(
+        user.id,
+        selectedPortfolio,
+        brandConfig,
+        finalImageUrl,
+        outputFormatMap[selectedFormat],
+        prompt
+      );
+
+      // 3. Webhook İsteği
       const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_SOCIAL;
       if (!webhookUrl) throw new Error("Webhook URL eksik.");
 
@@ -160,39 +210,47 @@ export default function ImageGenPage() {
 
       if (!response.ok) throw new Error("Yapay zeka yanıt vermedi.");
 
-      // --- DÜZELTME BURADA BAŞLIYOR ---
       const rawData = await response.json();
-      console.log("Webhook Ham Yanıt:", rawData); // Konsoldan kontrol etmek için
-
-      // n8n bazen Array ([...]) bazen Object ({...}) dönebilir.
-      // Eğer Array ise ilk elemanı al, değilse kendisini al.
       const data = Array.isArray(rawData) ? rawData[0] : rawData;
 
       if (data.status === 'success' && data.image_url) {
-        
-        // Açıklama null gelirse biz oluşturalım (Fallback Caption)
-        const fallbackCaption = `🏡 ${p.title}\n\n📍 ${district}/${city}\n💰 ${price?.toLocaleString()} ₺\n📐 ${room} | ${net}m²\n\nDetaylı bilgi için DM atın! 👇\n\n#emlak #${city?.toLowerCase()} #satılık`;
+        // Caption belirle
+        let finalCaption = "";
+        if (selectedPortfolio.ai_output && selectedPortfolio.ai_output.instagram) {
+           finalCaption = selectedPortfolio.ai_output.instagram;
+        } else {
+           const d = selectedPortfolio.details || {};
+           finalCaption = `🏡 ${selectedPortfolio.title}\n\n📍 ${d.district || ''}/${d.city || ''}\n💰 ${(d.price || 0).toLocaleString()} ₺\n\n${brandConfig.cta_text}\n\n#emlak #${(d.city || '').toLowerCase()} #satılık`;
+        }
 
         setResult({
           image: data.image_url,
-          caption: data.description || fallbackCaption
+          caption: finalCaption
         });
 
-        // 6. Kullanım Sayacını Artır
-        const { data: profile } = await supabase.from('profiles').select('social_ui_used').eq('id', user.id).single();
+        // Kredi güncelle
+        const { data: profile } = await supabase.from('profiles').select('social_ai_used').eq('id', user.id).single();
         if (profile) {
-           await supabase.from('profiles').update({ social_ui_used: (profile.social_ui_used || 0) + 1 }).eq('id', user.id);
+           await supabase.from('profiles').update({ social_ai_used: (profile.social_ai_used || 0) + 1 }).eq('id', user.id);
+           setCredits(prev => ({ ...prev, used: prev.used + 1 }));
         }
       } else {
-        throw new Error("Görsel oluşturma başarısız oldu veya veri formatı hatalı.");
+        throw new Error("Görsel oluşturma başarısız oldu.");
       }
 
     } catch (error: any) {
-      console.error(error);
       alert("Hata: " + error.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  const renderStyledCaption = (text: string) => {
+    if (!text) return null;
+    return text.split(/(\s+)/).map((word, index) => {
+      if (word.startsWith('#')) return <span key={index} style={{ color: '#60a5fa', fontWeight: 600 }}>{word}</span>;
+      return <span key={index}>{word}</span>;
+    });
   };
 
   return (
@@ -207,7 +265,7 @@ export default function ImageGenPage() {
             <motion.div layoutId="nav-indicator" className="active-bg" />
             <span className="z-10 flex items-center gap-2 relative">
               <LayoutTemplate size={16} className="text-white" />
-              <span className="text-white font-semibold">Portföy Postu</span>
+              <span className="text-white font-semibold">Sosyal Medya Stüdyosu</span>
             </span>
           </button>
         </div>
@@ -234,9 +292,9 @@ export default function ImageGenPage() {
                         <div className="p-details">
                           <h4>{p.title}</h4>
                           <div className="p-meta">
-                            <span>{p.city || p.details?.city}</span>
+                            <span>{p.details?.city || ""}</span>
                             <span className="separator">•</span>
-                            <span className="price">{(p.price || p.details?.price)?.toLocaleString()} ₺</span>
+                            <span className="price">{(p.details?.price || 0).toLocaleString()} ₺</span>
                           </div>
                         </div>
                         {selectedPortfolio?.id === p.id && <CheckCircle2 size={18} className="check-icon"/>}
@@ -257,35 +315,53 @@ export default function ImageGenPage() {
                 <motion.div key="loading" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="canvas-state loading">
                   <div className="scanner-line"></div>
                   <div className="loading-content">
-                    <Loader2 size={50} className="animate-spin text-purple-500" />
-                    <p>Yapay Zeka Tasarlıyor...</p>
+                    <Loader2 size={64} className="spin text-purple-500 mb-4" />
+                    <h3 className="text-xl font-bold text-white mb-2">Tasarım Oluşturuluyor</h3>
+                    <p className="text-gray-400">Marka kimliğiniz uygulanıyor, lütfen bekleyin...</p>
                   </div>
                 </motion.div>
               ) : result.image ? (
                 // SONUÇ EKRANI
-                <motion.div key="result" initial={{opacity:0, scale:0.95}} animate={{opacity:1, scale:1}} className="canvas-state result w-full h-full flex flex-col">
-                  <div className={`result-frame flex-1 flex items-center justify-center overflow-hidden p-4`}>
-                     <img src={result.image} alt="AI Result" className={`result-img ${selectedFormat === 'instagram_story' ? 'story' : 'post'}`}/>
+                <motion.div key="result" initial={{opacity:0, scale:0.95}} animate={{opacity:1, scale:1}} className="canvas-state result w-full h-full flex flex-col p-6">
+                  
+                  {/* Görsel Alanı */}
+                  <div className="result-image-container">
+                     <img src={result.image} alt="AI Result" className={`result-img-preview ${selectedFormat === 'instagram_story' ? 'story' : 'post'}`}/>
                   </div>
-                  <div className="px-6 mb-2 w-full">
-                     <div className="caption-box">
-                        <div className="cap-header">
-                           <span className="title"><Instagram size={12}/> Açıklama</span>
-                           <button onClick={handleCopy} className="copy-btn">
-                              {copied ? <Check size={12} className="text-green-400"/> : <Copy size={12}/>}
+                  
+                  {/* Caption Alanı */}
+                  <div className="result-caption-area">
+                     <motion.div 
+                        className={`caption-card-glass ${isCaptionExpanded ? 'expanded' : ''}`}
+                        initial={false}
+                        animate={{ height: isCaptionExpanded ? 'auto' : '56px' }}
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                     >
+                        <div className="caption-header" onClick={() => setIsCaptionExpanded(!isCaptionExpanded)}>
+                           <div className="flex items-center gap-3">
+                             <Instagram size={18} className="text-pink-500"/> 
+                             <span className="title">AI Instagram Post Açıklaması</span>
+                             {isCaptionExpanded ? <ChevronDown size={16} className="text-gray-400"/> : <ChevronUp size={16} className="text-gray-400"/>}
+                           </div>
+                           <motion.button whileTap={{ scale: 0.95 }} onClick={handleCopy} className={`copy-btn ${copied ? 'copied' : ''}`}>
+                              {copied ? <Check size={14}/> : <Copy size={14}/>}
                               {copied ? 'Kopyalandı' : 'Kopyala'}
-                           </button>
+                           </motion.button>
                         </div>
-                        <p className="cap-text custom-scrollbar">{result.caption}</p>
-                     </div>
+                        <div className="caption-content custom-scrollbar">
+                          {renderStyledCaption(result.caption || "")}
+                        </div>
+                     </motion.div>
                   </div>
-                  <div className="result-actions">
-                    <button onClick={() => setResult({image: null, caption: null})} className="action-btn glass">
-                      <RefreshCcw size={18}/> <span className="text">Yeniden</span>
+
+                  {/* Butonlar */}
+                  <div className="result-actions-grid">
+                    <button onClick={() => setResult({image: null, caption: null})} className="action-btn secondary">
+                      <RefreshCcw size={18}/> Yeni Oluştur
                     </button>
-                    <a href={result.image} download target="_blank" className="action-btn primary">
-                      <Download size={18}/> <span className="text">İndir</span>
-                    </a>
+                    <button onClick={handleDownload} className="action-btn primary">
+                      <Download size={18}/> İndir (HD)
+                    </button>
                   </div>
                 </motion.div>
               ) : (
@@ -295,27 +371,17 @@ export default function ImageGenPage() {
                     {imagePreview ? (
                       <div className="preview-container">
                         <img src={imagePreview} className="preview-img" />
-                        
-                        {/* BUTONLAR */}
                         <div className="preview-actions">
-                            <button onClick={handleClearImage} className="btn-remove" title="Görseli Kaldır">
-                                <X size={18} />
-                            </button>
-
-                            <label htmlFor="change-image-input" className="btn-change">
-                                <Edit size={14}/> Görseli Değiştir
-                            </label>
-                            
+                            <button onClick={handleClearImage} className="btn-remove" title="Görseli Kaldır"><X size={18} /></button>
+                            <label htmlFor="change-image-input" className="btn-change"><Edit size={14}/> Görseli Değiştir</label>
                             <input id="change-image-input" type="file" hidden accept="image/*" onChange={handleImageUpload} />
                         </div>
                       </div>
                     ) : (
                       <label className="upload-label">
-                        <div className="icon-pulse mb-4">
-                          <UploadCloud size={48} className="icon-main"/>
-                        </div>
+                        <div className="icon-pulse mb-4"><UploadCloud size={48} className="icon-main"/></div>
                         <h3>Görsel Yükle</h3>
-                        <p>{selectedPortfolio ? "Seçilen portföy için fotoğraf yükleyin." : "Önce sol taraftan bir portföy seçin."}</p>
+                        <p>{selectedPortfolio ? `"${selectedPortfolio.title}" için görsel seçin.` : "Önce sol taraftan bir portföy seçin."}</p>
                         <span className="badge-required">Zorunlu Alan</span>
                         <input type="file" hidden accept="image/*" onChange={handleImageUpload} disabled={!selectedPortfolio} />
                       </label>
@@ -335,6 +401,7 @@ export default function ImageGenPage() {
                <div className="header-line"></div>
             </div>
             <div className="box-content custom-scrollbar">
+              
               <div className="control-section">
                 <label>Çıktı Formatı</label>
                 <div className="format-toggles">
@@ -345,27 +412,50 @@ export default function ImageGenPage() {
                   ))}
                 </div>
               </div>
-              <div className="control-section flex-1">
-                <label className="flex justify-between">Yapay Zeka Talimatı<span className="badge-opt">Opsiyonel</span></label>
+
+              {/* Marka Ayarları */}
+              <div className="control-section">
+                <button onClick={() => setShowBrandSettings(!showBrandSettings)} className="brand-toggle">
+                  <div className="label-wrap"><Palette size={16} className="icon-purple"/><span>Marka & Tasarım</span></div>
+                  {showBrandSettings ? <ChevronUp size={14}/> : <ChevronDown size={14}/>}
+                </button>
+                <AnimatePresence>
+                  {showBrandSettings && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                      <div className="brand-content">
+                        <div className="form-group"><label>Marka Adı</label><input type="text" value={brandConfig.name} onChange={(e) => setBrandConfig({...brandConfig, name: e.target.value})}/></div>
+                        <div className="form-group"><label>Renkler</label><div className="color-grid">
+                            <div className="color-wrapper"><input type="color" value={brandConfig.primary_color} onChange={(e) => setBrandConfig({...brandConfig, primary_color: e.target.value})}/><span>{brandConfig.primary_color}</span></div>
+                            <div className="color-wrapper"><input type="color" value={brandConfig.secondary_color} onChange={(e) => setBrandConfig({...brandConfig, secondary_color: e.target.value})}/><span>{brandConfig.secondary_color}</span></div>
+                        </div></div>
+                        <div className="form-group"><label>Tasarım Tonu</label><select value={brandConfig.tone} onChange={(e) => setBrandConfig({...brandConfig, tone: e.target.value})}>
+                            <option value="kurumsal">Kurumsal & Ciddi</option><option value="lux">Lüks & Premium</option><option value="minimal">Minimal & Modern</option><option value="sicak">Sıcak & Samimi</option>
+                        </select></div>
+                        <div className="form-group"><label>Çağrı Metni (CTA)</label><input type="text" value={brandConfig.cta_text} onChange={(e) => setBrandConfig({...brandConfig, cta_text: e.target.value})}/></div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              <div className="control-section expanded">
+                <label className="flex-split">Yapay Zeka Talimatı<span className="badge-opt">Opsiyonel</span></label>
                 <div className="chat-box">
                   <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="Örn: Sağ üst köşeye 'Fırsat' etiketi koy..." />
                   <div className="chat-footer"><Sparkles size={14}/><span>AI Assistant Hazır</span></div>
                 </div>
               </div>
             </div>
+
             <div className="box-footer">
-              <button 
-                onClick={handleGenerate} 
-                disabled={loading || !selectedPortfolio || !imagePreview}
-                className={`generate-btn-v2 ${(!selectedPortfolio || !imagePreview) ? 'disabled' : ''}`}
-              >
+              <button onClick={handleGenerate} disabled={loading || !selectedPortfolio || !imagePreview} className={`generate-btn-v2 ${(!selectedPortfolio || !imagePreview) ? 'disabled' : ''}`}>
                 <div className="btn-bg"></div>
                 <span className="relative flex items-center gap-2">
-                  {loading ? <Loader2 size={20} className="animate-spin"/> : <Zap size={20} fill="currentColor"/>}
-                  {loading ? 'Sihir Yapılıyor...' : 'Görseli Oluştur'}
+                  {loading ? <Loader2 size={20} className="spin"/> : <Zap size={20} fill="currentColor"/>}
+                  {loading ? 'Marka Uygulanıyor...' : 'Görseli Oluştur'}
                 </span>
               </button>
-              <p className="credit-sub">1 Kredi • Yaklaşık 15sn</p>
+              <p className="credit-sub">1 Kredi • Kalan: {Math.max(0, credits.limit - credits.used)}</p>
             </div>
           </div>
         </motion.div>
