@@ -248,7 +248,11 @@ export default function DashboardPage() {
                     <tr key={item.id}>
                       <td>{item.title}</td>
                       <td>{item.details.district} / {item.details.city}</td>
-                      <td><span className="badge-type">{item.details.propertyType}</span></td>
+                      <td>
+  <span className="badge-type">
+    {item.listing_type === 'sale' ? 'Satılık' : 'Kiralık'}
+  </span>
+</td>
                       <td className="date-cell"><Clock size={14} />{new Date(item.created_at).toLocaleDateString('tr-TR')}</td>
                       <td style={{textAlign: 'right'}}><Link href={`/dashboard/portfolios/${item.id}`}>Detay</Link></td>
                     </tr>

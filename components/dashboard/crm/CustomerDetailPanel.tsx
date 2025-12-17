@@ -93,12 +93,20 @@ export default function CustomerDetailPanel({ customer, onClose }: CustomerDetai
   return (
     <AnimatePresence>
       <motion.div 
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        onClick={onClose} className="panel-backdrop"
+        key="backdrop" 
+        initial={{ opacity: 0 }} 
+        animate={{ opacity: 1 }} 
+        exit={{ opacity: 0 }}
+        onClick={onClose} 
+        className="panel-backdrop"
       />
       
+      {/* 2. Düzeltme: key="panel" eklendi */}
       <motion.div 
-        initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
+        key="panel"
+        initial={{ x: "100%" }} 
+        animate={{ x: 0 }} 
+        exit={{ x: "100%" }}
         transition={{ type: "spring", damping: 25, stiffness: 200 }}
         className="customer-detail-panel"
       >

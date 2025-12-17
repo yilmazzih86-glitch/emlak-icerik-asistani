@@ -179,6 +179,7 @@ export default function PortfolioDetailPage() {
      listingNo: details.listingNo || portfolio.id.slice(0, 8),
      date: format(new Date(portfolio.created_at), "dd-MM-yyyy", { locale: tr }),
      status: portfolio.status === 'active' ? 'Aktif' : 'Pasif',
+     listingType: portfolio.listing_type === 'sale' ? 'Satılık' : 'Kiralık',
      type: "Daire",
      
      // EKSİK OLAN propType EKLENDİ
@@ -293,6 +294,7 @@ export default function PortfolioDetailPage() {
                            <h4>Genel Bilgiler</h4>
                            <DetailRow label="İlan No" value={d.listingNo} />
                            <DetailRow label="Son Güncelleme" value={d.date} />
+                           <DetailRow label="İlan Tipi" value={d.listingType} highlight />
                            <DetailRow label="İlan Durumu" value={d.status} highlight />
                            <DetailRow label="Konut Tipi" value={d.propType} />
                            <DetailRow label="Fiyat" value={portfolio?.price ? `${portfolio.price.toLocaleString('tr-TR')} ₺` : '-'} highlight />
