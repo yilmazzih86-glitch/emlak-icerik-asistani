@@ -21,6 +21,7 @@ export interface WebhookPortfolioData {
   property_type: string;
   price: number;
   price_currency: string;
+  dues: number; // <--- BURASI EKLENDİ
   room_count: string;
   net_m2: number;
   gross_m2: number;

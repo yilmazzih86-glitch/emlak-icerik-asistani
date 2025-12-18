@@ -1,10 +1,8 @@
 // lib/n8n/payload-builder.ts
 
 import { SocialMediaWebhookPayload, BrandConfig } from "@/types/n8n";
-
-// Supabase'den gelen ham veri tipi (Sayfadaki Portfolio tipiyle uyumlu olması için any kullanıyoruz,
-// çünkü veritabanı JSON yapısı karmaşık olabilir)
-type SupabasePortfolio = any; 
+// Doğru tipi import ediyoruz
+import { Portfolio } from "@/types"; 
 
 const mapToneToStyle = (tone: string): string => {
   const t = tone.toLowerCase();
@@ -18,19 +16,20 @@ const mapToneToStyle = (tone: string): string => {
 
 export const buildSocialMediaPayload = (
   userId: string,
-  portfolio: SupabasePortfolio,
+  portfolio: Portfolio, // ARTIK 'ANY' DEĞİL
   brand: BrandConfig,
   imageUrl: string,
   outputFormat: SocialMediaWebhookPayload['output_format'],
   userPrompt: string
 ): SocialMediaWebhookPayload => {
   
-  const d = portfolio.details || {}; // details JSON kolonu
+  // Yedek veri kaynağı (Legacy)
+  const d = portfolio.details || {}; 
 
-  // Başlık: Varsa kullan, yoksa otomatik oluştur
+  // Başlık Mantığı: Önce ana sütun, yoksa dinamik oluşturma
   const generatedTitle = portfolio.title && portfolio.title.trim().length > 0
     ? portfolio.title
-    : `${d.city || ''} ${d.district || ''} ${d.roomCount || ''} ${d.propertyType || ''}`.trim();
+    : `${portfolio.city || d.city || ''} ${portfolio.district || d.district || ''} ${portfolio.room_count || d.roomCount || ''}`.trim();
 
   // Stil belirleme
   const style = mapToneToStyle(d.marketing?.tone || brand.tone);
@@ -41,26 +40,46 @@ export const buildSocialMediaPayload = (
     language: d.marketing?.language || 'tr',
     brand: {
       ...brand,
-      tone: brand.tone // UI'dan gelen tonu kullan veya style'a eşle
+      tone: brand.tone 
     },
     portfolio: {
       id: portfolio.id,
       title: generatedTitle,
-      city: d.city || "",
-      district: d.district || "",
-      neighborhood: d.neighborhood || "",
-      property_type: d.propertyType || "",
-      price: d.price || portfolio.price || 0,
+      
+      // --- YENİ MANTIK: ÖNCE SÜTUN, SONRA JSON ---
+      city: portfolio.city || d.city || "",
+      district: portfolio.district || d.district || "",
+      neighborhood: portfolio.neighborhood || d.neighborhood || "",
+      
+      // Property Type genelde oda sayısı veya tip ile eşleşir
+      property_type: portfolio.room_count || d.propertyType || "",
+      
+      // Fiyat ve Aidat (Sayısal kontrol)
+      price: portfolio.price ?? d.price ?? 0,
       price_currency: "TRY",
-      room_count: d.roomCount || portfolio.room_count || "",
-      net_m2: d.netM2 || portfolio.net_m2 || 0,
-      gross_m2: d.grossM2 || portfolio.gross_m2 || 0,
+      
+      // Yeni eklediğin aidat alanı (JSON'da yoksa 0 gönderir)
+      dues: portfolio.dues ?? d.dues ?? 0, 
+
+      room_count: portfolio.room_count || d.roomCount || "",
+      net_m2: portfolio.net_m2 ?? d.netM2 ?? 0,
+      gross_m2: portfolio.gross_m2 ?? d.grossM2 ?? 0,
+      
+      // Listing No genelde JSON'da tutulur
       listing_no: d.listingNo || "",
-      floor: d.floor || "",
-      site: d.site || "Hayır",
-      credit: d.credit || "Hayır",
-      heating: d.heating || "",
+      
+      floor: portfolio.floor || d.floor || "",
+      
+      // Site durumu (Eğer sütun açtıysan portfolio.site, açmadıysan JSON)
+      site: portfolio.site || d.site || "Hayır",
+      
+      // Kredi durumu
+      credit: portfolio.credit_status || d.credit || "Hayır",
+      
+      heating: portfolio.heating || d.heating || "",
       parking: d.parking || "Hayır",
+      
+      // Marketing verileri JSON içinde kalmaya devam eder
       highlights: d.marketing?.highlights || null,
       marketing_notes: d.marketing?.notes || null,
       target_audience: d.marketing?.target || null

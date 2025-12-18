@@ -131,7 +131,7 @@ export default function GeneratePage() {
   const nextStep = () => { if (validateStep(step)) setStep(step + 1); };
   const prevStep = () => setStep(step - 1);
 
-  // --- FORM GÖNDERİMİ (DOĞRUDAN n8n BAĞLANTISI) ---
+  // --- FORM GÖNDERİMİ (DÜZELTİLMİŞ KISIM) ---
   const handleSubmit = async () => {
     setLoading(true);
     try {
@@ -182,15 +182,32 @@ export default function GeneratePage() {
       
       const n8nData = await n8nResponse.json();
 
-      // 3. Sonucu Veritabanına Kaydetme
+      // 3. Sonucu Veritabanına Kaydetme (GÜNCELLENDİ: Ana sütunlara kayıt)
       const { data, error } = await supabase.from("portfolios").insert({
           user_id: user.id,
           title: `${formData.city} ${formData.district} ${formData.roomCount} Fırsatı`,
+          
+          // --- ANA SÜTUNLAR (Artık Boş Gelmeyecek) ---
+          city: formData.city,
+          district: formData.district,
+          neighborhood: formData.neighborhood,
+          
+          price: formData.price || 0,
+          net_m2: formData.netM2 || 0,
+          gross_m2: formData.grossM2 || 0,
+          room_count: formData.roomCount,
+          floor: formData.floor,
+          heating: formData.heating,
+          
+          // Dönüşümler
+          site: formData.site, 
+          credit_status: formData.credit === "Evet" ? "Uygun" : "Uygun Değil",
+          
+          // --- LEGACY VE AI ---
           details: formData,
-          // n8n çıktısının yapısına göre burayı "contents" veya "output" olarak alıyoruz
           ai_output: n8nData.contents || n8nData.output, 
           status: "active",
-      }).select().single();
+      } as any).select().single(); // 'as any' ile olası tip hatalarını önledik
 
       if (error) throw error;
       

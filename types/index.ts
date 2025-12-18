@@ -77,23 +77,27 @@ export interface Portfolio {
   id: string;
   user_id: string;
   title: string;
-  // Mevcut 'details' JSON'ı duruyor (Geriye dönük uyumluluk için)
-  details: any; 
-  // Yeni Eklenen Kolonlar
+  details: any; // Legacy (Eskiler bozulmasın diye tutuyoruz ama artık ana kaynak değil)
+  
+  // Ana Sütunlar (Doğru Veri Kaynağı)
   status: 'active' | 'passive' | 'sold' | 'rented';
   listing_type: 'sale' | 'rent';
   city?: string;
   district?: string;
   neighborhood?: string;
+  
+  // Sayısal ve Kritik Veriler
   price?: number;
+  dues?: number; // YENİ EKLENDİ (Aidat)
   net_m2?: number;
   gross_m2?: number;
   room_count?: string;
   floor?: string;
   heating?: string;
-  credit_status?: string;
+  credit_status?: string; // 'Evet/Hayır' yerine 'Uygun/Uygun Değil' standardı daha iyi
+  site?: string; // Site içerisinde mi?
   
-  ai_output: any; // Mevcut AI çıktıları
+  ai_output: any;
   image_urls: string[] | null;
   created_at: string;
 }

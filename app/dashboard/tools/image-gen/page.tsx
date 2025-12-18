@@ -5,34 +5,17 @@ import { createClient } from "@/lib/supabase/client";
 import { 
   LayoutTemplate, UploadCloud, X, Sparkles, Loader2, 
   Smartphone, Instagram, RefreshCcw, Download, CheckCircle2, Zap, Copy, Check, Edit,
-  Palette, ChevronDown, ChevronUp, Share2, Maximize2, Minimize2
+  Palette, ChevronDown, ChevronUp
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Helper ve Tipleri İçe Aktar
 import { buildSocialMediaPayload } from "../../../../lib/n8n/payload-builder";
 import { BrandConfig, SocialMediaWebhookPayload } from "@/types/n8n";
+// Global Type İmportu (Hata Çözümü)
+import { Portfolio } from "@/types";
 
-// --- TİP TANIMLARI ---
 type FormatType = 'instagram_post' | 'instagram_story';
-
-// Portfolio interface'i Supabase yapısına uygun şekilde genişletildi
-interface Portfolio {
-  id: string;
-  title: string;
-  image_url?: string;
-  price?: number;
-  room_count?: string;
-  net_m2?: number;
-  gross_m2?: number;
-  ai_output?: {
-    instagram?: string;
-    portal?: string;
-    linkedin?: string;
-  };
-  // details JSONB kolonu için esnek yapı
-  details?: any; 
-}
 
 const FORMATS: { id: FormatType; label: string; icon: any }[] = [
   { id: 'instagram_post', label: 'Post (4:5)', icon: Instagram },
@@ -46,6 +29,8 @@ export default function ImageGenPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{image: string | null, caption: string | null}>({ image: null, caption: null });
   const [copied, setCopied] = useState(false);
+  
+  // State tipi düzeltildi: Global Portfolio
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [credits, setCredits] = useState({ limit: 0, used: 0 });
   const [isCaptionExpanded, setIsCaptionExpanded] = useState(false);
@@ -57,7 +42,6 @@ export default function ImageGenPage() {
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  // Marka Ayarları State
   const [showBrandSettings, setShowBrandSettings] = useState(false);
   const [brandConfig, setBrandConfig] = useState<BrandConfig>({
     name: "",
@@ -71,14 +55,13 @@ export default function ImageGenPage() {
     hashtag_prefix: null
   });
 
-  // 1. Verileri Çek
   useEffect(() => {
     async function initData() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
       const { data: pData } = await supabase.from('portfolios').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
-      if (pData) setPortfolios(pData);
+      if (pData) setPortfolios(pData as Portfolio[]);
 
       const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
       if (profile) {
@@ -87,7 +70,6 @@ export default function ImageGenPage() {
           used: profile.social_ai_used || 0 
         });
         
-        // Marka bilgilerini profilden al
         setBrandConfig(prev => ({
           ...prev,
           name: profile.agency_name || "Emlak Ofisi",
@@ -142,14 +124,14 @@ export default function ImageGenPage() {
     }
   };
 
-  // --- GENERATE (Görsel Oluştur) ---
   const handleGenerate = async () => {
-    // Validasyon
     if (!selectedPortfolio) return alert("Lütfen sol listeden bir portföy seçiniz.");
-    // Görsel zorunluluğu: Ya yeni yüklenen ya da portföyde var olan
-    const hasImage = uploadedImage || selectedPortfolio.image_url;
-    if (!hasImage) return alert("Lütfen bir görsel yükleyiniz veya kapak görseli olan bir portföy seçiniz.");
     
+    // Görsel Kontrolü (Global tip uyumlu)
+    const hasPortfolioImage = selectedPortfolio.image_urls && selectedPortfolio.image_urls.length > 0;
+    const hasImage = uploadedImage || hasPortfolioImage;
+    
+    if (!hasImage) return alert("Lütfen bir görsel yükleyiniz veya kapak görseli olan bir portföy seçiniz.");
     if (credits.limit <= credits.used) return alert("Sosyal medya görsel limitiniz doldu.");
 
     setLoading(true);
@@ -160,30 +142,20 @@ export default function ImageGenPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Oturum süresi dolmuş.");
 
-      // 1. Görsel URL Belirle
       let finalImageUrl = "";
       
       if (uploadedImage) {
         const fileExt = uploadedImage.name.split('.').pop();
         const fileName = `${user.id}-${Date.now()}.${fileExt}`;
         const filePath = `${user.id}/${fileName}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('temp-uploads')
-          .upload(filePath, uploadedImage, { cacheControl: '3600', upsert: false });
-          
+        const { error: uploadError } = await supabase.storage.from('temp-uploads').upload(filePath, uploadedImage, { upsert: false });
         if (uploadError) throw new Error("Görsel yüklenemedi.");
-        
-        const { data: { publicUrl } } = supabase.storage
-          .from('temp-uploads')
-          .getPublicUrl(filePath);
-          
+        const { data: { publicUrl } } = supabase.storage.from('temp-uploads').getPublicUrl(filePath);
         finalImageUrl = publicUrl;
-      } else if (selectedPortfolio.image_url) {
-        finalImageUrl = selectedPortfolio.image_url;
+      } else if (hasPortfolioImage && selectedPortfolio.image_urls) {
+        finalImageUrl = selectedPortfolio.image_urls[0];
       }
 
-      // 2. Payload Oluştur (Helper Fonksiyonu ile)
       const outputFormatMap: Record<FormatType, SocialMediaWebhookPayload['output_format']> = {
         'instagram_post': 'post_4_5',
         'instagram_story': 'story_9_16'
@@ -198,7 +170,6 @@ export default function ImageGenPage() {
         prompt
       );
 
-      // 3. Webhook İsteği
       const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_SOCIAL;
       if (!webhookUrl) throw new Error("Webhook URL eksik.");
 
@@ -214,7 +185,6 @@ export default function ImageGenPage() {
       const data = Array.isArray(rawData) ? rawData[0] : rawData;
 
       if (data.status === 'success' && data.image_url) {
-        // Caption belirle
         let finalCaption = "";
         if (selectedPortfolio.ai_output && selectedPortfolio.ai_output.instagram) {
            finalCaption = selectedPortfolio.ai_output.instagram;
@@ -228,7 +198,6 @@ export default function ImageGenPage() {
           caption: finalCaption
         });
 
-        // Kredi güncelle
         const { data: profile } = await supabase.from('profiles').select('social_ai_used').eq('id', user.id).single();
         if (profile) {
            await supabase.from('profiles').update({ social_ai_used: (profile.social_ai_used || 0) + 1 }).eq('id', user.id);
@@ -248,7 +217,7 @@ export default function ImageGenPage() {
   const renderStyledCaption = (text: string) => {
     if (!text) return null;
     return text.split(/(\s+)/).map((word, index) => {
-      if (word.startsWith('#')) return <span key={index} style={{ color: '#60a5fa', fontWeight: 600 }}>{word}</span>;
+      if (word.startsWith('#')) return <span key={index} className="hashtag">{word}</span>;
       return <span key={index}>{word}</span>;
     });
   };
@@ -263,9 +232,9 @@ export default function ImageGenPage() {
         <div className="nav-island">
           <button className="nav-btn active">
             <motion.div layoutId="nav-indicator" className="active-bg" />
-            <span className="z-10 flex items-center gap-2 relative">
-              <LayoutTemplate size={16} className="text-white" />
-              <span className="text-white font-semibold">Sosyal Medya Stüdyosu</span>
+            <span className="btn-content">
+              <LayoutTemplate size={16} className="icon-white" />
+              <span className="text">Sosyal Medya Stüdyosu</span>
             </span>
           </button>
         </div>
@@ -274,7 +243,7 @@ export default function ImageGenPage() {
       <div className="stage-grid">
         {/* SOL PANEL */}
         <motion.div initial={{x: -50, opacity: 0}} animate={{x: 0, opacity: 1}} className="side-panel left">
-          <div className="glass-box h-full flex flex-col">
+          <div className="glass-box">
             <div className="box-header">
               <h3>Portföy Seçimi</h3>
               <div className="header-line"></div>
@@ -292,9 +261,9 @@ export default function ImageGenPage() {
                         <div className="p-details">
                           <h4>{p.title}</h4>
                           <div className="p-meta">
-                            <span>{p.details?.city || ""}</span>
+                            <span>{p.city || p.details?.city || ""}</span>
                             <span className="separator">•</span>
-                            <span className="price">{(p.details?.price || 0).toLocaleString()} ₺</span>
+                            <span className="price">{(p.price || p.details?.price || 0).toLocaleString()} ₺</span>
                           </div>
                         </div>
                         {selectedPortfolio?.id === p.id && <CheckCircle2 size={18} className="check-icon"/>}
@@ -315,21 +284,18 @@ export default function ImageGenPage() {
                 <motion.div key="loading" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="canvas-state loading">
                   <div className="scanner-line"></div>
                   <div className="loading-content">
-                    <Loader2 size={64} className="spin text-purple-500 mb-4" />
-                    <h3 className="text-xl font-bold text-white mb-2">Tasarım Oluşturuluyor</h3>
-                    <p className="text-gray-400">Marka kimliğiniz uygulanıyor, lütfen bekleyin...</p>
+                    <Loader2 size={64} className="spin icon-purple mb-medium" />
+                    <h3 className="loading-title">Tasarım Oluşturuluyor</h3>
+                    <p className="loading-desc">Marka kimliğiniz uygulanıyor, lütfen bekleyin...</p>
                   </div>
                 </motion.div>
               ) : result.image ? (
-                // SONUÇ EKRANI
-                <motion.div key="result" initial={{opacity:0, scale:0.95}} animate={{opacity:1, scale:1}} className="canvas-state result w-full h-full flex flex-col p-6">
+                <motion.div key="result" initial={{opacity:0, scale:0.95}} animate={{opacity:1, scale:1}} className="canvas-state result">
                   
-                  {/* Görsel Alanı */}
                   <div className="result-image-container">
                      <img src={result.image} alt="AI Result" className={`result-img-preview ${selectedFormat === 'instagram_story' ? 'story' : 'post'}`}/>
                   </div>
                   
-                  {/* Caption Alanı */}
                   <div className="result-caption-area">
                      <motion.div 
                         className={`caption-card-glass ${isCaptionExpanded ? 'expanded' : ''}`}
@@ -338,10 +304,10 @@ export default function ImageGenPage() {
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
                      >
                         <div className="caption-header" onClick={() => setIsCaptionExpanded(!isCaptionExpanded)}>
-                           <div className="flex items-center gap-3">
-                             <Instagram size={18} className="text-pink-500"/> 
+                           <div className="caption-title-row">
+                             <Instagram size={18} className="icon-pink"/> 
                              <span className="title">AI Instagram Post Açıklaması</span>
-                             {isCaptionExpanded ? <ChevronDown size={16} className="text-gray-400"/> : <ChevronUp size={16} className="text-gray-400"/>}
+                             {isCaptionExpanded ? <ChevronDown size={16} className="icon-gray"/> : <ChevronUp size={16} className="icon-gray"/>}
                            </div>
                            <motion.button whileTap={{ scale: 0.95 }} onClick={handleCopy} className={`copy-btn ${copied ? 'copied' : ''}`}>
                               {copied ? <Check size={14}/> : <Copy size={14}/>}
@@ -354,7 +320,6 @@ export default function ImageGenPage() {
                      </motion.div>
                   </div>
 
-                  {/* Butonlar */}
                   <div className="result-actions-grid">
                     <button onClick={() => setResult({image: null, caption: null})} className="action-btn secondary">
                       <RefreshCcw size={18}/> Yeni Oluştur
@@ -365,7 +330,6 @@ export default function ImageGenPage() {
                   </div>
                 </motion.div>
               ) : (
-                // UPLOAD EKRANI
                 <motion.div key="upload" initial={{opacity:0}} animate={{opacity:1}} className="canvas-state upload">
                   <div className={`drop-zone ${imagePreview ? 'filled' : ''}`}>
                     {imagePreview ? (
@@ -379,7 +343,7 @@ export default function ImageGenPage() {
                       </div>
                     ) : (
                       <label className="upload-label">
-                        <div className="icon-pulse mb-4"><UploadCloud size={48} className="icon-main"/></div>
+                        <div className="icon-pulse mb-medium"><UploadCloud size={48} className="icon-main"/></div>
                         <h3>Görsel Yükle</h3>
                         <p>{selectedPortfolio ? `"${selectedPortfolio.title}" için görsel seçin.` : "Önce sol taraftan bir portföy seçin."}</p>
                         <span className="badge-required">Zorunlu Alan</span>
@@ -395,7 +359,7 @@ export default function ImageGenPage() {
 
         {/* SAĞ PANEL */}
         <motion.div initial={{x: 50, opacity: 0}} animate={{x: 0, opacity: 1}} transition={{delay: 0.2}} className="side-panel right">
-          <div className="glass-box h-full flex flex-col">
+          <div className="glass-box">
             <div className="box-header">
                <h3>Kontrol Merkezi</h3>
                <div className="header-line"></div>
@@ -413,7 +377,6 @@ export default function ImageGenPage() {
                 </div>
               </div>
 
-              {/* Marka Ayarları */}
               <div className="control-section">
                 <button onClick={() => setShowBrandSettings(!showBrandSettings)} className="brand-toggle">
                   <div className="label-wrap"><Palette size={16} className="icon-purple"/><span>Marka & Tasarım</span></div>
@@ -450,7 +413,7 @@ export default function ImageGenPage() {
             <div className="box-footer">
               <button onClick={handleGenerate} disabled={loading || !selectedPortfolio || !imagePreview} className={`generate-btn-v2 ${(!selectedPortfolio || !imagePreview) ? 'disabled' : ''}`}>
                 <div className="btn-bg"></div>
-                <span className="relative flex items-center gap-2">
+                <span className="btn-content-row">
                   {loading ? <Loader2 size={20} className="spin"/> : <Zap size={20} fill="currentColor"/>}
                   {loading ? 'Marka Uygulanıyor...' : 'Görseli Oluştur'}
                 </span>

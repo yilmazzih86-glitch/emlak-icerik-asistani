@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Save, ArrowLeft, MapPin, DollarSign, Ruler, Home, Building, Info, Layers, FileText, Star, MessageSquare } from "lucide-react";
+import { Save, ArrowLeft, MapPin, DollarSign, Ruler, Home, Building, Info, Layers, Star, MessageSquare } from "lucide-react";
 import Link from "next/link";
 
 import { 
@@ -12,6 +12,7 @@ import {
   getNeighbourhoodsByCityCodeAndDistrict 
 } from "turkey-neighbourhoods";
 
+// Sabitler aynen kalıyor...
 const ROOM_COUNTS = ["1+0", "1+1", "2+1", "3+1", "3+2", "4+1", "4+2", "5+1", "5+2", "Villa", "Müstakil"];
 const HEATING_TYPES = ["Kombi (Doğalgaz)", "Merkezi", "Merkezi (Pay Ölçer)", "Yerden Isıtma", "Klima", "Soba", "Yok"];
 const BUILDING_AGES = ["Sıfır Bina", "1-5", "5-10", "10-15", "15-20", "20-25", "25-30", "30+"];
@@ -44,11 +45,10 @@ export default function NewPortfolioPage() {
     
     credit_status: "Uygun",
     furnished: "Hayır",
-    in_site: "Hayır",
-    dues: "",
+    in_site: "Hayır", // DB'de 'site' olabilir, mapping yapacağız
+    dues: "",         // DB'de 'dues' numeric
     swap: "Hayır",
     
-    // YENİ ALANLAR (ESKİ DESCRIPTION YERİNE)
     highlights: "", 
     notes: ""
   });
@@ -78,31 +78,45 @@ export default function NewPortfolioPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Oturum hatası");
 
+      // Sayısal değerleri güvenli çevirelim
+      const safePrice = parseFloat(formData.price) || 0;
+      const safeDues = parseFloat(formData.dues) || 0;
+      const safeNetM2 = parseFloat(formData.net_m2) || 0;
+      const safeGrossM2 = parseFloat(formData.gross_m2) || 0;
+
+      // --- ANA VERİTABANI OBJESİ (Sütunlar + JSON) ---
       const { data, error } = await supabase.from("portfolios").insert({
         user_id: user.id,
         status: "active",
         
+        // 1. Ana Sütunlar (SQL/Filter için kritik)
         title: formData.title,
         listing_type: formData.listing_type,
-        price: Number(formData.price),
+        price: safePrice,
+        dues: safeDues, // YENİ EKLENEN SÜTUN
+        
         city: formData.city,
         district: formData.district,
         neighborhood: formData.neighborhood,
-        net_m2: formData.net_m2 ? Number(formData.net_m2) : null,
-        gross_m2: formData.gross_m2 ? Number(formData.gross_m2) : null,
+        
+        net_m2: safeNetM2,
+        gross_m2: safeGrossM2,
         room_count: formData.room_count,
         floor: formData.floor,
         heating: formData.heating,
-        credit_status: formData.credit_status,
-
+        credit_status: formData.credit_status, // "Uygun" / "Uygun Değil"
+        site: formData.in_site, // Formda 'in_site', DB'de 'site' (Eğer sütun açtıysan)
+        
+        // 2. Legacy JSON (Geriye dönük uyumluluk ve AI Payload için yedek)
         details: {
           ...formData,
-          price: Number(formData.price),
-          grossM2: Number(formData.gross_m2),
-          netM2: Number(formData.net_m2),
+          price: safePrice,
+          dues: safeDues,
+          grossM2: safeGrossM2,
+          netM2: safeNetM2,
+          site: formData.in_site, // JSON içinde de tutuyoruz
           listingNo: Math.floor(100000 + Math.random() * 900000).toString(),
           
-          // MARKETING VERİSİ
           marketing: {
             highlights: formData.highlights, 
             notes: formData.notes,
@@ -123,8 +137,10 @@ export default function NewPortfolioPage() {
     }
   };
 
+  // Render kısmı aynen kalabilir...
   return (
     <div className="new-portfolio-page animate-in fade-in">
+       {/* ... Header ... */}
       <div className="page-header">
         <Link href="/dashboard/portfolios" className="back-link"><ArrowLeft size={20}/></Link>
         <div>
@@ -135,22 +151,28 @@ export default function NewPortfolioPage() {
 
       <form onSubmit={handleSubmit} className="glass-panel portfolio-form">
         
-        {/* 1. TEMEL BİLGİLER */}
+        {/* ... Diğer inputlar aynen kalacak, sadece logic değişti ... */}
+        {/* Burada mevcut kodundaki form yapısını koruyabilirsin */}
+        {/* Sadece Örnek Olarak Aidat Inputunun doğru çalıştığını teyit et: */}
+        
         <div className="form-section">
           <h3 className="section-title"><Info size={18} className="text-purple"/> Temel Bilgiler</h3>
           <div className="form-grid">
-            <div className="input-group full-width">
+             {/* ... Başlık, Tip ... */}
+             <div className="input-group full-width">
                <label>İlan Başlığı *</label>
                <input required placeholder="Örn: Cadde Üzeri Lüks 3+1 Daire" className="form-input" 
                  value={formData.title} onChange={(e) => handleChange("title", e.target.value)} />
             </div>
+            
             <div className="input-group">
                <label>İlan Tipi</label>
                <select className="form-select" value={formData.listing_type} onChange={(e) => handleChange("listing_type", e.target.value)}>
                  <option value="sale">Satılık</option><option value="rent">Kiralık</option>
                </select>
             </div>
-            <div className="input-group">
+
+             <div className="input-group">
                <label>Fiyat (TL) *</label>
                <div className="input-wrapper">
                  <DollarSign size={16} className="input-icon green"/>
@@ -158,6 +180,8 @@ export default function NewPortfolioPage() {
                    value={formData.price} onChange={(e) => handleChange("price", e.target.value)} />
                </div>
             </div>
+            
+            {/* AİDAT ALANI */}
             <div className="input-group">
                <label>Aidat (TL)</label>
                <input type="number" placeholder="0" className="form-input" 
@@ -165,6 +189,9 @@ export default function NewPortfolioPage() {
             </div>
           </div>
         </div>
+
+        {/* ... Geri kalan form alanları (Konum, Özellikler vs.) mevcut kodundaki gibi kalacak ... */}
+        {/* ... Code brevity for generic form parts ... */}
 
         {/* 2. KONUM */}
         <div className="form-section">
@@ -279,7 +306,7 @@ export default function NewPortfolioPage() {
            </div>
         </div>
 
-        {/* 6. ÖNE ÇIKANLAR VE NOTLAR (YENİ EKLENEN KISIM) */}
+        {/* 6. ÖNE ÇIKANLAR */}
         <div className="form-section">
           <h3 className="section-title"><Star size={18} className="text-yellow-400"/> Öne Çıkanlar & Notlar</h3>
           <div className="form-grid">
@@ -306,7 +333,6 @@ export default function NewPortfolioPage() {
           </div>
         </div>
 
-        {/* FOOTER */}
         <div className="form-footer">
            <Link href="/dashboard/portfolios" className="btn-secondary">İptal</Link>
            <button disabled={loading} type="submit" className="btn-primary">
