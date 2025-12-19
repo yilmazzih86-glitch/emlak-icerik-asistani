@@ -1,0 +1,67 @@
+@import '@/styles/variables';
+@import '@/styles/mixins';
+
+.btn {
+  @include flex(center, center, 0.5rem);
+  padding: 0.625rem 1rem;
+  border-radius: $radius-md;
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 1px solid transparent;
+  user-select: none;
+  font-family: inherit;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  // Varyasyon 1: Primary (Mor Dolgulu)
+  &--primary {
+    background-color: $color-primary;
+    color: white;
+    box-shadow: 0 4px 14px 0 rgba($brand-purple, 0.39);
+
+    &:hover:not(:disabled) { 
+      background-color: darken($color-primary, 5%); 
+      transform: translateY(-1px);
+    }
+    
+    &:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+  }
+
+  // Varyasyon 2: Outline (Çerçeveli)
+  &--outline {
+    background-color: transparent;
+    border-color: rgba($text-muted, 0.3);
+    color: $text-secondary;
+
+    &:hover:not(:disabled) { 
+      border-color: $text-secondary;
+      background-color: rgba($text-secondary, 0.05);
+      color: $text-main;
+    }
+  }
+
+  // Varyasyon 3: Ghost (Sadece yazı/ikon)
+  &--ghost {
+    background-color: transparent;
+    color: $text-muted;
+    padding: 0.5rem; // Daha küçük padding
+
+    &:hover:not(:disabled) { 
+      background-color: rgba($text-muted, 0.1);
+      color: $text-main;
+    }
+  }
+
+  // Boyutlandırma
+  &--sm {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+  }
+}

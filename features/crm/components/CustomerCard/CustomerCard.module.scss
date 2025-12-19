@@ -1,0 +1,86 @@
+@import '@/styles/variables';
+@import '@/styles/mixins';
+
+.card {
+  @include card-surface; // Mixin kullanımı (Koyu tema uyumlu)
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    border-color: rgba($brand-purple, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+
+  // Sol taraftaki renkli şerit (Aşamayı belli eder)
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: $brand-purple; // Varsayılan
+    opacity: 0.7;
+  }
+
+  &__header {
+    @include flex(space-between, flex-start);
+    margin-bottom: 0.75rem;
+  }
+
+  &__info {
+    @include flex(flex-start, center, 0.75rem);
+    
+    h4 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: $text-main;
+      margin-bottom: 0.2rem;
+    }
+    
+    p {
+      font-size: 0.8rem;
+      color: $text-muted;
+    }
+  }
+
+  &__price {
+    font-weight: 700;
+    color: $color-success; // Para her zaman yeşil/güçlü dursun
+    font-size: 0.9rem;
+    background: rgba($color-success, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  &__details {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba($text-muted, 0.1);
+    
+    // Grid yapısı: İkon ve metinleri hizalamak için
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 0.8rem;
+    color: $text-muted;
+  }
+
+  &__portfolio {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    
+    svg { color: $brand-orange; }
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+}

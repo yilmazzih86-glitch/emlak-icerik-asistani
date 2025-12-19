@@ -1,148 +1,204 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { 
-  Users, Search, Plus, ClipboardList, Loader2
-} from "lucide-react";
-import { Customer } from "@/types";
-import CustomerCard from "@/components/dashboard/crm/CustomerCard";
-import StageFilters from "@/components/dashboard/crm/StageFilters";
-import NewCustomerModal from "@/components/dashboard/crm/NewCustomerModal";
-import AgendaPanel from "@/components/dashboard/crm/AgendaPanel";
-
-// 1. YENİ BİLEŞENİ IMPORT EDİYORUZ
-import CustomerDetailPanel from "@/components/dashboard/crm/CustomerDetailPanel";
+import { useState, useEffect } from "react";
+import { Plus, Search, Filter, Trash2, Edit } from "lucide-react"; // Trash2 ikonu eklendi
+import { Button } from "@/components/ui/Button/Button";
+import { CrmBoard } from "@/features/crm/components/CrmBoard/CrmBoard";
+import { NewDealModal } from "@/features/crm/components/NewDealModal/NewDealModal";
+import { Deal, CrmStage } from "@/features/crm/api/types";
+import { crmService } from "@/features/crm/api/crmService";
 
 export default function CrmPage() {
-  const supabase = createClient();
-  
-  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStage, setFilterStage] = useState("all");
+  const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   
-  const [stageCounts, setStageCounts] = useState<Record<string, number>>({});
-  
-  const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
-  const [isAgendaOpen, setIsAgendaOpen] = useState(false);
+  // Modal State'leri
+  const [isNewDealOpen, setIsNewDealOpen] = useState(false);
+  const [initialStage, setInitialStage] = useState<CrmStage>('new');
 
-  // 2. SEÇİLİ MÜŞTERİ STATE'İ (Panelin açılması için)
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-
-  useEffect(() => {
-    fetchCustomers();
-  }, []);
-
-  const fetchCustomers = async () => {
-    setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data } = await supabase
-      .from('customers')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-
-    if (data) {
-      setCustomers(data as Customer[]);
-      
-      const counts: Record<string, number> = { all: data.length };
-      data.forEach((c: any) => {
-        const stg = c.stage || 'new';
-        counts[stg] = (counts[stg] || 0) + 1;
-      });
-      setStageCounts(counts);
+  const fetchDeals = async () => {
+    try {
+      const data = await crmService.getDeals();
+      setDeals(data);
+    } catch (error) {
+      console.error("Hata:", error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
-  const filteredCustomers = customers.filter(c => {
-    const matchesSearch = c.full_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          (c.phone && c.phone.includes(searchTerm));
-    
-    const matchesStage = filterStage === 'all' || c.stage === filterStage;
-    
-    return matchesSearch && matchesStage;
+  useEffect(() => { fetchDeals(); }, []);
+
+  // --- YENİ: AŞAMA DEĞİŞTİRME (Sürükle-Bırak) ---
+  const handleStageChange = async (dealId: string, newStage: CrmStage) => {
+    // 1. Optimistic Update (Ekran anında güncellensin)
+    setDeals(prev => prev.map(d => d.id === dealId ? { ...d, stage: newStage } : d));
+
+    try {
+      // 2. Veritabanını güncelle
+      await crmService.updateDealStage(dealId, newStage);
+    } catch (error) {
+      console.error("Aşama güncellenemedi:", error);
+      fetchDeals(); // Hata varsa geri al
+    }
+  };
+
+  // --- YENİ: SİLME İŞLEMİ ---
+  const handleDeleteDeal = async () => {
+    if (!selectedDeal) return;
+    if (!confirm("Bu fırsatı silmek istediğinize emin misiniz? (Müşteri kaydı silinmez)")) return;
+
+    try {
+      await crmService.deleteDeal(selectedDeal.id);
+      setSelectedDeal(null); // Paneli kapat
+      fetchDeals(); // Listeyi yenile
+    } catch (error) {
+      alert("Silme başarısız");
+    }
+  };
+
+  const handleOpenNewDeal = (stage: CrmStage = 'new') => {
+    setInitialStage(stage);
+    setIsNewDealOpen(true);
+  };
+
+  const handleWhatsApp = (phone: string) => {
+    if (!phone) return;
+    const cleanPhone = phone.replace(/\D/g, '').replace(/^0+/, '');
+    window.open(`https://wa.me/90${cleanPhone}`, '_blank');
+  };
+
+  const filteredDeals = deals.filter((deal) => {
+    const term = searchTerm.toLowerCase();
+    return deal.customer?.full_name?.toLowerCase().includes(term) || 
+           deal.portfolio?.title?.toLowerCase().includes(term);
   });
 
-  const handleWhatsApp = (customer: Customer) => {
-    const phone = customer.phone?.replace(/\D/g, ''); 
-    if (!phone) return alert("Telefon numarası bulunamadı.");
-    const url = `https://wa.me/90${phone.replace(/^0+/, '')}`;
-    window.open(url, '_blank');
-  };
-
   return (
-    <div className="crm-page animate-in fade-in">
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '0 1.5rem 1.5rem 1.5rem', maxWidth: '100vw' }}>
       
-      <div className="crm-header">
-        <div className="header-left">
-          <h1><Users size={28} className="icon-purple"/> Müşteri Listesi</h1>
-          <p>Potansiyel alıcı ve satıcılarınızı tek yerden yönetin.</p>
+      {/* HEADER */}
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', marginTop: '1.5rem' }}>
+        <div>
+          <h1 style={{ fontSize: '1.8rem', fontWeight: 700, color: 'var(--foreground)' }}>Pipeline</h1>
+          <p style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>Müşteri ilişkileri ve satış süreçleri.</p>
         </div>
-        <div className="header-actions">
-          <button onClick={() => setIsAgendaOpen(true)} className="btn-secondary">
-            <ClipboardList size={18} className="icon-orange"/> Ajandam
-          </button>
-          <button onClick={() => setIsCustomerModalOpen(true)} className="btn-primary">
-            <Plus size={18} /> Yeni Müşteri
-          </button>
+        
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+          <div style={{ position: 'relative' }}>
+            <input 
+              type="text" 
+              placeholder="Ara..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                background: 'var(--secondary)', border: '1px solid var(--border)', color: 'var(--foreground)', 
+                padding: '0.6rem 1rem 0.6rem 2.5rem', borderRadius: '0.5rem', fontSize: '0.9rem', width: '260px', outline: 'none'
+              }}
+            />
+            <Search size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }}/>
+          </div>
+          <Button icon={<Plus size={18}/>} onClick={() => handleOpenNewDeal('new')}>Yeni Fırsat</Button>
         </div>
-      </div>
+      </header>
 
-      <div className="crm-controls-wrapper">
-        <div className="search-container">
-          <Search size={18} className="search-icon"/>
-          <input type="text" className="search-input" placeholder="İsim veya telefon ile ara..." 
-            value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-
-        <StageFilters 
-          currentStage={filterStage} 
-          onStageChange={setFilterStage} 
-          counts={stageCounts} 
+      {/* BOARD */}
+      <div style={{ flex: 1, overflow: 'hidden' }}>
+        <CrmBoard 
+          deals={filteredDeals} 
+          isLoading={loading}
+          onDealClick={setSelectedDeal}
+          onWhatsApp={handleWhatsApp}
+          onAddDeal={handleOpenNewDeal}
+          onStageChange={handleStageChange} // BAĞLANTI BURADA
         />
       </div>
 
-      <div className="crm-grid">
-        {loading ? (
-          <div className="state-box"><Loader2 className="spin icon-purple" size={32}/><span>Yükleniyor...</span></div>
-        ) : filteredCustomers.length === 0 ? (
-          <div className="state-box empty"><Users size={48} className="icon-muted"/><p>Kayıt bulunamadı.</p></div>
-        ) : (
-          filteredCustomers.map((customer) => (
-            <CustomerCard 
-              key={customer.id} 
-              customer={customer} 
-              onWhatsApp={handleWhatsApp}
-              // 3. KARTTA DÜZENLE BUTONUNA BASILINCA STATE GÜNCELLENİR
-              onEdit={() => setSelectedCustomer(customer)} 
-              hasActiveTask={false} 
-            />
-          ))
-        )}
-      </div>
-
-      <NewCustomerModal 
-        isOpen={isCustomerModalOpen} 
-        onClose={() => setIsCustomerModalOpen(false)} 
-        onSuccess={fetchCustomers} 
-      />
-      
-      <AgendaPanel 
-        isOpen={isAgendaOpen}
-        onClose={() => setIsAgendaOpen(false)}
+      <NewDealModal 
+        isOpen={isNewDealOpen}
+        onClose={() => setIsNewDealOpen(false)}
+        initialStage={initialStage}
+        onSuccess={fetchDeals} 
       />
 
-      {/* 4. DETAY PANELİ (EN ALTA EKLENDİ) */}
-      <CustomerDetailPanel 
-        customer={selectedCustomer} 
-        onClose={() => setSelectedCustomer(null)} 
-      />
+      {/* DETAY PANELİ */}
+      {selectedDeal && (
+        <>
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 40 }} onClick={() => setSelectedDeal(null)} />
+          
+          <div style={{
+            position: 'fixed', top: 0, right: 0, bottom: 0, width: '450px', background: 'var(--secondary)', 
+            borderLeft: '1px solid var(--border)', zIndex: 50, padding: '1.5rem', 
+            boxShadow: '-5px 0 25px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column', gap: '1rem',
+            animation: 'slideInRight 0.3s ease'
+          }}>
+            {/* Panel Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
+              <div>
+                <h2 style={{ fontSize: '1.2rem', fontWeight: 600 }}>{selectedDeal.customer?.full_name}</h2>
+                <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>{selectedDeal.customer?.phone}</span>
+                </div>
+              </div>
+              <Button size="sm" variant="ghost" onClick={() => setSelectedDeal(null)}>Kapat</Button>
+            </div>
 
+            {/* Panel Content */}
+            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              
+              {/* Tarih Bilgisi */}
+              <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+                Eklenme Tarihi: {new Date(selectedDeal.created_at).toLocaleString('tr-TR')}
+              </div>
+
+              {/* Portföy Alanı */}
+              <div style={{ background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '8px' }}>
+                <h3 style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--accent)' }}>Portföy</h3>
+                {selectedDeal.portfolio ? (
+                  <div>
+                    <p>{selectedDeal.portfolio.title}</p>
+                    <p style={{ fontWeight: 700, marginTop: '0.25rem', color: '#10b981' }}>
+                      {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(selectedDeal.portfolio.price || 0)}
+                    </p>
+                  </div>
+                ) : (
+                  <p style={{ color: 'var(--muted)', fontStyle: 'italic' }}>Henüz portföy seçilmemiş.</p>
+                )}
+              </div>
+
+              {/* AI Aksiyonları */}
+              <div style={{ padding: '1rem', border: '1px dashed var(--border)', borderRadius: '8px', textAlign: 'center' }}>
+                <p style={{ fontSize: '0.9rem', color: 'var(--muted)', marginBottom: '1rem' }}>
+                  Yapay zeka bu müşteri için ne yapsın?
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <Button variant="outline" size="sm">Takip Mesajı</Button>
+                  <Button variant="outline" size="sm">Randevu İste</Button>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Panel Footer (Silme Butonu) */}
+            <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1rem', display: 'flex', justifyContent: 'space-between' }}>
+               <Button variant="ghost" style={{ color: '#ef4444' }} onClick={handleDeleteDeal} icon={<Trash2 size={16} />}>
+                 Fırsatı Sil
+               </Button>
+               <Button onClick={() => handleWhatsApp(selectedDeal.customer?.phone || '')}>WhatsApp'ta Aç</Button>
+            </div>
+
+          </div>
+        </>
+      )}
+
+      <style jsx global>{`
+        @keyframes slideInRight {
+          from { transform: translateX(100%); }
+          to { transform: translateX(0); }
+        }
+      `}</style>
     </div>
   );
 }

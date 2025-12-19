@@ -1,0 +1,119 @@
+@import '@/styles/variables';
+@import '@/styles/mixins';
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7); // Arkası hafif karartılmış
+  backdrop-filter: blur(4px);      // Buzlu cam efekti
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal {
+  @include card-surface; // Senin koyu gri kart yapın
+  width: 100%;
+  max-width: 480px;
+  padding: 1.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  border: 1px solid rgba($brand-purple, 0.2); // Hafif mor çerçeve
+
+  &__header {
+    @include flex(space-between, center);
+    
+    h2 { 
+      font-size: 1.25rem; 
+      font-weight: 600; 
+      color: $text-main;
+      letter-spacing: -0.02em;
+    }
+
+    button {
+      color: $text-muted;
+      padding: 0.25rem;
+      border-radius: 4px;
+      transition: all 0.2s;
+      
+      &:hover {
+        background: rgba(255,255,255,0.1);
+        color: $text-main;
+      }
+    }
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  &__footer {
+    @include flex(flex-end, center, 0.75rem);
+    padding-top: 1rem;
+    border-top: 1px solid rgba($text-muted, 0.1);
+  }
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: $text-muted;
+  }
+
+  // İkonlu input kapsayıcısı
+  .inputWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    svg {
+      position: absolute;
+      left: 12px;
+      color: $text-muted;
+      pointer-events: none;
+      transition: color 0.2s;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.75rem 1rem 0.75rem 2.5rem; // İkon için soldan boşluk
+      border-radius: $radius-md;
+      border: 1px solid $color-border;
+      background: rgba(0,0,0,0.2); // Input zemini biraz daha koyu
+      color: $text-main;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s;
+
+      &::placeholder { color: darken($text-muted, 10%); }
+
+      &:focus {
+        border-color: $brand-purple;
+        background: rgba(0,0,0,0.4);
+        box-shadow: 0 0 0 1px $brand-purple;
+        
+        & ~ svg { color: $brand-purple; } // Focus olunca ikonu da boya
+      }
+    }
+    
+    // Select için padding ayarı (ikon yoksa)
+    select:not([style*="paddingLeft"]) {
+      padding-left: 1rem;
+    }
+  }
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }

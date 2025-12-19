@@ -1,0 +1,50 @@
+@import '@/styles/variables';
+@import '@/styles/mixins';
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  border-radius: 99px; // Tam oval
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+
+  // Varsayılan (Gri/Nötr)
+  background: rgba($text-muted, 0.15);
+  color: $text-secondary;
+  border: 1px solid rgba($text-muted, 0.2);
+
+  // Varyasyonlar
+  &--info { // Yeni Müşteri
+    background: rgba(#3b82f6, 0.15);
+    color: #60a5fa;
+    border-color: rgba(#3b82f6, 0.2);
+  }
+
+  &--warning { // Görüşülüyor / Teklif
+    background: rgba($color-warning, 0.15);
+    color: lighten($color-warning, 10%);
+    border-color: rgba($color-warning, 0.2);
+  }
+
+  &--success { // Satış
+    background: rgba($color-success, 0.15);
+    color: lighten($color-success, 10%);
+    border-color: rgba($color-success, 0.2);
+  }
+
+  &--danger { // Kayıp
+    background: rgba($color-danger, 0.15);
+    color: lighten($color-danger, 10%);
+    border-color: rgba($color-danger, 0.2);
+  }
+  
+  &--purple { // Özel Etiketler
+    background: rgba($brand-purple, 0.15);
+    color: lighten($brand-purple, 10%);
+    border-color: rgba($brand-purple, 0.2);
+  }
+}

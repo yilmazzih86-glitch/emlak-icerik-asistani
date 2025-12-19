@@ -1,0 +1,16 @@
+// styles/_mixins.scss
+@import '@/styles/variables';
+
+@mixin flex($justify: flex-start, $align: center, $gap: 0) {
+  display: flex;
+  justify-content: $justify;
+  align-items: $align;
+  gap: $gap;
+}
+
+// Kartlar artık senin koyu temana uygun olacak
+@mixin card-surface {
+  background: $color-bg-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+}
