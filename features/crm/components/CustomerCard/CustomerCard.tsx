@@ -1,77 +1,55 @@
+// features/crm/components/CustomerCard/CustomerCard.tsx
+'use client';
+
 import React from 'react';
-import { Phone, Home, Clock } from 'lucide-react'; // Lucide ikonları
 import styles from './CustomerCard.module.scss';
-import { Badge } from '@/components/ui/Badge/Badge';
-import { Avatar } from '@/components/ui/Avatar/Avatar';
-import { Button } from '@/components/ui/Button/Button';
-// Eğer henüz types dosyasını oluşturmadıysan, 'any' kullanıp geçme, aşağıda basit bir tip tanımlayalım
-import { Deal } from '@/features/crm/api/types'; 
+import { Deal } from '@/features/crm/api/types';
+import { Phone, Home, BadgeDollarSign } from 'lucide-react';
 
 interface Props {
   deal: Deal;
-  onClick: () => void;
-  onWhatsApp: (phone: string) => void;
+  // image_7581c7'deki eksik prop hatalarını gideren tanımlar
+  onClick?: () => void; 
+  onWhatsApp?: (phone: string) => void;
 }
 
-export const CustomerCard = ({ deal, onClick, onWhatsApp }: Props) => {
-  const customerName = deal.customer?.full_name || 'İsimsiz Müşteri';
-  const priceFormatted = deal.expected_amount 
-    ? new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumSignificantDigits: 3 }).format(deal.expected_amount)
-    : '-';
+export const CustomerCard = ({ deal, onClick }: Props) => {
+  const customer = deal.customer;
 
   return (
     <div className={styles.card} onClick={onClick}>
-      {/* Üst Kısım: Avatar + İsim + Fiyat */}
-      <div className={styles.card__header}>
-        <div className={styles.card__info}>
-          <Avatar name={customerName} />
-          <div>
-            <h4>{customerName}</h4>
-            <p>{deal.customer?.phone}</p>
-          </div>
+      <div className={styles.header}>
+        <div className={styles.avatar}>
+          {customer?.full_name?.charAt(0) || '?'}
         </div>
-        {deal.expected_amount > 0 && (
-          <span className={styles.card__price}>{priceFormatted}</span>
+        <div className={styles.mainInfo}>
+          <h4 className={styles.name}>{customer?.full_name || 'İsimsiz Müşteri'}</h4>
+          <span className={styles.phone}>{customer?.phone}</span>
+        </div>
+        {customer?.budget_max && (
+          <div className={styles.budget}>
+            ₺{customer.budget_max.toLocaleString()}
+          </div>
         )}
       </div>
 
-      {/* Orta Kısım: Badge (Aşama) */}
-      <div style={{ marginBottom: '0.5rem' }}>
-        <Badge variant={
-          deal.stage === 'new' ? 'info' :
-          deal.stage === 'closed_won' ? 'success' :
-          deal.stage === 'closed_lost' ? 'danger' : 'warning'
-        }>
-          {deal.stage.toUpperCase().replace('_', ' ')}
-        </Badge>
+      <div className={styles.tags}>
+        <span className={styles.tag}>{deal.stage.toUpperCase()}</span>
       </div>
 
-      {/* Alt Kısım: Portföy Bilgisi ve Aksiyon */}
-      <div className={styles.card__details}>
-        <div className={styles.card__portfolio}>
-          {deal.portfolio ? (
-            <>
-              <Home size={14} />
-              <span>{deal.portfolio.title.substring(0, 20)}...</span>
-            </>
-          ) : (
-            <span>Talep: 3+1 Kadıköy...</span> // (Dinamik hale gelecek)
-          )}
+      {deal.portfolio && (
+        <div className={styles.portfolioLink}>
+          <Home size={14} />
+          <span>{deal.portfolio.title}</span>
         </div>
-
-        <div className={styles.card__actions}>
-          <Button 
-            variant="ghost" 
-            size="sm" // Button bileşenine size prop'u eklememiz gerekebilir
-            onClick={(e) => {
-              e.stopPropagation();
-              if (deal.customer?.phone) onWhatsApp(deal.customer.phone);
-            }}
-          >
-            <Phone size={16} className="text-green-500" /> {/* WhatsApp Yeşil */}
-          </Button>
+      )}
+      
+      {!deal.portfolio && (
+        <div className={styles.noPortfolio}>
+          <Home size={14} />
+          <span>Talep: 3+1 Kadıköy...</span>
         </div>
-      </div>
+      )}
     </div>
   );
 };
