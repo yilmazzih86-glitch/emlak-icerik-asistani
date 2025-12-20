@@ -1,120 +1,137 @@
-// features/crm/components/NewDealModal/NewDealModal.tsx
-'use client';
-
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './NewDealModal.module.scss';
+import { crmService } from '../../api/crmService';
+import { Customer, Stage } from '../../api/types';
+// DÜZELTME: Named import
 import { Button } from '@/components/ui/Button/Button';
-import { X, Save, User, Briefcase, Wallet, Layers } from 'lucide-react';
-import { crmService } from '@/features/crm/api/crmService';
-import { CrmStage } from '@/features/crm/api/types';
 
-interface Props {
+interface NewDealModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  initialStage?: CrmStage;
 }
 
-export const NewDealModal = ({ isOpen, onClose, onSuccess, initialStage = 'new' }: Props) => {
-  const [loading, setLoading] = useState(false);
-  const [customers, setCustomers] = useState<{id: string, full_name: string}[]>([]);
-  const [portfolios, setPortfolios] = useState<{id: string, title: string}[]>([]);
-
-  const [formData, setFormData] = useState({
-    customer_id: '',
-    portfolio_id: '',
-    expected_amount: '',
-    stage: initialStage
-  });
+export const NewDealModal = ({ isOpen, onClose, onSuccess }: NewDealModalProps) => {
+  // DÜZELTME: Seçilen müşterinin tam Customer olması gerekmiyor, Partial yeterli
+  const [selectedCustomer, setSelectedCustomer] = useState<Partial<Customer> | null>(null);
+  const [expectedAmount, setExpectedAmount] = useState('');
+  const [stage, setStage] = useState<Stage>('new');
+  
+  const [searchTerm, setSearchTerm] = useState('');
+  // DÜZELTME: State tipi Partial<Customer>[] yapıldı (Type hatası çözümü)
+  const [searchResults, setSearchResults] = useState<Partial<Customer>[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
-      const loadOptions = async () => {
-        const [cData, pData] = await Promise.all([
-          crmService.getCustomersSelect(),
-          crmService.getPortfoliosSelect()
-        ]);
-        setCustomers(cData);
-        setPortfolios(pData);
-      };
-      loadOptions();
-      setFormData(prev => ({ ...prev, stage: initialStage }));
-    }
-  }, [isOpen, initialStage]);
+    const delayDebounce = setTimeout(async () => {
+      if (searchTerm.length > 1) {
+        setIsSearching(true);
+        const results = await crmService.searchCustomers(searchTerm);
+        setSearchResults(results);
+        setIsSearching(false);
+      } else {
+        setSearchResults([]);
+      }
+    }, 300);
+    return () => clearTimeout(delayDebounce);
+  }, [searchTerm]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.customer_id) return alert('Lütfen müşteri seçin.');
+    if (!selectedCustomer?.id) {
+      alert("Lütfen bir müşteri seçin.");
+      return;
+    }
 
+    setSubmitting(true);
     try {
-      setLoading(true);
-      await crmService.createDeal({
-        customer_id: formData.customer_id,
-        portfolio_id: formData.portfolio_id || null,
-        stage: formData.stage,
-        expected_amount: formData.expected_amount ? Number(formData.expected_amount) : 0
+      await crmService.createDealFull({
+        customer_id: selectedCustomer.id,
+        stage: stage,
+        expected_amount: expectedAmount ? Number(expectedAmount) : 0,
+        user_id: '2ffee494-c974-4c87-8724-0e1bf543890e'
       });
       onSuccess();
       onClose();
     } catch (error) {
-      alert('Hata: ' + (error as Error).message);
-    } finally { setLoading(false); }
+      console.error(error);
+      alert('Fırsat oluşturulamadı.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={e => e.stopPropagation()}>
-        <div className={styles.modal__header}>
-          <h2>Sürece Dahil Et (Yeni Fırsat)</h2>
-          <button className={styles.closeBtn} onClick={onClose}><X size={20}/></button>
+    <div className={styles.overlay}>
+      <div className={styles.modal}>
+        <div className={styles.header}>
+          <h3>Yeni Fırsat Ekle</h3>
+          <button onClick={onClose} className={styles.closeBtn}>✕</button>
         </div>
         
-        <form onSubmit={handleSubmit} className={styles.modal__body}>
+        <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.formGroup}>
-            <label>Müşteri Seçin *</label>
-            <div className={styles.inputWrapper}>
-              <User size={18}/>
-              <select required value={formData.customer_id} onChange={e => setFormData({...formData, customer_id: e.target.value})}>
-                <option value="">-- Müşteri Seçin --</option>
-                {customers.map(c => <option key={c.id} value={c.id}>{c.full_name}</option>)}
-              </select>
-            </div>
-          </div>
-
-          <div className={styles.formGroup}>
-            <label>İlgilenilen Portföy (Opsiyonel)</label>
-            <div className={styles.inputWrapper}>
-              <Briefcase size={18}/>
-              <select value={formData.portfolio_id} onChange={e => setFormData({...formData, portfolio_id: e.target.value})}>
-                <option value="">Belirsiz / Genel İlgilenen</option>
-                {portfolios.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
-              </select>
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div className={styles.formGroup}>
-              <label>Tahmini Tutar (TL)</label>
-              <div className={styles.inputWrapper}><Wallet size={18}/><input type="number" value={formData.expected_amount} onChange={e => setFormData({...formData, expected_amount: e.target.value})}/></div>
-            </div>
-            <div className={styles.formGroup}>
-              <label>Aşama</label>
-              <div className={styles.inputWrapper}><Layers size={18}/>
-                <select value={formData.stage} onChange={e => setFormData({...formData, stage: e.target.value as any})}>
-                  <option value="new">Yeni</option>
-                  <option value="contacted">Görüşüldü</option>
-                  <option value="presentation">Sunum</option>
-                  <option value="negotiation">Pazarlık</option>
-                </select>
+            <label>Müşteri Seç *</label>
+            {selectedCustomer ? (
+              <div className={styles.selectedCustomer}>
+                <span>✅ {selectedCustomer.full_name}</span>
+                <button type="button" onClick={() => setSelectedCustomer(null)}>Değiştir</button>
               </div>
+            ) : (
+              <div style={{position: 'relative'}}>
+                <input 
+                  type="text" 
+                  placeholder="Müşteri adı ara..." 
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className={styles.searchInput}
+                />
+                {searchResults.length > 0 && (
+                  <ul className={styles.searchResults}>
+                    {searchResults.map(cust => (
+                      <li key={cust.id} onClick={() => {
+                        setSelectedCustomer(cust);
+                        setSearchTerm('');
+                        setSearchResults([]);
+                      }}>
+                        {cust.full_name} <small>({cust.phone})</small>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className={styles.row}>
+            <div className={styles.formGroup}>
+               <label>Aşama</label>
+               <select value={stage} onChange={(e) => setStage(e.target.value as Stage)}>
+                 <option value="new">Yeni Müşteri</option>
+                 <option value="contacted">Görüşüldü</option>
+                 <option value="presentation">Sunum Yapıldı</option>
+                 <option value="negotiation">Teklif / Pazarlık</option>
+               </select>
+            </div>
+            <div className={styles.formGroup}>
+               <label>Beklenen Tutar (TL)</label>
+               <input 
+                 type="number" 
+                 value={expectedAmount}
+                 onChange={(e) => setExpectedAmount(e.target.value)}
+                 placeholder="0"
+               />
             </div>
           </div>
 
-          <div className={styles.modal__footer}>
-            <Button type="button" variant="ghost" onClick={onClose}>Vazgeç</Button>
-            <Button type="submit" variant="primary" isLoading={loading} style={{ minWidth: '160px' }} icon={<Save size={18}/>}>Pipeline'a Ekle</Button>
+          <div className={styles.footer}>
+            <Button variant="outline" onClick={onClose} type="button">İptal</Button>
+            <Button variant="primary" type="submit" disabled={submitting || !selectedCustomer}>
+              {submitting ? 'Oluşturuluyor...' : 'Fırsat Oluştur'}
+            </Button>
           </div>
         </form>
       </div>

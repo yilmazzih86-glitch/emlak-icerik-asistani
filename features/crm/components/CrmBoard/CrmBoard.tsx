@@ -1,123 +1,184 @@
 // features/crm/components/CrmBoard/CrmBoard.tsx
+
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import styles from './CrmBoard.module.scss';
-import { CustomerCard } from '../CustomerCard/CustomerCard';
-import { Deal, CrmStage } from '@/features/crm/api/types';
-import { Plus, Sparkles, Loader2 } from 'lucide-react';
+import { useCrmStore } from '../../hooks/useCrmStore';
+import { crmService } from '../../api/crmService';
+import { Deal, Stage, STAGE_LABELS } from '../../api/types';
 import { Button } from '@/components/ui/Button/Button';
+import { NewDealModal } from '../NewDealModal/NewDealModal';
 
-// image_7fe350 ve image_751ce7'deki interface eksiklerini gideren tam tanım
-interface CrmBoardProps {
-  deals: Deal[];
-  isLoading: boolean;
-  onDealClick: (deal: Deal) => void;
-  onStageChange: (dealId: string, newStage: CrmStage) => void;
-  onAddDeal: (stage: CrmStage) => void;
-  onWhatsAppAutomation: (deal: Deal) => Promise<void>;
-  onAddDealFromPool?: (customerId: string, stage: CrmStage) => void;
-}
+// Sütunların sırası
+const STAGE_ORDER: Stage[] = ['new', 'contacted', 'presentation', 'negotiation', 'won'];
 
-const STAGES: { id: CrmStage; label: string }[] = [
-  { id: 'new', label: 'Yeni Müşteri' },
-  { id: 'contacted', label: 'Görüşüldü' },
-  { id: 'presentation', label: 'Sunum Yapıldı' },
-  { id: 'negotiation', label: 'Pazarlık' },
-  { id: 'closed_won', label: 'Satış Başarılı' },
-];
+export default function CrmBoard() {
+  const { selectCustomer } = useCrmStore();
+  const [deals, setDeals] = useState<Deal[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isDealModalOpen, setIsDealModalOpen] = useState(false); // Modal state
 
-export const CrmBoard = ({ 
-  deals, 
-  isLoading, 
-  onDealClick, 
-  onStageChange, 
-  onAddDeal, 
-  onWhatsAppAutomation,
-  onAddDealFromPool 
-}: CrmBoardProps) => {
-  const [draggedDealId, setDraggedDealId] = useState<string | null>(null);
+  // Verileri Çek
+  useEffect(() => {
+    fetchDeals();
+  }, []);
 
-  const handleDragStart = (e: React.DragEvent, dealId: string) => {
-    setDraggedDealId(dealId);
-    e.dataTransfer.setData('dealId', dealId);
-  };
-
-  const handleDrop = (e: React.DragEvent, targetStage: CrmStage) => {
-    e.preventDefault();
-    const dealId = e.dataTransfer.getData('dealId');
-    const customerId = e.dataTransfer.getData('customerId'); // image_757e44: Havuzdan drop mantığı
-
-    if (dealId) {
-      onStageChange(dealId, targetStage);
-    } else if (customerId && onAddDealFromPool) {
-      onAddDealFromPool(customerId, targetStage);
+  const fetchDeals = async () => {
+    try {
+      const data = await crmService.getDeals();
+      setDeals(data);
+    } catch (error) {
+      console.error('Fırsatlar yüklenemedi:', error);
+    } finally {
+      setIsLoading(false);
     }
-    setDraggedDealId(null);
   };
 
-  if (isLoading) return <div className={styles.loading}><Loader2 className="animate-spin" /></div>;
+  // Sürükle-Bırak İşlemi
+  const onDragEnd = async (result: DropResult) => {
+    const { destination, source, draggableId } = result;
+
+    // Geçersiz bırakma veya aynı yere bırakma
+    if (!destination || (destination.droppableId === source.droppableId && destination.index === source.index)) {
+      return;
+    }
+
+    const newStage = destination.droppableId as Stage;
+
+    // 1. Optimistic Update (Arayüzü hemen güncelle)
+    const updatedDeals = deals.map(deal => 
+      deal.id === draggableId ? { ...deal, stage: newStage } : deal
+    );
+    setDeals(updatedDeals);
+
+    // 2. Backend Update
+    try {
+      await crmService.updateDealStage(draggableId, newStage);
+    } catch (error) {
+      console.error("Stage update failed:", error);
+      fetchDeals(); // Hata varsa eski haline döndür
+    }
+  };
+
+  // Deals verisini sütunlara göre grupla
+  const getDealsByStage = (stage: Stage) => {
+    return deals.filter(deal => deal.stage === stage);
+  };
+
+  // Toplam Beklenen Tutar Hesaplama
+  const calculateTotal = (stageDeals: Deal[]) => {
+    return stageDeals.reduce((acc, curr) => acc + (curr.expected_amount || 0), 0);
+  };
+
+  if (isLoading) return <div className={styles.loading}>Pipeline Yükleniyor...</div>;
 
   return (
-    <div className={styles.boardContainer}>
-      <div className={styles.board}>
-        {STAGES.map((stage) => (
-          <div 
-            key={stage.id} 
-            className={styles.column}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => handleDrop(e, stage.id)}
-          >
-            <div className={styles.columnHeader}>
-              <div className={styles.titleGroup}>
-                <h3>{stage.label}</h3>
-                <span className={styles.badge}>
-                  {deals.filter(d => d.stage === stage.id).length}
-                </span>
-              </div>
-              {/* image_7fe350'deki onAddDeal hatası giderildi */}
-              <button className={styles.addBtn} onClick={() => onAddDeal(stage.id)}>
-                <Plus size={18} />
-              </button>
-            </div>
+    <>
+      {/* Üst Bar: Yeni Fırsat Butonu */}
+      <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'flex-end', padding: '0 1rem' }}>
+          <Button variant="primary" onClick={() => setIsDealModalOpen(true)}>
+              + Yeni Fırsat Ekle
+          </Button>
+      </div>
 
-            <div className={styles.cards}>
-              {deals
-                .filter((deal) => deal.stage === stage.id)
-                .map((deal) => (
-                  <div 
-                    key={deal.id} 
-                    className={styles.cardWrapper}
-                    draggable 
-                    onDragStart={(e) => handleDragStart(e, deal.id)}
-                  >
-                    <CustomerCard 
-                      deal={deal} 
-                      onClick={() => onDealClick(deal)} // image_7581c7 prop hatası fix
-                    />
-                    
-                    {deal.customer?.phone && (
-                      <div className={styles.cardActions}>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onWhatsAppAutomation(deal);
-                          }}
-                          className={styles.aiButton}
-                          icon={<Sparkles size={14} />}
-                        >
-                          AI Mesajı ile Gönder
-                        </Button>
+      <div className={styles.boardContainer}>
+        <DragDropContext onDragEnd={onDragEnd}>
+          <div className={styles.columnsWrapper}>
+            {STAGE_ORDER.map((stage) => {
+              const stageDeals = getDealsByStage(stage);
+              
+              return (
+                <div key={stage} className={styles.column}>
+                  {/* Sütun Başlığı */}
+                  <div className={styles.columnHeader}>
+                    <div className={styles.headerTop}>
+                      <h3>{STAGE_LABELS[stage]}</h3>
+                      <span className={styles.countBadge}>{stageDeals.length}</span>
+                    </div>
+                    <div className={styles.headerTotal}>
+                      {stageDeals.length > 0 && calculateTotal(stageDeals) > 0 
+                        ? `${calculateTotal(stageDeals).toLocaleString('tr-TR')} ₺`
+                        : '-'}
+                    </div>
+                  </div>
+
+                  {/* Droppable Alan */}
+                  <Droppable droppableId={stage}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.droppableProps}
+                        className={`${styles.dealList} ${snapshot.isDraggingOver ? styles.draggingOver : ''}`}
+                      >
+                        {stageDeals.map((deal, index) => (
+                          <Draggable key={deal.id} draggableId={deal.id} index={index}>
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                className={`${styles.dealCard} ${snapshot.isDragging ? styles.dragging : ''}`}
+                                onClick={() => selectCustomer(deal.customer_id, deal.id)} // Sidebar'ı açar
+                                style={{ ...provided.draggableProps.style }}
+                              >
+                                <div className={styles.cardHeader}>
+                                  <span className={styles.customerName}>
+                                    {deal.customer?.full_name || 'İsimsiz Müşteri'}
+                                  </span>
+                                  {deal.probability !== undefined && deal.probability > 0 && (
+                                    <span className={`${styles.probability} ${deal.probability > 70 ? styles.high : styles.low}`}>
+                                      %{deal.probability}
+                                    </span>
+                                  )}
+                                </div>
+                                
+                                <div className={styles.cardBody}>
+                                  {deal.portfolio ? (
+                                      <div className={styles.portfolioTag}>🏠 {deal.portfolio.title}</div>
+                                  ) : (
+                                      <div className={styles.emptyTag}>Portföy Seçilmedi</div>
+                                  )}
+                                  
+                                  {deal.expected_amount && (
+                                    <div className={styles.amount}>
+                                      {deal.expected_amount.toLocaleString('tr-TR')} ₺
+                                    </div>
+                                  )}
+                                </div>
+
+                                <div className={styles.cardFooter}>
+                                  <span className={styles.date}>
+                                    {new Date(deal.updated_at).toLocaleDateString('tr-TR')}
+                                  </span>
+                                  {deal.customer?.avatar_url && (
+                                      <img src={deal.customer.avatar_url} className={styles.miniAvatar} alt="" />
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
                       </div>
                     )}
-                  </div>
-                ))}
-            </div>
+                  </Droppable>
+                </div>
+              );
+            })}
           </div>
-        ))}
+        </DragDropContext>
       </div>
-    </div>
+
+      {/* --- MODAL ENTEGRASYONU --- */}
+      <NewDealModal
+        isOpen={isDealModalOpen}
+        onClose={() => setIsDealModalOpen(false)}
+        onSuccess={() => {
+            fetchDeals(); // Board'u yenile
+        }}
+      />
+    </>
   );
-};
+}

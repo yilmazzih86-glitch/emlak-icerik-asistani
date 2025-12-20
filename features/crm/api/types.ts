@@ -1,51 +1,66 @@
 // features/crm/api/types.ts
 
-export type CrmStage = 'new' | 'contacted' | 'presentation' | 'negotiation' | 'closed_won' | 'closed_lost';
-export type ActivityType = 'note' | 'call' | 'meeting' | 'whatsapp_sent' | 'ai_generated' | 'status_change' | 'task_done';
+// ----------------------------------------------------------------------
+// 1. Temel Enum ve Sabitler
+// ----------------------------------------------------------------------
+export type Stage = 'new' | 'contacted' | 'presentation' | 'negotiation' | 'won';
 
-// 1. Müşteri Detay Tipi (DB'deki tüm kolonları kapsar)
+export const STAGE_LABELS: Record<Stage, string> = {
+  new: 'Yeni Müşteri',
+  contacted: 'Görüşüldü',
+  presentation: 'Sunum Yapıldı',
+  negotiation: 'Teklif / Pazarlık',
+  won: 'Satış Başarılı',
+};
+
+// ----------------------------------------------------------------------
+// 2. Veritabanı Tablo Karşılıkları (Interfaces)
+// ----------------------------------------------------------------------
+
 export interface Customer {
   id: string;
+  user_id?: string; // Ekleyen kullanıcı
   full_name: string;
-  phone?: string;
+  phone: string;
   email?: string;
-  status: 'new' | 'active' | 'passive' | 'archived';
-  type: 'buy' | 'rent' | 'sell' | 'lease';
+  type?: 'buy' | 'sell'; // Alıcı / Satıcı
+  status: 'active' | 'passive' | 'archived';
+  
+  // Tercihler ve Bütçe
   budget_min?: number;
   budget_max?: number;
-  interested_cities?: string[];
-  interested_districts?: string[];
-  preferred_room_counts?: string[];
+  location_interest?: string; // Genel ilgi alanı
+  interested_cities?: string[]; // Örn: ["İzmir", "Aydın"] (CSV'den parse edilecek)
+  preferred_room_counts?: string[]; // Örn: ["3+1", "Villa"]
+  
   notes?: string;
-  last_activity_at?: string;
-  assigned_to?: string;
+  tags?: string[];
+  avatar_url?: string;
+  
+  // Sistem Alanları
   created_at: string;
+  last_activity_at?: string; // Otomasyon için kritik
+  assigned_to?: string; // Danışman ID
 }
 
-// 2. Fırsat (Deal) Tipi
-export interface DealRow {
+export interface Deal {
   id: string;
-  org_id: string;
   customer_id: string;
-  portfolio_id?: string | null;
-  stage: CrmStage;
-  expected_amount: number;
-  probability: number;
+  user_id?: string;
+  portfolio_id?: string; // Müşteri bir portföyle eşleştiyse
+  stage: Stage;
+  expected_amount?: number;
+  probability?: number; // 0-100 arası
+  closed_at?: string;
   created_at: string;
   updated_at: string;
+  
+  // Join ile gelebilecek ilişkili veriler
+  customer?: Customer;
+  portfolio?: Portfolio;
 }
 
-export interface Deal extends DealRow {
-  customer?: Partial<Customer>; // Join ile gelen temel müşteri bilgisi
-  portfolio?: {
-    title: string;
-    price: number;
-    image_urls?: string[];
-  };
-}
-
-// 3. Görev Tipi
-export interface CrmTask {
+export interface Task {
   id: string;
   customer_id: string;
   assigned_to: string;
@@ -56,41 +71,68 @@ export interface CrmTask {
   created_at: string;
 }
 
-// 4. Aktivite Tipi
-export interface CrmActivity {
+export interface Activity {
   id: string;
   customer_id: string;
-  type: ActivityType;
+  type: 'call' | 'meeting' | 'note' | 'email' | 'whatsapp' | 'system' | 'task_done';
   description: string;
+  meta?: any; // Ekstra veri (örn: hangi portföy önerildi)
   created_at: string;
   created_by: string;
-  meta?: any; // AI promptları veya kanal bilgisi için
 }
 
-// 5. Merkezi AI Otomasyon Tipleri
-export type AiAutomationMode = 
-  | 'message_draft'      // 1. Mesaj Hazırlama
-  | 'smart_match'       // 2. Akıllı Eşleştirme
-  | 'followup_alert'    // 3. Takip & Sessizlik
-  | 'relationship_memo' // 4. Satış Sonrası
-  | 'consultant_insight'; // 5. Danışman Özet
-
-export interface AiOrchestratorRequest {
-  mode: AiAutomationMode;
+export interface Appointment {
+  id: string;
   customer_id: string;
-  deal_id?: string;
-  context?: {
-    tone?: 'formal' | 'friendly' | 'urgent';
-    custom_instruction?: string;
+  title: string;
+  appointment_date: string; // ISO String
+  location?: string;
+  notes?: string;
+  created_by: string;
+  created_at: string;
+}
+
+export interface Portfolio {
+  id: string;
+  title: string;
+  price: number;
+  city: string;
+  district: string;
+  neighborhood?: string;
+  room_count: string;
+  net_m2: number;
+  gross_m2?: number;
+  floor?: string;
+  heating?: string;
+  credit_status?: string;
+  image_urls?: string[];
+  
+  // AI ve Pazarlama
+  ai_output?: {
+    reels?: string;
+    portal?: string;
+    linkedin?: string;
+    instagram?: string;
+  };
+  marketing?: {
+    tone?: string;
+    target?: string;
   };
 }
 
-export interface AiOrchestratorResponse {
-  success: boolean;
-  output: string; // Ana metin veya analiz sonucu
-  metadata?: {
-    suggested_portfolios?: any[];
-    risk_score?: number;
-    next_steps?: string[];
-  };
+// ----------------------------------------------------------------------
+// 3. AI & Otomasyon Tipleri (Frontend Logic İçin)
+// ----------------------------------------------------------------------
+
+export interface AIAnalysisResult {
+  portfolio_id: string;
+  match_score: number; // 0-100
+  reason: string; // "Bütçe ve lokasyon tam uyumlu..."
+  risks: string[]; // "Bütçeyi %10 aşıyor"
+}
+
+export interface MessageDraft {
+  platform: 'whatsapp' | 'email';
+  content: string;
+  phone_number?: string;
 }
