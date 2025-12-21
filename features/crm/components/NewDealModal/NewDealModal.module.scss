@@ -1,11 +1,12 @@
-@import '@/styles/variables';
-@import '@/styles/mixins';
+// DÜZELTME: Relative path (Garanti çözüm)
+@import '../../../../styles/variables';
+@import '../../../../styles/mixins';
 
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7); // Arkası hafif karartılmış
-  backdrop-filter: blur(4px);      // Buzlu cam efekti
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
   z-index: 50;
   display: flex;
   align-items: center;
@@ -14,7 +15,8 @@
 }
 
 .modal {
-  @include card-surface; // Senin koyu gri kart yapın
+  // Mixin kullanımı (Artık hata vermeyecek)
+  @include card-surface; 
   width: 100%;
   max-width: 480px;
   padding: 1.5rem;
@@ -23,7 +25,8 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  border: 1px solid rgba($brand-purple, 0.2); // Hafif mor çerçeve
+  // Mor çerçeve yerine standart border
+  border: 1px solid $color-border; 
 
   &__header {
     @include flex(space-between, center);
@@ -33,12 +36,16 @@
       font-weight: 600; 
       color: $text-main;
       letter-spacing: -0.02em;
+      margin: 0;
     }
 
     button {
-      color: $text-muted;
+      background: none;
+      border: none;
+      color: $text-secondary; // Düzeltildi
       padding: 0.25rem;
       border-radius: 4px;
+      cursor: pointer;
       transition: all 0.2s;
       
       &:hover {
@@ -57,7 +64,7 @@
   &__footer {
     @include flex(flex-end, center, 0.75rem);
     padding-top: 1rem;
-    border-top: 1px solid rgba($text-muted, 0.1);
+    border-top: 1px solid $color-border; // Düzeltildi
   }
 }
 
@@ -69,7 +76,7 @@
   label {
     font-size: 0.85rem;
     font-weight: 500;
-    color: $text-muted;
+    color: $text-secondary; // Düzeltildi
   }
 
   // İkonlu input kapsayıcısı
@@ -81,61 +88,54 @@
     svg {
       position: absolute;
       left: 12px;
-      color: $text-muted;
+      color: $text-secondary; // Düzeltildi
       pointer-events: none;
       transition: color 0.2s;
     }
 
     input, select {
       width: 100%;
-      padding: 0.75rem 1rem 0.75rem 2.5rem; // İkon için soldan boşluk
+      padding: 0.75rem 1rem 0.75rem 0.75rem; // Padding düzeltildi
       border-radius: $radius-md;
       border: 1px solid $color-border;
-      background: rgba(0,0,0,0.2); // Input zemini biraz daha koyu
+      background: rgba(0,0,0,0.2);
       color: $text-main;
       font-size: 0.95rem;
       outline: none;
       transition: all 0.2s;
 
-      &::placeholder { color: darken($text-muted, 10%); }
+      &::placeholder { color: $text-muted; }
 
       &:focus {
-        border-color: $brand-purple;
+        border-color: $color-primary;
         background: rgba(0,0,0,0.4);
-        box-shadow: 0 0 0 1px $brand-purple;
-        
-        & ~ svg { color: $brand-purple; } // Focus olunca ikonu da boya
+        box-shadow: 0 0 0 1px $color-primary;
       }
-    }
-    
-    // Select için padding ayarı (ikon yoksa)
-    select:not([style*="paddingLeft"]) {
-      padding-left: 1rem;
     }
   }
 }
 
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-// ... (Diğer stiller aynı)
-
+// Müşteri Arama Sonuçları
 .selectedCustomer {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem;
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  border-radius: 6px;
-  color: #166534;
+  background: rgba(16, 185, 129, 0.1); // Success rengi şeffaf
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: $radius-md;
+  color: $color-success;
+
+  span { font-weight: 500; }
 
   button {
     background: none;
     border: none;
-    color: #ef4444;
+    color: $color-danger;
     cursor: pointer;
     font-size: 0.85rem;
     text-decoration: underline;
+    &:hover { color: lighten($color-danger, 10%); }
   }
 }
 
@@ -144,12 +144,12 @@
   top: 100%;
   left: 0;
   width: 100%;
-  background: #fff;
-  border: 1px solid $border-color;
-  border-radius: 0 0 6px 6px;
+  background: $color-bg-surface;
+  border: 1px solid $color-border;
+  border-radius: 0 0 $radius-md $radius-md;
   max-height: 200px;
   overflow-y: auto;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
   z-index: 10;
   margin: 0;
   padding: 0;
@@ -158,24 +158,34 @@
   li {
     padding: 0.75rem;
     cursor: pointer;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid $color-border;
+    color: $text-main;
+    display: flex;
+    justify-content: space-between;
     
     &:hover {
-      background-color: #f8fafc;
+      background-color: rgba(255, 255, 255, 0.05);
     }
 
     small {
-      color: #94a3b8;
-      margin-left: 0.5rem;
+      color: $text-muted;
     }
   }
 }
 
-select {
-    width: 100%;
-    padding: 0.6rem;
-    border: 1px solid $border-color;
-    border-radius: 6px;
-    font-size: 0.95rem;
-    background: #fff;
+.searchInput {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: $radius-md;
+  border: 1px solid $color-border;
+  background: rgba(0,0,0,0.2);
+  color: $text-main;
+  outline: none;
+  
+  &:focus {
+    border-color: $color-primary;
+  }
 }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }

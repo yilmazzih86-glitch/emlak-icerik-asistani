@@ -1,5 +1,5 @@
-@import '@/styles/variables';
-@import '@/styles/mixins';
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
 
 .btn {
   @include flex(center, center, 0.5rem);
@@ -18,10 +18,11 @@
     cursor: not-allowed;
   }
 
-  // Varyasyon 1: Primary (Mor Dolgulu)
+  // Varyasyon 1: Primary
   &--primary {
     background-color: $color-primary;
     color: white;
+    // $brand-purple değişkeni variables dosyasından gelir
     box-shadow: 0 4px 14px 0 rgba($brand-purple, 0.39);
 
     &:hover:not(:disabled) { 
@@ -34,7 +35,7 @@
     }
   }
 
-  // Varyasyon 2: Outline (Çerçeveli)
+  // Varyasyon 2: Outline
   &--outline {
     background-color: transparent;
     border-color: rgba($text-muted, 0.3);
@@ -47,11 +48,11 @@
     }
   }
 
-  // Varyasyon 3: Ghost (Sadece yazı/ikon)
+  // Varyasyon 3: Ghost
   &--ghost {
     background-color: transparent;
     color: $text-muted;
-    padding: 0.5rem; // Daha küçük padding
+    padding: 0.5rem;
 
     &:hover:not(:disabled) { 
       background-color: rgba($text-muted, 0.1);

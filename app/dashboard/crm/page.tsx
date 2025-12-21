@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { CrmBoard } from '@/features/crm/components/CrmBoard/CrmBoard';
+import CrmBoard from '@/features/crm/components/CrmBoard/CrmBoard';
 import { CrmSidebar } from '@/features/crm/components/CrmSidebar/CrmSidebar';
 import { crmService } from '@/features/crm/api/crmService';
 import { Deal, Customer, CrmStage } from '@/features/crm/api/types';

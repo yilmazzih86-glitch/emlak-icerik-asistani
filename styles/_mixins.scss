@@ -1,6 +1,5 @@
-// DÜZELTME: Relative path yerine Alias kullanıyoruz (@)
-@import '@/styles/variables';
-
+// DÜZELTME: './' kaldırıldı, doğrudan dosya adı kullanıldı
+@import 'variables';
 
 // Esnek Kutu Düzeni
 @mixin flex($justify: flex-start, $align: center, $gap: 0) {
@@ -19,21 +18,18 @@
 
 // --- RESPONSIVE MIXINS ---
 
-// Mobil Cihazlar (768px altı)
 @mixin mobile {
   @media (max-width: 768px) {
     @content;
   }
 }
 
-// Tablet Cihazlar (768px - 1024px arası)
 @mixin tablet {
   @media (min-width: 769px) and (max-width: 1024px) {
     @content;
   }
 }
 
-// Masaüstü (1024px üstü)
 @mixin desktop {
   @media (min-width: 1025px) {
     @content;
