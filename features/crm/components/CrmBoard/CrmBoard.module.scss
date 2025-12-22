@@ -1,494 +1,259 @@
-@import '../../../../styles/variables';
-@import '../../../../styles/mixins';
-
-.sidebarOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 40;
-  backdrop-filter: blur(4px);
-  animation: fadeIn 0.2s ease-out;
-}
-
-.sidebarContainer {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 500px;
-  height: 100vh;
-  background-color: $color-bg-surface; // Düzeltildi: Koyu tema yüzey rengi
-  border-left: 1px solid $color-border; // Düzeltildi: $border-color -> $color-border
-  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.5);
-  z-index: 50;
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  transform: translateX(100%);
-
-  &.open {
-    transform: translateX(0);
-  }
-
-  @include mobile {
-    width: 100%;
-  }
-}
-
-.header {
-  padding: 1.5rem;
-  border-bottom: 1px solid $color-border; // Düzeltildi
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: rgba(255, 255, 255, 0.02); // Hafif aydınlık başlık
-
-  h2 {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: $text-main; // Düzeltildi: $text-primary -> $text-main
-    margin: 0;
-  }
-
-  .closeBtn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0.5rem;
-    border-radius: $radius-sm; // Düzeltildi: $border-radius-sm -> $radius-sm
-    color: $text-secondary;
-    
-    &:hover {
-      background-color: rgba(255, 255, 255, 0.1);
-      color: $text-main;
-    }
-  }
-}
-
-.tabs {
-  display: flex;
-  padding: 0 1.5rem;
-  border-bottom: 1px solid $color-border; // Düzeltildi
-  background-color: $color-bg-surface; // Düzeltildi
-  gap: 1.5rem;
-
-  button {
-    background: none;
-    border: none;
-    padding: 1rem 0;
-    font-size: 0.9rem;
-    color: $text-secondary;
-    cursor: pointer;
-    position: relative;
-    font-weight: 500;
-    transition: color 0.2s;
-
-    &.active {
-      color: $color-primary; // Düzeltildi: $primary-color -> $color-primary
-      
-      &::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 2px;
-        background-color: $color-primary; // Düzeltildi
-        border-radius: 2px 2px 0 0;
-      }
-    }
-
-    &:hover:not(.active) {
-      color: $text-main; // Düzeltildi
-    }
-  }
-}
-
-.content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1.5rem;
-  background-color: $color-bg-app; // Düzeltildi: Sayfa zemini
-}
-
-// Global View Listesi için
-.customerItem {
-  background: $color-bg-surface; // Düzeltildi
-  padding: 1rem;
-  border: 1px solid $color-border; // Düzeltildi
-  border-radius: $radius-md; // Düzeltildi
-  margin-bottom: 0.75rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  &:hover {
-    border-color: $color-primary; // Düzeltildi
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    transform: translateY(-1px);
-  }
-
-  .info {
-    h4 {
-      margin: 0 0 0.25rem 0;
-      font-size: 0.95rem;
-      color: $text-main; // Düzeltildi
-    }
-    p {
-      margin: 0;
-      font-size: 0.85rem;
-      color: $text-secondary;
-    }
-  }
-}
-
-// AI Tools Kartları
-.aiToolCard {
-  background: $color-bg-surface; // Düzeltildi
-  border: 1px solid $color-border; // Düzeltildi
-  border-radius: $radius-md; // Düzeltildi
-  padding: 1.25rem;
-  margin-bottom: 1rem;
-  
-  h4 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1rem;
-    color: $text-main; // Düzeltildi
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  p {
-    font-size: 0.85rem;
-    color: $text-secondary;
-    margin-bottom: 1rem;
-    line-height: 1.5;
-  }
-}
-
-.poolList {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.aiToolsList {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-// Detay Sayfası Stilleri
-.infoCard {
-  background: $color-bg-surface;
-  border: 1px solid $color-border;
-  border-radius: $radius-md;
-  padding: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.infoRow {
-  display: flex;
-  justify-content: space-between;
-  padding: 0.5rem 0;
-  border-bottom: 1px dashed $color-border;
-  font-size: 0.9rem;
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  .label {
-    color: $text-secondary;
-    font-weight: 500;
-  }
-  .value {
-    color: $text-main;
-    font-weight: 600;
-  }
-}
-
-.noteBox {
-  margin-top: 0.75rem;
-  background: rgba(245, 158, 11, 0.1); // Warning renginin şeffaf hali
-  padding: 0.75rem;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  color: $color-warning;
-  border: 1px solid rgba(245, 158, 11, 0.2);
-}
-
-.sectionTitle {
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: $text-muted; // Düzeltildi
-  font-weight: 700;
-  margin-bottom: 0.75rem;
-}
-
-.aiGrid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-
-.listItem {
-  background: $color-bg-surface;
-  padding: 0.75rem;
-  border: 1px solid $color-border;
-  border-radius: 6px;
-  margin-bottom: 0.5rem;
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-
-  strong {
-    display: block;
-    font-size: 0.9rem;
-    color: $text-main;
-  }
-
-  .date {
-    font-size: 0.75rem;
-    color: $text-secondary;
-  }
-}
-
-.timelineItem {
-  display: flex;
-  gap: 0.75rem;
-  padding-bottom: 1rem;
-  border-left: 2px solid $color-border;
-  padding-left: 1rem;
-  margin-left: 0.5rem;
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    left: -5px;
-    top: 0;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: $text-secondary;
-  }
-
-  .content {
-    p { 
-      margin: 0 0 0.25rem 0; 
-      font-size: 0.9rem; 
-      color: $text-main;
-    }
-    span { font-size: 0.75rem; color: $text-muted; }
-  }
-}
-
-.emptyState {
-    text-align: center;
-    color: $text-muted;
-    font-size: 0.9rem;
-    padding: 1rem;
-}
-
-// Avatar Wrapper
-.avatarWrapper {
-  width: 40px; 
-  height: 40px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.1);
-  background-color: #262626;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+// --- Marka Renkleri & Değişkenler ---
+$color-purple: #7C3AED;       // Ana Marka Rengi (Vurgu)
+$color-purple-light: #DDD6FE; // Açık Mor
+$color-orange: #F97316;       // İkincil Renk (Aksiyon)
+$color-dark-bg: #1F2937;      // Koyu Gri (Arkaplan için)
+$color-darker-bg: #111827;    // Daha Koyu Gri (Sayfa zemini)
+$color-text-main: #1F2937;    // Ana Metin
+$color-text-sub: #6B7280;     // Alt Metin
+$color-column-bg: #F3F4F6;    // Sütun Zemini (Açık Gri)
+$color-white: #FFFFFF;
 
 .boardContainer {
-  height: 100%;
-  width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding-bottom: 2rem;
-
-  // PREMIUM SCROLLBAR
-  &::-webkit-scrollbar { height: 8px; }
-  &::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.02); }
-  &::-webkit-scrollbar-thumb { 
-    background: linear-gradient(to right, #8b5cf6, #f97316); 
-    border-radius: 20px; 
-  }
-}
-
-.board {
   display: flex;
-  gap: 1.5rem;
-  padding: 0 0.5rem;
+  gap: 1.25rem;
+  overflow-x: auto;
+  padding: 1.5rem;
+  height: calc(100vh - 80px); 
+  
+  // --- GÜNCELLEME: Arkaplan Koyu Gri ---
+  background-color: $color-darker-bg; 
   align-items: flex-start;
-  min-width: max-content;
+
+  // Loading metni rengi (koyu zemin üzerinde açık renk)
+  .loadingBoard {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: rgba($color-white, 0.6);
+    font-weight: 500;
+  }
+
+  // Scrollbar özelleştirme (Koyu tema uyumlu)
+  &::-webkit-scrollbar {
+    height: 10px; // Yatay scroll biraz daha belirgin olsun
+  }
+  &::-webkit-scrollbar-track {
+    background: rgba($color-white, 0.05);
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba($color-white, 0.2);
+    border-radius: 4px;
+    &:hover {
+        background: rgba($color-white, 0.3);
+    }
+  }
 }
 
 .column {
-  width: 310px;
-  background: rgba(255, 255, 255, 0.01);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  // DÜZELTME BURADA: $border-radius-md yerine $radius-md veya 20px kullanıyoruz
-  border-radius: 20px; 
+  min-width: 300px;
+  width: 300px;
+  // Sütunlar koyu zeminde öne çıkması için açık renk
+  background: $color-column-bg; 
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 250px);
-  backdrop-filter: blur(10px);
+  max-height: 100%;
+  border: 1px solid rgba($color-white, 0.05); // Hafif sınır
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3); // Derinlik gölgesi
 }
 
 .columnHeader {
-  padding: 1.25rem;
+  padding: 1.25rem 1rem;
+  background: $color-column-bg; // Header sütunla bütünleşsin
+  border-bottom: 3px solid transparent; 
+  border-radius: 12px 12px 0 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-
-  .titleGroup {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    h3 { font-size: 0.9rem; font-weight: 700; color: #fff; margin: 0; }
-    .countBadge {
-      background: rgba(139, 92, 246, 0.15);
-      color: #8b5cf6;
-      font-size: 0.7rem;
-      padding: 2px 8px;
-      border-radius: 10px;
-    }
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  
+  h3 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: $color-text-main;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
+
+  .count {
+    background: rgba($color-text-main, 0.1);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: $color-text-main;
+  }
+
+  // --- Aşamaya Göre Renkler ---
+  
+  &.new { 
+    border-bottom-color: #9CA3AF; // Gri
+  } 
+
+  &.contact { 
+    border-bottom-color: lighten($color-orange, 10%); 
+    h3 { color: darken($color-orange, 5%); }
+  } 
+
+  &.presentation { 
+    border-bottom-color: lighten($color-purple, 10%);
+    h3 { color: darken($color-purple, 5%); }
+  } 
+
+  &.offer { 
+    border-bottom-color: $color-orange;
+    h3 { color: $color-orange; }
+  } 
+
+  &.sold { 
+    border-bottom-color: $color-purple;
+    h3 { color: $color-purple; }
+    .count { background-color: $color-purple-light; color: $color-purple; }
+  } 
 }
 
-.dealList {
+.droppableArea {
   padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  flex-grow: 1;
   overflow-y: auto;
-  min-height: 100px;
-  
-  &::-webkit-scrollbar { width: 4px; }
-  &::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
+  min-height: 150px;
+  transition: background-color 0.2s;
 
   &.draggingOver {
-    background: rgba(255, 255, 255, 0.02);
+    background-color: rgba($color-purple, 0.05); 
+  }
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
   }
 }
 
 .dealCard {
-  background: #1e1e1e;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  background: $color-white;
+  border-radius: 8px;
   padding: 1rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   cursor: grab;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
   position: relative;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+
+  // Sol kenar çizgisi (Default gri)
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: #E5E7EB;
+    transition: background-color 0.2s;
+  }
 
   &:hover {
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
     transform: translateY(-2px);
-    border-color: rgba(139, 92, 246, 0.5);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    
+    &::before {
+        background-color: $color-purple; // Hoverda mor çizgi
+    }
   }
 
   &.dragging {
-    cursor: grabbing;
-    opacity: 0.9;
-    transform: scale(1.02);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
+    transform: rotate(2deg) scale(1.02);
     z-index: 100;
-  }
-}
-
-.cardHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 0.75rem;
-
-  .customerName {
-    font-weight: 600;
-    font-size: 0.95rem;
-    color: #fff;
-  }
-}
-
-.probability {
-  font-size: 0.7rem;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-weight: 600;
-
-  &.high { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-  &.low { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-}
-
-.cardBody {
-  margin-bottom: 0.75rem;
-
-  .portfolioTag {
-    font-size: 0.8rem;
-    color: #94a3b8;
-    background: rgba(255, 255, 255, 0.03);
-    padding: 4px 8px;
-    border-radius: 6px;
-    margin-bottom: 8px;
-    display: inline-block;
+    cursor: grabbing;
+    border: 1px solid $color-purple;
   }
 
-  .emptyTag {
-    font-size: 0.75rem;
-    color: #525252;
-    font-style: italic;
+  .cardHeader {
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .customerName {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        color: $color-text-main;
+        font-size: 0.95rem;
+
+        svg {
+            color: $color-text-sub;
+            width: 16px;
+            height: 16px;
+        }
+    }
   }
 
-  .amount {
-    font-weight: 700;
-    color: #f97316; // Marka Turuncusu
-    font-size: 0.9rem;
-    margin-top: 4px;
+  .cardBody {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .portfolioBadge {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: $color-purple-light;
+        color: darken($color-purple, 10%);
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        
+        svg {
+            width: 14px;
+            height: 14px;
+            opacity: 0.8;
+        }
+    }
+
+    .noPortfolio {
+        font-size: 0.75rem;
+        color: #9CA3AF;
+        font-style: italic;
+        padding: 4px 0;
+    }
+
+    .cardFooter {
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid #F3F4F6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        
+        .date {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: $color-text-sub;
+            font-size: 0.75rem;
+            
+            svg {
+                color: $color-orange; 
+                width: 12px;
+                height: 12px;
+            }
+        }
+    }
   }
-}
-
-.cardFooter {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  padding-top: 0.75rem;
-  margin-top: 0.5rem;
-
-  .date {
-    font-size: 0.7rem;
-    color: #666;
-  }
-
-  .miniAvatar {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-}
-
-.loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 50vh;
-  color: #888;
 }

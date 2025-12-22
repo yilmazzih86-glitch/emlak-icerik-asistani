@@ -1,171 +1,166 @@
-import React, { useEffect, useState } from 'react';
-import styles from './CrmSidebar.module.scss';
+// features/crm/components/CrmSidebar/SidebarGlobal.tsx
+
+import React, { useState } from 'react';
 import { useCrmStore } from '../../hooks/useCrmStore';
 import { crmService } from '../../api/crmService';
-import { Customer } from '../../api/types';
-import { Button } from '@/components/ui/Button/Button';
-import { Avatar } from '@/components/ui/Avatar/Avatar'; 
-import { NewCustomerModal } from '../NewCustomerModal/NewCustomerModal';
+import styles from './CrmSidebar.module.scss'; // Ortak stil dosyası
+import { UserPlus, Trash2, Bot, Users, Search, MessageSquare, Activity, UserCheck } from 'lucide-react';
 
-export const SidebarGlobal = () => {
-  const { activeGlobalTab, setGlobalTab, selectCustomer } = useCrmStore();
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+export default function SidebarGlobal() {
+  const { customers, addCustomerToPipeline, openCustomerDetail, fetchInitialData } = useCrmStore();
+  const [activeTab, setActiveTab] = useState<'pool' | 'ai'>('pool');
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const fetchCustomers = async () => {
-    try {
-      setIsLoading(true);
-      const data = await crmService.getCustomers();
-      setCustomers(data || []);
-    } catch (error) {
-      console.error("Müşteri listesi çekilemedi:", error);
-      setCustomers([]);
-    } finally {
-      setIsLoading(false);
+  // Müşteri Silme
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    if (confirm('Bu müşteriyi ve ilişkili tüm fırsatları silmek istediğinize emin misiniz?')) {
+      await crmService.deleteCustomer(id);
+      fetchInitialData(); // Listeyi yenile
     }
   };
 
-  useEffect(() => {
-    if (activeGlobalTab === 'pool') {
-      fetchCustomers();
+  // Müşteriyi Pipeline'a (Fırsatlara) Aktarma
+  const handleAddToPipeline = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    setIsProcessing(true);
+    try {
+      await addCustomerToPipeline(id);
+      alert("Müşteri başarıyla Fırsatlar (Pipeline) tablosuna eklendi!");
+    } catch (error) {
+      console.error(error);
+      alert("Bir hata oluştu.");
+    } finally {
+      setIsProcessing(false);
     }
-  }, [activeGlobalTab]);
+  };
+
+  // AI Aracı: Takip & Sessizlik Algılama (Örnek Fonksiyon)
+  const handleSilenceDetection = async () => {
+    setIsProcessing(true);
+    try {
+        // Burada backend'e tüm pipeline'ı taraması için istek atılır
+        const res = await fetch('/api/crm/ai-orchestrator', {
+            method: 'POST',
+            body: JSON.stringify({ mode: 'silence_detection' })
+        });
+        const data = await res.json();
+        alert(data.message || "Riskli müşteriler tarandı ve bildirimler oluşturuldu.");
+    } catch (e) {
+        alert("Otomasyon hatası");
+    } finally {
+        setIsProcessing(false);
+    }
+  };
 
   return (
-    <>
-      <div className={styles.header}>
-        <h2>CRM Paneli</h2>
-      </div>
-
-      <div className={styles.tabs}>
+    <div className={styles.sidebarContent}>
+      {/* Üst Sekmeler */}
+      <div className={styles.globalTabs}>
         <button 
-          className={activeGlobalTab === 'pool' ? styles.active : ''} 
-          onClick={() => setGlobalTab('pool')}
+          onClick={() => setActiveTab('pool')} 
+          className={`${styles.tabBtn} ${activeTab === 'pool' ? styles.active : ''}`}
         >
-          Müşteri Havuzu {customers.length > 0 && `(${customers.length})`}
+          <Users size={16} /> Müşteri Havuzu
         </button>
         <button 
-          className={activeGlobalTab === 'ai-tools' ? styles.active : ''} 
-          onClick={() => setGlobalTab('ai-tools')}
+          onClick={() => setActiveTab('ai')} 
+          className={`${styles.tabBtn} ${activeTab === 'ai' ? styles.active : ''}`}
         >
-          Yapay Zeka Araçları
+          <Bot size={16} /> AI Araçları
         </button>
       </div>
 
-      <div className={styles.content}>
-        
-        {/* TAB 1: MÜŞTERİ HAVUZU */}
-        {activeGlobalTab === 'pool' && (
-          <div className={styles.poolList}>
-            {isLoading ? (
-              <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>
-                Yükleniyor...
-              </div>
-            ) : customers.length === 0 ? (
-              <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>
-                <p>Henüz kayıtlı müşteri yok.</p>
-              </div>
-            ) : (
-              customers.map((customer) => (
-                <div 
-                  key={customer.id} 
-                  className={styles.customerItem}
-                  onClick={() => selectCustomer(customer.id)}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    
-                    {/* AVATAR DÜZELTME: name prop'u eklendi */}
-                    <div style={{ width: '40px', height: '40px' }}>
-                      {customer.avatar_url ? (
-                        <Avatar 
-                            src={customer.avatar_url} 
-                            name={customer.full_name} 
-                        />
-                      ) : (
-                        // Resim yoksa baş harf gösteren daire
-                        <div style={{ 
-                           width: '100%', 
-                           height: '100%', 
-                           background: '#e2e8f0', 
-                           borderRadius: '50%', 
-                           display: 'flex', 
-                           alignItems: 'center', 
-                           justifyContent: 'center',
-                           color: '#475569', 
-                           fontWeight: 600,
-                           fontSize: '0.9rem'
-                        }}>
-                           {customer.full_name.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className={styles.info}>
-                      <h4>{customer.full_name}</h4>
-                      <p>{customer.phone}</p>
-                      {customer.budget_max && (
-                        <span style={{ 
-                            fontSize: '0.75rem', color: '#2563eb', 
-                            background: '#eff6ff', padding: '2px 6px', 
-                            borderRadius: '4px', marginTop: '4px', 
-                            display: 'inline-block' 
-                        }}>
-                          Max: {customer.budget_max.toLocaleString('tr-TR')} ₺
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={(e: React.MouseEvent) => {
-                      e.stopPropagation();
-                      selectCustomer(customer.id);
-                    }}
-                  >
-                    Detay
-                  </Button>
-                </div>
-              ))
-            )}
-            
-            <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-              <Button 
-                variant="primary" 
-                style={{ width: '100%' }}
-                onClick={() => setIsModalOpen(true)}
+      {/* İÇERİK: Müşteri Havuzu */}
+      {activeTab === 'pool' && (
+        <div className={styles.listContainer}>
+          {customers.length === 0 ? (
+            <p className={styles.emptyState}>Henüz müşteri yok.</p>
+          ) : (
+            customers.map(customer => (
+              <div 
+                key={customer.id} 
+                className={styles.customerRow} 
+                onClick={() => openCustomerDetail(customer.id)} // Tıklayınca Detay Moduna geçer
               >
-                + Yeni Müşteri Ekle
-              </Button>
-            </div>
-          </div>
-        )}
+                <div className={styles.info}>
+                  <span className={styles.name}>{customer.full_name}</span>
+                  <span className={styles.sub}>{customer.phone}</span>
+                </div>
+                <div className={styles.actions}>
+                  <button 
+                    onClick={(e) => handleAddToPipeline(e, customer.id)} 
+                    title="Fırsata Dönüştür"
+                    disabled={isProcessing}
+                    className={styles.actionBtn}
+                  >
+                    <UserPlus size={16} />
+                  </button>
+                  <button 
+                    onClick={(e) => handleDelete(e, customer.id)} 
+                    title="Sil" 
+                    className={`${styles.actionBtn} ${styles.danger}`}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
 
-        {/* TAB 2: AI ARAÇLARI */}
-        {activeGlobalTab === 'ai-tools' && (
-          <div className={styles.aiToolsList}>
-            <div className={styles.aiToolCard}>
-              <h4>🤖 Müşteri Analiz Raporu</h4>
-              <p>Potansiyel satış fırsatlarını raporlar.</p>
-              <Button variant="outline" size="sm" style={{ width: '100%' }}>Analizi Başlat</Button>
+      {/* İÇERİK: AI Araçları */}
+      {activeTab === 'ai' && (
+        <div className={styles.aiToolsList}>
+          
+          <div className={styles.aiToolCard}>
+            <div className={styles.aiHeader}>
+                <MessageSquare className={styles.aiIcon} />
+                <h5>1️⃣ Mesaj Hazırlama</h5>
             </div>
-            
-            <div className={styles.aiToolCard}>
-              <h4>📧 Toplu E-posta Taslağı</h4>
-              <p>Kişiselleştirilmiş bülten hazırlar.</p>
-              <Button variant="outline" size="sm" style={{ width: '100%' }}>Taslak Oluştur</Button>
-            </div>
+            <p>Müşteri etkileşimlerini analiz eder, WhatsApp taslağı hazırlar.</p>
+            <small>Kullanım: Müşteri detay sayfasından erişilir.</small>
           </div>
-        )}
-      </div>
 
-      <NewCustomerModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        onSuccess={() => fetchCustomers()}
-      />
-    </>
+          <div className={styles.aiToolCard}>
+            <div className={styles.aiHeader}>
+                <Search className={styles.aiIcon} />
+                <h5>2️⃣ Akıllı Eşleştirme</h5>
+            </div>
+            <p>Kriterlere en uygun portföyleri skorlar ve listeler.</p>
+            <small>Kullanım: Müşteri detay sayfasından erişilir.</small>
+          </div>
+
+          <div className={styles.aiToolCard} onClick={handleSilenceDetection} style={{cursor: 'pointer'}}>
+            <div className={styles.aiHeader}>
+                <Activity className={styles.aiIcon} />
+                <h5>3️⃣ Takip & Sessizlik Algılama</h5>
+            </div>
+            <p>Uzun süre temas kurulmamış veya riskli müşterileri tespit eder.</p>
+            <button className={styles.runBtn} disabled={isProcessing}>
+                {isProcessing ? 'Taranıyor...' : 'Taramayı Başlat'}
+            </button>
+          </div>
+
+          <div className={styles.aiToolCard}>
+            <div className={styles.aiHeader}>
+                <UserCheck className={styles.aiIcon} />
+                <h5>4️⃣ Satış Sonrası İlişki</h5>
+            </div>
+            <p>Satış sonrası düzenli temas ve kutlama mesajları önerir.</p>
+          </div>
+
+          <div className={styles.aiToolCard}>
+            <div className={styles.aiHeader}>
+                <Bot className={styles.aiIcon} />
+                <h5>5️⃣ Danışman İçgörü</h5>
+            </div>
+            <p>Müşteri sürecini özetler ve "Sonraki Adım" önerisi sunar.</p>
+          </div>
+
+        </div>
+      )}
+    </div>
   );
-};
+}

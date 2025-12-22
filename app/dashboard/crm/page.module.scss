@@ -1,0 +1,63 @@
+// app/dashboard/crm/page.module.scss
+
+$header-height: 80px;
+$bg-color: #111827; // Koyu arkaplan
+$header-bg: #1F2937;
+$border-color: rgba(255,255,255,0.05);
+
+.crmLayout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background-color: $bg-color;
+  position: relative;
+}
+
+.header {
+  height: $header-height;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: $header-bg;
+  border-bottom: 1px solid $border-color;
+  flex-shrink: 0; // Header sıkışmasın
+
+  h1 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #F3F4F6;
+    margin: 0;
+  }
+
+  .sidebarToggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    background-color: #7C3AED; // Marka Moru
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover {
+      background-color: darken(#7C3AED, 5%);
+    }
+    
+    svg {
+        width: 18px;
+        height: 18px;
+    }
+  }
+}
+
+.boardWrapper {
+  flex: 1; // Kalan tüm alanı kapla
+  overflow: hidden; // Taşan kısımları gizle (Board kendi içinde scroll olacak)
+  position: relative;
+}

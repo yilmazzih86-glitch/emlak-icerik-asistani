@@ -1,72 +1,114 @@
 import { create } from 'zustand';
+import { CrmDeal, Customer, PipelineStage, AiAutomationMode, Portfolio } from '../api/types';
+import { crmService } from '../api/crmService';
 
-// Sidebar'ın iki ana modu var:
 type SidebarViewMode = 'global' | 'detail';
-
-// Sidebar içindeki aktif sekmeler
-type GlobalTab = 'pool' | 'ai-tools';
 type DetailTab = 'overview' | 'tasks' | 'activities' | 'appointments';
 
 interface CrmState {
-  // --- UI Durumu ---
+  // --- Data Cache ---
+  deals: CrmDeal[];
+  customers: Customer[];
+  isLoading: boolean;
+  
+  // --- UI State ---
   isSidebarOpen: boolean;
   viewMode: SidebarViewMode;
-  
-  // --- Global Görünüm Durumu ---
-  activeGlobalTab: GlobalTab;
-  
-  // --- Detay Görünüm Durumu ---
-  selectedCustomerId: string | null;
-  selectedDealId: string | null;
   activeDetailTab: DetailTab;
   
-  // --- Actions (Eylemler) ---
-  openSidebar: () => void;
-  closeSidebar: () => void;
-  toggleSidebar: () => void;
+  // --- Selected Context ---
+  selectedCustomerId: string | null;
+  selectedDealId: string | null; // Eğer pipeline'dan tıklandıysa
+  selectedPortfolioForAi: Portfolio | null; // AI mesajı için seçilen portföy
   
-  setGlobalTab: (tab: GlobalTab) => void;
+  // --- Actions ---
+  fetchInitialData: () => Promise<void>;
+  
+  // Sidebar Controls
+  openGlobalSidebar: () => void;
+  openCustomerDetail: (customerId: string, dealId?: string) => void;
+  closeSidebar: () => void;
   setDetailTab: (tab: DetailTab) => void;
   
-  selectCustomer: (customerId: string, dealId?: string) => void;
-  resetSelection: () => void;
+  // Pipeline Actions
+  moveDealOptimistic: (dealId: string, newStage: PipelineStage) => void;
+  addCustomerToPipeline: (customerId: string) => Promise<void>;
+  
+  // AI Helper
+  setAiPortfolio: (portfolio: Portfolio | null) => void;
 }
 
-export const useCrmStore = create<CrmState>((set) => ({
-  // Başlangıç Değerleri
+export const useCrmStore = create<CrmState>((set, get) => ({
+  deals: [],
+  customers: [],
+  isLoading: false,
+  
   isSidebarOpen: false,
   viewMode: 'global',
-  activeGlobalTab: 'pool',
+  activeDetailTab: 'overview',
+  
   selectedCustomerId: null,
   selectedDealId: null,
-  activeDetailTab: 'overview',
+  selectedPortfolioForAi: null,
 
-  // Fonksiyonlar
-  openSidebar: () => set({ isSidebarOpen: true }),
+  fetchInitialData: async () => {
+    set({ isLoading: true });
+    const [dealsRes, customersRes] = await Promise.all([
+      crmService.getDeals(),
+      crmService.getCustomers()
+    ]);
+    set({ 
+      deals: dealsRes.data || [], 
+      customers: customersRes.data || [], 
+      isLoading: false 
+    });
+  },
+
+  openGlobalSidebar: () => {
+    set({ 
+      isSidebarOpen: true, 
+      viewMode: 'global', 
+      selectedCustomerId: null, 
+      selectedDealId: null 
+    });
+  },
+
+  openCustomerDetail: (customerId, dealId) => {
+    set({
+      isSidebarOpen: true,
+      viewMode: 'detail',
+      selectedCustomerId: customerId,
+      selectedDealId: dealId || null,
+      activeDetailTab: 'overview'
+    });
+  },
+
   closeSidebar: () => set({ isSidebarOpen: false }),
-  toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
+  
+  setDetailTab: (tab) => set({ activeDetailTab: tab }),
 
-  setGlobalTab: (tab) => set({ 
-    viewMode: 'global', 
-    activeGlobalTab: tab 
-  }),
+  setAiPortfolio: (portfolio) => set({ selectedPortfolioForAi: portfolio }),
 
-  setDetailTab: (tab) => set({ 
-    activeDetailTab: tab 
-  }),
+  moveDealOptimistic: (dealId, newStage) => {
+    // 1. UI'ı hemen güncelle
+    set((state) => ({
+      deals: state.deals.map(d => 
+        d.id === dealId ? { ...d, stage: newStage } : d
+      )
+    }));
+    // 2. Arka planda sunucuya gönder
+    crmService.updateDealStage(dealId, newStage).catch(err => {
+      console.error("Move failed revert needed", err);
+      // Hata olursa eski haline döndürme mantığı buraya eklenebilir
+      get().fetchInitialData();
+    });
+  },
 
-  selectCustomer: (customerId, dealId) => set({
-    isSidebarOpen: true, // Otomatik aç
-    viewMode: 'detail',
-    selectedCustomerId: customerId,
-    selectedDealId: dealId || null,
-    activeDetailTab: 'overview' // Her seçimde genel bakışa dön
-  }),
-
-  resetSelection: () => set({
-    viewMode: 'global',
-    selectedCustomerId: null,
-    selectedDealId: null,
-    activeGlobalTab: 'pool' // Havuza geri dön
-  }),
+  addCustomerToPipeline: async (customerId) => {
+    const { data: newDeal, error } = await crmService.createDeal(customerId, 'NEW');
+    if (!error && newDeal) {
+      // Store'a ekle (müşteri bilgisini de joinlemek gerekir normalde ama şimdilik hızlı ekleme)
+      get().fetchInitialData(); // Temiz veri çek
+    }
+  }
 }));

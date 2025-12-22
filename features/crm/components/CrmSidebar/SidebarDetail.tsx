@@ -3,10 +3,10 @@ import styles from './CrmSidebar.module.scss';
 import { useCrmStore } from '../../hooks/useCrmStore';
 import { crmService } from '../../api/crmService';
 import { Customer, Task, Activity, Appointment } from '../../api/types';
-// DÜZELTME: Named import
 import { Button } from '@/components/ui/Button/Button';
 
-export const SidebarDetail = () => {
+// DÜZELTME: 'export default function' olarak değiştirildi
+export default function SidebarDetail() {
   const { 
     selectedCustomerId, 
     activeDetailTab, 
@@ -103,7 +103,6 @@ export const SidebarDetail = () => {
              
              <div className={styles.sectionTitle} style={{marginTop:'1.5rem'}}>Yapay Zeka Asistanı</div>
              <div className={styles.aiGrid}>
-                {/* DÜZELTME: style={{ width: '100%' }} ve variant outline */}
                 <Button variant="outline" style={{ width: '100%', justifyContent:'flex-start' }}>💬 Mesaj Hazırla</Button>
                 <Button variant="outline" style={{ width: '100%', justifyContent:'flex-start' }}>🏠 Portföy Eşleştir</Button>
                 <Button variant="outline" style={{ width: '100%', justifyContent:'flex-start' }}>🔔 Takip Analizi</Button>
