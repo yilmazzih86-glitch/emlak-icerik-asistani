@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion'; // Motion eklendi
+import { X } from 'lucide-react'; // X simgesi eklendi
 import styles from './NewCustomerModal.module.scss';
 import { crmService } from '../../api/crmService';
-// DÜZELTME: Named import
 import { Button } from '@/components/ui/Button/Button';
 
 interface NewCustomerModalProps {
@@ -45,75 +46,20 @@ export const NewCustomerModal = ({ isOpen, onClose, onSuccess }: NewCustomerModa
   };
 
   return (
-    <div className={styles.overlay}>
-      <div className={styles.modal}>
-        <div className={styles.header}>
-          <h3>Yeni Müşteri Ekle</h3>
-          <button onClick={onClose} className={styles.closeBtn}>✕</button>
-        </div>
-        
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.formGroup}>
-            <label>Ad Soyad *</label>
-            <input 
-              type="text" 
-              required 
-              value={formData.full_name}
-              onChange={(e) => setFormData({...formData, full_name: e.target.value})}
-              placeholder="Örn: Ahmet Yılmaz"
-            />
-          </div>
-
-          <div className={styles.row}>
-            <div className={styles.formGroup}>
-              <label>Telefon *</label>
-              <input 
-                type="tel" 
-                required 
-                value={formData.phone}
-                onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                placeholder="05..."
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label>Maks. Bütçe (TL)</label>
-              <input 
-                type="number" 
-                value={formData.budget_max}
-                onChange={(e) => setFormData({...formData, budget_max: e.target.value})}
-                placeholder="Örn: 5000000"
-              />
-            </div>
-          </div>
-
-          <div className={styles.formGroup}>
-            <label>E-posta</label>
-            <input 
-              type="email" 
-              value={formData.email}
-              onChange={(e) => setFormData({...formData, email: e.target.value})}
-              placeholder="ornek@email.com"
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label>Notlar</label>
-            <textarea 
-              rows={3}
-              value={formData.notes}
-              onChange={(e) => setFormData({...formData, notes: e.target.value})}
-              placeholder="Müşteri talepleri..."
-            />
-          </div>
-
-          <div className={styles.footer}>
-            <Button variant="outline" onClick={onClose} type="button">İptal</Button>
-            <Button variant="primary" type="submit" disabled={loading}>
-              {loading ? 'Kaydediliyor...' : 'Kaydet'}
-            </Button>
-          </div>
-        </form>
+  <div className={styles.modalOverlay}>
+    <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className={styles.premiumModal}>
+      <div className={styles.modalHeader}>
+        <h3>Yeni Müşteri Profili</h3>
+        <button onClick={onClose}><X size={20}/></button>
       </div>
-    </div>
-  );
+      <form className={styles.premiumForm}>
+        {/* Inputlar... */}
+        <div className={styles.modalFooter}>
+          <button type="button" onClick={onClose} className={styles.btnCancel}>İptal</button>
+          <button type="submit" className={styles.btnSubmit}>Kaydet</button>
+        </div>
+      </form>
+    </motion.div>
+  </div>
+);
 };

@@ -1,140 +1,84 @@
-import React, { useState, useEffect } from 'react';
-import styles from './NewDealModal.module.scss';
+// features/crm/components/NewDealModal/NewDealModal.tsx
+'use client';
+import React, { useState } from 'react';
+import { useCrmStore } from '../../hooks/useCrmStore';
 import { crmService } from '../../api/crmService';
-import { Customer, Stage } from '../../api/types';
-// DÜZELTME: Named import
-import { Button } from '@/components/ui/Button/Button';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, Search, ChevronDown, User } from 'lucide-react';
+import styles from './NewDealModal.module.scss';
 
-interface NewDealModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess: () => void;
-}
+export function NewDealModal({ isOpen, onClose, onSuccess }: any) {
+  const { customers } = useCrmStore(); // Müşteri havuzundan verileri alıyoruz
+  const [search, setSearch] = useState('');
+  const [selectedId, setSelectedId] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [amount, setAmount] = useState('');
 
-export const NewDealModal = ({ isOpen, onClose, onSuccess }: NewDealModalProps) => {
-  // DÜZELTME: Seçilen müşterinin tam Customer olması gerekmiyor, Partial yeterli
-  const [selectedCustomer, setSelectedCustomer] = useState<Partial<Customer> | null>(null);
-  const [expectedAmount, setExpectedAmount] = useState('');
-  const [stage, setStage] = useState<Stage>('new');
-  
-  const [searchTerm, setSearchTerm] = useState('');
-  // DÜZELTME: State tipi Partial<Customer>[] yapıldı (Type hatası çözümü)
-  const [searchResults, setSearchResults] = useState<Partial<Customer>[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const filtered = customers.filter(c => c.full_name.toLowerCase().includes(search.toLowerCase()));
 
-  useEffect(() => {
-    const delayDebounce = setTimeout(async () => {
-      if (searchTerm.length > 1) {
-        setIsSearching(true);
-        const results = await crmService.searchCustomers(searchTerm);
-        setSearchResults(results);
-        setIsSearching(false);
-      } else {
-        setSearchResults([]);
-      }
-    }, 300);
-    return () => clearTimeout(delayDebounce);
-  }, [searchTerm]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedCustomer?.id) {
-      alert("Lütfen bir müşteri seçin.");
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      await crmService.createDealFull({
-        customer_id: selectedCustomer.id,
-        stage: stage,
-        expected_amount: expectedAmount ? Number(expectedAmount) : 0,
-        user_id: '2ffee494-c974-4c87-8724-0e1bf543890e'
-      });
-      onSuccess();
-      onClose();
-    } catch (error) {
-      console.error(error);
-      alert('Fırsat oluşturulamadı.');
-    } finally {
-      setSubmitting(false);
-    }
+    if (!selectedId) return;
+    
+    await crmService.createDealFull({
+      customer_id: selectedId,
+      stage: 'NEW',
+      expected_amount: Number(amount)
+    });
+    onSuccess();
+    onClose();
   };
 
   if (!isOpen) return null;
 
   return (
     <div className={styles.overlay}>
-      <div className={styles.modal}>
-        <div className={styles.header}>
-          <h3>Yeni Fırsat Ekle</h3>
-          <button onClick={onClose} className={styles.closeBtn}>✕</button>
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className={styles.premiumModal}>
+        <div className={styles.modalHeader}>
+          <h3><User size={20}/> Yeni Fırsat Kaydı</h3>
+          <button onClick={onClose}><X size={20}/></button>
         </div>
-        
-        <form onSubmit={handleSubmit} className={styles.form}>
+
+        <form onSubmit={handleCreate}>
           <div className={styles.formGroup}>
-            <label>Müşteri Seç *</label>
-            {selectedCustomer ? (
-              <div className={styles.selectedCustomer}>
-                <span>✅ {selectedCustomer.full_name}</span>
-                <button type="button" onClick={() => setSelectedCustomer(null)}>Değiştir</button>
+            <label>Müşteri Seçin</label>
+            <div className={styles.customSelect}>
+              <div className={styles.selectTrigger} onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
+                {selectedId ? customers.find(c => c.id === selectedId)?.full_name : "Müşteri Ara..."}
+                <ChevronDown size={16} />
               </div>
-            ) : (
-              <div style={{position: 'relative'}}>
-                <input 
-                  type="text" 
-                  placeholder="Müşteri adı ara..." 
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className={styles.searchInput}
-                />
-                {searchResults.length > 0 && (
-                  <ul className={styles.searchResults}>
-                    {searchResults.map(cust => (
-                      <li key={cust.id} onClick={() => {
-                        setSelectedCustomer(cust);
-                        setSearchTerm('');
-                        setSearchResults([]);
-                      }}>
-                        {cust.full_name} <small>({cust.phone})</small>
-                      </li>
-                    ))}
-                  </ul>
+              
+              <AnimatePresence>
+                {isDropdownOpen && (
+                  <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className={styles.dropdownMenu}>
+                    <div className={styles.searchInner}>
+                      <Search size={14} />
+                      <input placeholder="Hızlı ara..." value={search} onChange={(e) => setSearch(e.target.value)} autoFocus />
+                    </div>
+                    <div className={styles.optionsScroll}>
+                      {filtered.map(c => (
+                        <div key={c.id} className={styles.option} onClick={() => { setSelectedId(c.id); setIsDropdownOpen(false); }}>
+                          <span>{c.full_name}</span>
+                          <small>{c.phone}</small>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
                 )}
-              </div>
-            )}
-          </div>
-
-          <div className={styles.row}>
-            <div className={styles.formGroup}>
-               <label>Aşama</label>
-               <select value={stage} onChange={(e) => setStage(e.target.value as Stage)}>
-                 <option value="new">Yeni Müşteri</option>
-                 <option value="contacted">Görüşüldü</option>
-                 <option value="presentation">Sunum Yapıldı</option>
-                 <option value="negotiation">Teklif / Pazarlık</option>
-               </select>
-            </div>
-            <div className={styles.formGroup}>
-               <label>Beklenen Tutar (TL)</label>
-               <input 
-                 type="number" 
-                 value={expectedAmount}
-                 onChange={(e) => setExpectedAmount(e.target.value)}
-                 placeholder="0"
-               />
+              </AnimatePresence>
             </div>
           </div>
 
-          <div className={styles.footer}>
-            <Button variant="outline" onClick={onClose} type="button">İptal</Button>
-            <Button variant="primary" type="submit" disabled={submitting || !selectedCustomer}>
-              {submitting ? 'Oluşturuluyor...' : 'Fırsat Oluştur'}
-            </Button>
+          <div className={styles.formGroup}>
+            <label>Tahmini İşlem Tutarı (₺)</label>
+            <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" />
           </div>
+
+          <button type="submit" className={styles.btnSubmit} disabled={!selectedId}>
+            Fırsatı Başlat
+          </button>
         </form>
-      </div>
+      </motion.div>
     </div>
   );
-};
+}

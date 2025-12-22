@@ -1,259 +1,106 @@
-// --- Marka Renkleri & Değişkenler ---
-$color-purple: #7C3AED;       // Ana Marka Rengi (Vurgu)
-$color-purple-light: #DDD6FE; // Açık Mor
-$color-orange: #F97316;       // İkincil Renk (Aksiyon)
-$color-dark-bg: #1F2937;      // Koyu Gri (Arkaplan için)
-$color-darker-bg: #111827;    // Daha Koyu Gri (Sayfa zemini)
-$color-text-main: #1F2937;    // Ana Metin
-$color-text-sub: #6B7280;     // Alt Metin
-$color-column-bg: #F3F4F6;    // Sütun Zemini (Açık Gri)
-$color-white: #FFFFFF;
+@import '@/styles/variables';
 
-.boardContainer {
-  display: flex;
-  gap: 1.25rem;
-  overflow-x: auto;
-  padding: 1.5rem;
-  height: calc(100vh - 80px); 
-  
-  // --- GÜNCELLEME: Arkaplan Koyu Gri ---
-  background-color: $color-darker-bg; 
-  align-items: flex-start;
-
-  // Loading metni rengi (koyu zemin üzerinde açık renk)
-  .loadingBoard {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
-    color: rgba($color-white, 0.6);
-    font-weight: 500;
-  }
-
-  // Scrollbar özelleştirme (Koyu tema uyumlu)
-  &::-webkit-scrollbar {
-    height: 10px; // Yatay scroll biraz daha belirgin olsun
-  }
-  &::-webkit-scrollbar-track {
-    background: rgba($color-white, 0.05);
-    border-radius: 4px;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: rgba($color-white, 0.2);
-    border-radius: 4px;
-    &:hover {
-        background: rgba($color-white, 0.3);
-    }
-  }
+.boardWrapper {
+  padding: 2.5rem;
+  background: radial-gradient(circle at top right, rgba(139, 92, 246, 0.05), transparent);
+  min-height: 100vh;
 }
 
-.column {
-  min-width: 300px;
-  width: 300px;
-  // Sütunlar koyu zeminde öne çıkması için açık renk
-  background: $color-column-bg; 
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  max-height: 100%;
-  border: 1px solid rgba($color-white, 0.05); // Hafif sınır
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3); // Derinlik gölgesi
-}
-
-.columnHeader {
-  padding: 1.25rem 1rem;
-  background: $color-column-bg; // Header sütunla bütünleşsin
-  border-bottom: 3px solid transparent; 
-  border-radius: 12px 12px 0 0;
+.premiumHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  margin-bottom: 3rem;
   
-  h3 {
-    margin: 0;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: $color-text-main;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .count {
-    background: rgba($color-text-main, 0.1);
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: $color-text-main;
-  }
-
-  // --- Aşamaya Göre Renkler ---
-  
-  &.new { 
-    border-bottom-color: #9CA3AF; // Gri
-  } 
-
-  &.contact { 
-    border-bottom-color: lighten($color-orange, 10%); 
-    h3 { color: darken($color-orange, 5%); }
-  } 
-
-  &.presentation { 
-    border-bottom-color: lighten($color-purple, 10%);
-    h3 { color: darken($color-purple, 5%); }
-  } 
-
-  &.offer { 
-    border-bottom-color: $color-orange;
-    h3 { color: $color-orange; }
-  } 
-
-  &.sold { 
-    border-bottom-color: $color-purple;
-    h3 { color: $color-purple; }
-    .count { background-color: $color-purple-light; color: $color-purple; }
-  } 
-}
-
-.droppableArea {
-  padding: 1rem;
-  flex-grow: 1;
-  overflow-y: auto;
-  min-height: 150px;
-  transition: background-color 0.2s;
-
-  &.draggingOver {
-    background-color: rgba($color-purple, 0.05); 
-  }
-
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 4px;
+  h1 { 
+    font-size: 2.5rem; 
+    font-weight: 900; 
+    background: linear-gradient(135deg, #ffffff 0%, #a78bfa 100%);
+    -webkit-background-clip: text;
+    background-clip: text; // HATA ÇÖZÜMÜ: Standart property eklendi
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.03em;
   }
 }
 
 .dealCard {
-  background: $color-white;
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  cursor: grab;
-  border: 1px solid transparent;
-  transition: all 0.2s ease;
-  position: relative;
-  overflow: hidden;
-
-  // Sol kenar çizgisi (Default gri)
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background-color: #E5E7EB;
-    transition: background-color 0.2s;
-  }
-
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
   &:hover {
-    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-    transform: translateY(-2px);
-    
-    &::before {
-        background-color: $color-purple; // Hoverda mor çizgi
-    }
+    transform: translateY(-8px) scale(1.02);
+    border-color: rgba(139, 92, 246, 0.5);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(139, 92, 246, 0.2);
+    background: rgba(255, 255, 255, 0.06);
   }
 
-  &.dragging {
-    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
-    transform: rotate(2deg) scale(1.02);
-    z-index: 100;
-    cursor: grabbing;
-    border: 1px solid $color-purple;
+  .avatar {
+    background: linear-gradient(135deg, #8b5cf6, #f59e0b); // Mor-Turuncu geçiş
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
   }
+}
 
-  .cardHeader {
-    margin-bottom: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.boardContainer {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  padding-bottom: 1rem;
+}
 
-    .customerName {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: 600;
-        color: $color-text-main;
-        font-size: 0.95rem;
+.column {
+  min-width: 320px;
+  background: rgba(255, 255, 255, 0.03); // Glassmorphism
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+}
 
-        svg {
-            color: $color-text-sub;
-            width: 16px;
-            height: 16px;
-        }
-    }
+.columnHeader {
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  h3 { color: #fff; font-size: 1rem; font-weight: 700; }
+  
+  &.new { border-top: 4px solid #8b5cf6; } // Mor
+  &.offer { border-top: 4px solid #f59e0b; } // Turuncu
+}
+
+.dealCard {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1.2rem;
+  margin-bottom: 1rem;
+  cursor: grab;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(139, 92, 246, 0.2); // Mor glow
+    border-color: #8b5cf6;
   }
-
-  .cardBody {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-
-    .portfolioBadge {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        background: $color-purple-light;
-        color: darken($color-purple, 10%);
-        padding: 6px 10px;
-        border-radius: 6px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        
-        svg {
-            width: 14px;
-            height: 14px;
-            opacity: 0.8;
-        }
-    }
-
-    .noPortfolio {
-        font-size: 0.75rem;
-        color: #9CA3AF;
-        font-style: italic;
-        padding: 4px 0;
-    }
-
-    .cardFooter {
-        margin-top: 8px;
-        padding-top: 8px;
-        border-top: 1px solid #F3F4F6;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        
-        .date {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            color: $color-text-sub;
-            font-size: 0.75rem;
-            
-            svg {
-                color: $color-orange; 
-                width: 12px;
-                height: 12px;
-            }
-        }
-    }
+  
+  .avatar {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, #8b5cf6, #d946ef);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; color: #fff;
   }
+}
+
+.btnPrimary {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 12px;
+  font-weight: 600; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
 }

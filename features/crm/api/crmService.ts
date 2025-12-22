@@ -1,84 +1,67 @@
 import { createClient } from '@/lib/supabase/client';
-import { CrmDeal, Customer, PipelineStage, CrmTask, CrmActivity, CrmAppointment } from './types';
+import { Customer, CrmDeal, PipelineStage, CrmActivity, CrmTask, CrmAppointment } from './types';
 
 const supabase = createClient();
 
 export const crmService = {
-  // --- Müşteri Havuzu ---
+  // --- Müşteri Havuzu (Customers) ---
   async getCustomers() {
-    // Pipeline'da OLMAYAN müşterileri getirmek isterseniz not.in filtresi eklenebilir
-    // Şimdilik tüm müşterileri çekiyoruz
     return await supabase
       .from('customers')
       .select('*')
       .order('created_at', { ascending: false });
   },
 
+  async searchCustomers(query: string) {
+    const { data, error } = await supabase
+      .from('customers')
+      .select('id, full_name, phone')
+      .ilike('full_name', `%${query}%`)
+      .limit(5);
+    if (error) throw error;
+    return data;
+  },
+
   async createCustomer(data: Partial<Customer>) {
     return await supabase.from('customers').insert(data).select().single();
   },
 
-  async deleteCustomer(id: string) {
-    // Cascade ayarlıysa ilişkili deal/task vb. silinir
-    return await supabase.from('customers').delete().eq('id', id);
-  },
-
-  // --- Pipeline / Deals ---
+  // --- Satış Pipeline (Deals) ---
   async getDeals() {
     return await supabase
       .from('crm_deals')
       .select(`
         *,
-        customers (*),
+        customers (id, full_name, phone),
         portfolios (id, title, price, district)
       `)
       .order('created_at', { ascending: false });
   },
 
-  async createDeal(customerId: string, stage: PipelineStage = 'NEW', portfolioId?: string) {
-    // Müşteri bilgilerini çekip varsayılan başlık oluşturuyoruz
-    const { data: customer } = await supabase.from('customers').select('full_name').eq('id', customerId).single();
-    
-    return await supabase.from('crm_deals').insert({
-      customer_id: customerId,
-      stage,
-      portfolio_id: portfolioId || null,
-      title: `${customer?.full_name || 'Müşteri'} - Fırsat`
-    }).select().single();
+  async createDealFull(data: any) {
+    const { data: newDeal, error } = await supabase
+      .from('crm_deals')
+      .insert({
+        customer_id: data.customer_id,
+        stage: data.stage.toUpperCase(), 
+        expected_amount: data.expected_amount,
+        portfolio_id: data.portfolio_id || null,
+        user_id: data.user_id
+      })
+      .select()
+      .single();
+    if (error) throw error;
+    return newDeal;
   },
 
   async updateDealStage(dealId: string, newStage: PipelineStage) {
     return await supabase
       .from('crm_deals')
-      .update({ stage: newStage })
+      .update({ stage: newStage.toUpperCase() })
       .eq('id', dealId);
   },
 
-  async deleteDeal(dealId: string) {
-    return await supabase.from('crm_deals').delete().eq('id', dealId);
-  },
-
-  // --- Alt Tablolar (Task, Activity, Appointment) ---
-  
-  async getCustomerDetails(customerId: string) {
-    // Paralel istek atarak performans kazanalım
-    const [tasks, activities, appointments] = await Promise.all([
-      supabase.from('crm_tasks').select('*').eq('customer_id', customerId).order('due_date'),
-      supabase.from('crm_activities').select('*').eq('customer_id', customerId).order('created_at', { ascending: false }),
-      supabase.from('crm_appointments').select('*').eq('customer_id', customerId).order('appointment_date')
-    ]);
-
-    return {
-      tasks: tasks.data || [],
-      activities: activities.data || [],
-      appointments: appointments.data || []
-    };
-  },
-  
-  // Örnek bir ekleme fonksiyonu
-  async addTask(task: Partial<CrmTask>) {
-    return await supabase.from('crm_tasks').insert(task).select().single();
-  },
+  // --- Müşteri Detay & Geçmiş Verileri ---
   async getCustomerFullProfile(customerId: string) {
     const [customer, tasks, activities, appointments, deals] = await Promise.all([
       supabase.from('customers').select('*').eq('id', customerId).single(),
@@ -97,13 +80,12 @@ export const crmService = {
     };
   },
 
-  // AI Aktivitesini loglamak için
-  async logAiActivity(customerId: string, toolMode: string, summary: string) {
-    return await supabase.from('crm_activities').insert({
-      customer_id: customerId,
-      type: 'ai_log',
-      description: `AI (${toolMode}) kullanıldı: ${summary}`,
-      created_at: new Date().toISOString()
-    });
+  // --- Alt Tablo İşlemleri (Ekleme) ---
+  async addActivity(activity: Partial<CrmActivity>) {
+    return await supabase.from('crm_activities').insert(activity).select().single();
+  },
+  
+  async addTask(task: Partial<CrmTask>) {
+    return await supabase.from('crm_tasks').insert(task).select().single();
   }
 };

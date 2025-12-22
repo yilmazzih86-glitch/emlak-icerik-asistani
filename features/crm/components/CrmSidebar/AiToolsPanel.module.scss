@@ -45,8 +45,8 @@
     }
 
     &.active {
-      background: #fdf2f8; // Hafif pembe/mor background
-      border-color: currentColor; // Butonun inline rengini alır
+      background: #fdf2f8; 
+      border-color: currentColor; 
       border-width: 2px;
       
       span {
@@ -127,7 +127,7 @@
 /* Mod 1: Mesaj Taslağı */
 .messageDraft {
   padding: 1rem;
-  background: #f0fdf4; // Hafif yeşil (WhatsApp vibe)
+  background: #f0fdf4; 
 
   .bubble {
     background: #fff;
@@ -214,5 +214,49 @@
   font-size: 0.95rem;
   color: #374151;
   line-height: 1.6;
-  white-space: pre-wrap; // Satır boşluklarını koru
+  white-space: pre-wrap; 
+}
+// features/crm/components/CrmSidebar/AiToolsPanel.module.scss
+.resultBox {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  margin-top: 2rem;
+  overflow: hidden;
+
+  .messageDraft {
+    padding: 1.5rem;
+    background: radial-gradient(circle at top right, rgba(37, 211, 102, 0.05), transparent);
+
+    .bubble {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 1.25rem;
+      border-radius: 0 18px 18px 18px;
+      color: #d1d1d6;
+      line-height: 1.6;
+      font-size: 0.95rem;
+      box-shadow: 10px 10px 30px rgba(0,0,0,0.2);
+    }
+  }
+
+  .matchItem {
+    padding: 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    gap: 1rem;
+    transition: background 0.2s;
+
+    &:hover { background: rgba(139, 92, 246, 0.03); }
+
+    .score {
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      height: fit-content;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 0.85rem;
+    }
+  }
 }

@@ -1,136 +1,112 @@
-// DÜZELTME: Relative path ile import (Turbopack uyumlu)
-@import '../../../../styles/variables';
-@import '../../../../styles/mixins';
+// features/crm/components/NewCustomerModal/NewCustomerModal.module.scss
+@import '@/styles/variables';
 
-.overlay {
+.modalOverlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.7); // Arkası daha koyu
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(12px); // Glassmorphism arka plan
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 50;
-  backdrop-filter: blur(4px);
-  animation: fadeIn 0.2s ease-out;
+  z-index: 2000;
+  padding: 1rem;
 }
 
-.modal {
-  // DÜZELTME: Koyu tema yüzey rengi
-  background-color: $color-bg-surface; 
+.premiumModal {
   width: 100%;
-  max-width: 500px;
-  // DÜZELTME: $border-radius-md -> $radius-md
-  border-radius: $radius-md; 
-  // DÜZELTME: $border-color -> $color-border
-  border: 1px solid $color-border; 
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-  overflow: hidden;
-  animation: slideUp 0.3s ease-out;
-  display: flex;
-  flex-direction: column;
-}
+  max-width: 580px;
+  background: rgba(18, 18, 24, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px;
+  padding: 2.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 
+              0 0 40px rgba(139, 92, 246, 0.05); // Hafif mor ışıltı
 
-.header {
-  padding: 1.25rem;
-  border-bottom: 1px solid $color-border; // Düzeltildi
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: rgba(255, 255, 255, 0.02); // Hafif aydınlık
+  .modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
 
-  h3 {
-    margin: 0;
-    font-size: 1.1rem;
-    // DÜZELTME: $text-primary -> $text-main
-    color: $text-main; 
-  }
+    h3 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #fff 0%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
 
-  .closeBtn {
-    background: none;
-    border: none;
-    font-size: 1.25rem;
-    cursor: pointer;
-    // DÜZELTME: $text-secondary (Variables dosyasında mevcut)
-    color: $text-secondary;
-    padding: 0.5rem;
-    // DÜZELTME: $radius-sm
-    border-radius: $radius-sm; 
-    transition: all 0.2s;
-    
-    &:hover {
-      background-color: rgba(255, 255, 255, 0.1);
-      color: $text-main;
+    button {
+      color: rgba(255, 255, 255, 0.3);
+      transition: color 0.3s ease;
+      &:hover { color: #fff; }
     }
   }
 }
 
-.form {
-  padding: 1.5rem;
-}
+.premiumForm {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
 
-.formGroup {
-  margin-bottom: 1rem;
+  .fullWidth { grid-column: span 2; }
 
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: $text-secondary;
-  }
-
-  input, textarea {
-    width: 100%;
-    padding: 0.75rem;
-    // DÜZELTME: $border-color -> $color-border
-    border: 1px solid $color-border; 
-    // DÜZELTME: Input içi koyu renk
-    background-color: rgba(0, 0, 0, 0.2); 
-    border-radius: $radius-md;
-    font-size: 0.95rem;
-    color: $text-main; // Yazı rengi beyaz
-    transition: all 0.2s;
-
-    &:focus {
-      outline: none;
-      // DÜZELTME: $primary-color -> $color-primary
-      border-color: $color-primary; 
-      box-shadow: 0 0 0 1px rgba($color-primary, 0.5);
-    }
-
-    &::placeholder {
-      color: $text-muted;
-    }
-  }
-}
-
-.row {
-  display: flex;
-  gap: 1rem;
-  
   .formGroup {
-    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+
+    label {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-left: 0.25rem;
+    }
+
+    input, select, textarea {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 0.85rem 1.1rem;
+      color: #fff;
+      font-size: 0.95rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+      &:focus {
+        outline: none;
+        background: rgba(255, 255, 255, 0.06);
+        border-color: #8b5cf6;
+        box-shadow: 0 0 15px rgba(139, 92, 246, 0.15);
+      }
+    }
   }
-}
 
-.footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid $color-border;
-}
+  .modalFooter {
+    grid-column: span 2;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1rem;
 
-@keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
+    .btnSubmit {
+      background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
+      color: #fff;
+      border: none;
+      padding: 0.9rem 2rem;
+      border-radius: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+      transition: transform 0.2s, box-shadow 0.2s;
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px rgba(139, 92, 246, 0.5);
+      }
+    }
+  }
 }
