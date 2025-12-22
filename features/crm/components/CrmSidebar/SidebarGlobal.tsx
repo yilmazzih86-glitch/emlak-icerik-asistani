@@ -1,72 +1,107 @@
-'use client';
+// features/crm/components/CrmSidebar/SidebarGlobal.tsx
 
-import React, { useState } from 'react';
-import { useCrmStore } from '../../hooks/useCrmStore';
-import { Search, User, ChevronRight, UserPlus } from 'lucide-react';
-import styles from './CrmSidebar.module.scss';
+import React, { useState, useEffect } from 'react';
+import { useCrmStore } from '@/features/crm/hooks/useCrmStore';
+import { Customer } from '@/features/crm/api/types';
+import { Search, Plus, User, Phone, ChevronRight, Users } from 'lucide-react';
+import NewCustomerModal from '../NewCustomerModal/NewCustomerModal';
+import styles from './CrmSidebar.module.scss'; // Ortak stiller
 
 export default function SidebarGlobal() {
-  const { customers, openCustomerDetail } = useCrmStore();
+  const { 
+    customers, 
+    openCustomerDetail, 
+    closeSidebar, 
+    searchCustomersLocal, 
+    loadCustomers,
+    pagination,
+    isLoading 
+  } = useCrmStore();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Arama Filtresi (İsim veya Telefon)
-  const filteredCustomers = customers.filter(c => 
-    c.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.phone.includes(searchTerm)
-  );
+  // Arama işlemi (Debounce mantığı eklenebilir)
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setSearchTerm(val);
+    searchCustomersLocal(val);
+  };
 
   return (
-    <div className={styles.globalContainer}>
-      {/* Üst Başlık ve Arama */}
-      <div className={styles.sidebarHeader}>
+    <aside className={styles.sidebarGlobal}>
+      
+      {/* HEADER */}
+      <header className={styles.header}>
         <div className={styles.titleRow}>
-          <h2>Müşteri Havuzu</h2>
-          <span className={styles.badge}>{customers.length} Kayıt</span>
+          <h3><Users size={18}/> Müşteri Havuzu</h3>
+          <button onClick={closeSidebar} className={styles.closeMobile}>Kapat</button>
         </div>
         
-        <div className={styles.searchBox}>
-          <Search size={18} className={styles.searchIcon}/>
-          <input 
-            type="text" 
-            placeholder="İsim veya telefon ile ara..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        <div className={styles.actions}>
+          <div className={styles.searchBox}>
+            <Search size={14} />
+            <input 
+              placeholder="İsim veya telefon ara..." 
+              value={searchTerm}
+              onChange={handleSearch}
+            />
+          </div>
+          <button className={styles.addBtn} onClick={() => setIsModalOpen(true)}>
+            <Plus size={16} />
+          </button>
         </div>
-      </div>
+      </header>
 
-      {/* Müşteri Listesi */}
+      {/* LISTE */}
       <div className={styles.listContainer}>
-        {filteredCustomers.length > 0 ? (
-          filteredCustomers.map(customer => (
-            <div 
-              key={customer.id} 
-              className={styles.customerCard}
-              onClick={() => openCustomerDetail(customer.id)}
-            >
-              <div className={styles.avatar}>
-                {customer.full_name.charAt(0).toUpperCase()}
-              </div>
-              <div className={styles.mainInfo}>
-                <span className={styles.name}>{customer.full_name}</span>
-                <span className={styles.phone}>{customer.phone}</span>
-              </div>
-              <ChevronRight size={16} className={styles.arrow} />
-            </div>
-          ))
-        ) : (
+        {customers.length === 0 && !isLoading ? (
           <div className={styles.emptyState}>
             <p>Müşteri bulunamadı.</p>
           </div>
+        ) : (
+          customers.map((c) => (
+            <div 
+              key={c.id} 
+              className={styles.customerRow}
+              onClick={() => openCustomerDetail(c.id)}
+            >
+              <div className={styles.avatar}>
+                {c.avatar_url ? (
+                  <img src={c.avatar_url} alt={c.full_name} />
+                ) : (
+                  <span>{c.full_name.charAt(0).toUpperCase()}</span>
+                )}
+              </div>
+              <div className={styles.info}>
+                <h4>{c.full_name}</h4>
+                <div className={styles.meta}>
+                  <span><Phone size={10}/> {c.phone}</span>
+                  {c.status && <span className={styles.tag}>{c.status}</span>}
+                </div>
+              </div>
+              <ChevronRight size={14} className={styles.arrow} />
+            </div>
+          ))
+        )}
+        
+        {/* Yükle Butonu (Pagination) */}
+        {customers.length < pagination.total && !searchTerm && (
+          <button 
+            className={styles.loadMoreBtn}
+            onClick={() => loadCustomers(pagination.page + 1)}
+            disabled={isLoading}
+          >
+            {isLoading ? 'Yükleniyor...' : 'Daha Fazla Yükle'}
+          </button>
         )}
       </div>
 
-      {/* Alt Sabit Buton */}
-      <div className={styles.sidebarFooter}>
-        <button className={styles.addBtn}>
-          <UserPlus size={18} /> Yeni Müşteri Ekle
-        </button>
-      </div>
-    </div>
+      {/* MODAL */}
+      <NewCustomerModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+      />
+    </aside>
   );
 }

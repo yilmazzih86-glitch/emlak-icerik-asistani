@@ -1,65 +1,173 @@
+// features/crm/components/NewCustomerModal/NewCustomerModal.tsx
+
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion'; // Motion eklendi
-import { X } from 'lucide-react'; // X simgesi eklendi
+import { useCrmStore } from '@/features/crm/hooks/useCrmStore';
+import { crmService } from '@/features/crm/api/crmService';
+import { X, Save, User, Phone, Mail, Banknote, FileText, Loader2 } from 'lucide-react';
 import styles from './NewCustomerModal.module.scss';
-import { crmService } from '../../api/crmService';
-import { Button } from '@/components/ui/Button/Button';
 
 interface NewCustomerModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
 }
 
-export const NewCustomerModal = ({ isOpen, onClose, onSuccess }: NewCustomerModalProps) => {
+export default function NewCustomerModal({ isOpen, onClose }: NewCustomerModalProps) {
+  const { loadCustomers } = useCrmStore();
+  const [loading, setLoading] = useState(false);
+  
+  // Form State
   const [formData, setFormData] = useState({
     full_name: '',
     phone: '',
     email: '',
-    notes: '',
-    budget_max: ''
+    budget_min: '',
+    budget_max: '',
+    notes: ''
   });
-  const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
     try {
+      // 1. Müşteriyi Oluştur
       await crmService.createCustomer({
         full_name: formData.full_name,
         phone: formData.phone,
-        email: formData.email,
-        notes: formData.notes,
+        email: formData.email || undefined,
+        budget_min: formData.budget_min ? Number(formData.budget_min) : undefined,
         budget_max: formData.budget_max ? Number(formData.budget_max) : undefined,
-        status: 'active'
+        notes: formData.notes,
+        user_id: 'current_user_id', // Auth entegrasyonunda burası dinamik olacak
+        source: 'manual_entry'
       });
-      onSuccess(); 
-      onClose();   
-      setFormData({ full_name: '', phone: '', email: '', notes: '', budget_max: '' });
+
+      // 2. Listeyi Yenile ve Kapat
+      await loadCustomers(1); // İlk sayfaya dön
+      onClose();
+      // Formu temizle
+      setFormData({ full_name: '', phone: '', email: '', budget_min: '', budget_max: '', notes: '' });
+      
     } catch (error) {
-      alert('Müşteri oluşturulurken hata oluştu.');
+      console.error(error);
+      alert('Müşteri oluşturulurken bir hata oluştu.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-  <div className={styles.modalOverlay}>
-    <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className={styles.premiumModal}>
-      <div className={styles.modalHeader}>
-        <h3>Yeni Müşteri Profili</h3>
-        <button onClick={onClose}><X size={20}/></button>
+    <div className={styles.overlay}>
+      <div className={styles.modal}>
+        <header className={styles.header}>
+          <h2><User size={20} /> Yeni Müşteri Ekle</h2>
+          <button onClick={onClose} className={styles.closeBtn}><X size={20} /></button>
+        </header>
+
+        <form onSubmit={handleSubmit} className={styles.form}>
+          
+          <div className={styles.formGroup}>
+            <label>Ad Soyad *</label>
+            <div className={styles.inputWrapper}>
+              <User size={16} />
+              <input 
+                name="full_name" 
+                required 
+                placeholder="Örn: Ahmet Yılmaz" 
+                value={formData.full_name}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+
+          <div className={styles.row}>
+            <div className={styles.formGroup}>
+              <label>Telefon *</label>
+              <div className={styles.inputWrapper}>
+                <Phone size={16} />
+                <input 
+                  name="phone" 
+                  required 
+                  placeholder="0555..." 
+                  value={formData.phone}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+            <div className={styles.formGroup}>
+              <label>E-posta</label>
+              <div className={styles.inputWrapper}>
+                <Mail size={16} />
+                <input 
+                  name="email" 
+                  type="email" 
+                  placeholder="ornek@mail.com" 
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.row}>
+            <div className={styles.formGroup}>
+              <label>Min Bütçe</label>
+              <div className={styles.inputWrapper}>
+                <Banknote size={16} />
+                <input 
+                  name="budget_min" 
+                  type="number" 
+                  placeholder="1.000.000" 
+                  value={formData.budget_min}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+            <div className={styles.formGroup}>
+              <label>Max Bütçe</label>
+              <div className={styles.inputWrapper}>
+                <Banknote size={16} />
+                <input 
+                  name="budget_max" 
+                  type="number" 
+                  placeholder="5.000.000" 
+                  value={formData.budget_max}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label>Notlar</label>
+            <div className={styles.inputWrapper}>
+              <FileText size={16} className={styles.textAreaIcon} />
+              <textarea 
+                name="notes" 
+                rows={3} 
+                placeholder="Müşteri hakkında ilk notlar..." 
+                value={formData.notes}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+
+          <footer className={styles.footer}>
+            <button type="button" onClick={onClose} className={styles.cancelBtn}>İptal</button>
+            <button type="submit" className={styles.submitBtn} disabled={loading}>
+              {loading ? <Loader2 className={styles.spin} size={18}/> : <Save size={18} />}
+              Kaydet
+            </button>
+          </footer>
+        </form>
       </div>
-      <form className={styles.premiumForm}>
-        {/* Inputlar... */}
-        <div className={styles.modalFooter}>
-          <button type="button" onClick={onClose} className={styles.btnCancel}>İptal</button>
-          <button type="submit" className={styles.btnSubmit}>Kaydet</button>
-        </div>
-      </form>
-    </motion.div>
-  </div>
-);
-};
+    </div>
+  );
+}

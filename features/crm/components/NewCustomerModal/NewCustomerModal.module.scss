@@ -1,112 +1,220 @@
 // features/crm/components/NewCustomerModal/NewCustomerModal.module.scss
-@import '@/styles/variables';
 
-.modalOverlay {
+@import '@/styles/_variables.scss';
+
+// 1. ARKA PLAN OVERLAY (Karartma)
+.overlay {
   position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(12px); // Glassmorphism arka plan
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75); // Koyu karartma
+  backdrop-filter: blur(4px); // Arkası bulanıklaşsın
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
-  padding: 1rem;
+  animation: fadeIn 0.2s ease-out;
 }
 
-.premiumModal {
-  width: 100%;
-  max-width: 580px;
-  background: rgba(18, 18, 24, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 28px;
-  padding: 2.5rem;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 
-              0 0 40px rgba(139, 92, 246, 0.05); // Hafif mor ışıltı
+// 2. MODAL KUTUSU
+.modal {
+  background-color: $bg-dark-panel; // Panel Rengi
+  width: 90%;
+  max-width: 550px;
+  border-radius: $radius-lg;
+  border: 1px solid $color-border;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+  
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: 90vh; // Ekranın dışına taşmasın
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 
-  .modalHeader {
+  // --- HEADER ---
+  .header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid $color-border;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    background-color: rgba($bg-dark-panel, 0.5);
 
-    h3 {
-      font-size: 1.75rem;
-      font-weight: 800;
-      color: #fff;
-      letter-spacing: -0.03em;
-      background: linear-gradient(135deg, #fff 0%, #a78bfa 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
+    h2 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: $color-text-main;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+
+      // İkon Rengi (Mor)
+      svg { color: $color-primary; }
     }
 
-    button {
-      color: rgba(255, 255, 255, 0.3);
-      transition: color 0.3s ease;
-      &:hover { color: #fff; }
-    }
-  }
-}
-
-.premiumForm {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-
-  .fullWidth { grid-column: span 2; }
-
-  .formGroup {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-
-    label {
-      color: rgba(255, 255, 255, 0.5);
-      font-size: 0.85rem;
-      font-weight: 500;
-      margin-left: 0.25rem;
-    }
-
-    input, select, textarea {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 14px;
-      padding: 0.85rem 1.1rem;
-      color: #fff;
-      font-size: 0.95rem;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-      &:focus {
-        outline: none;
-        background: rgba(255, 255, 255, 0.06);
-        border-color: #8b5cf6;
-        box-shadow: 0 0 15px rgba(139, 92, 246, 0.15);
-      }
-    }
-  }
-
-  .modalFooter {
-    grid-column: span 2;
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-    margin-top: 1rem;
-
-    .btnSubmit {
-      background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
-      color: #fff;
+    .closeBtn {
+      background: transparent;
       border: none;
-      padding: 0.9rem 2rem;
-      border-radius: 14px;
-      font-weight: 700;
+      color: $color-text-muted;
       cursor: pointer;
-      box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
-      transition: transform 0.2s, box-shadow 0.2s;
+      padding: 0.25rem;
+      border-radius: $radius-sm;
+      transition: all 0.2s;
 
       &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 25px rgba(139, 92, 246, 0.5);
+        background-color: rgba(255, 255, 255, 0.1);
+        color: $color-text-main;
+      }
+    }
+  }
+
+  // --- FORM ALANI ---
+  .form {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    overflow-y: auto; // İçerik uzunsa kaydır
+
+    // Scrollbar
+    &::-webkit-scrollbar { width: 6px; }
+    &::-webkit-scrollbar-thumb { background: $bg-dark-input; border-radius: 3px; }
+
+    .row {
+      display: flex;
+      gap: 1rem;
+      @media (max-width: 640px) { flex-direction: column; gap: 1.25rem; }
+    }
+
+    .formGroup {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      label {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: $color-text-muted;
+      }
+
+      .inputWrapper {
+        display: flex;
+        align-items: center;
+        background-color: $bg-dark-input; // Input içi koyu
+        border: 1px solid transparent;
+        border-radius: $radius-md;
+        padding: 0 0.75rem;
+        transition: all 0.2s;
+        position: relative;
+
+        // Focus olunca Mor Çerçeve
+        &:focus-within {
+          border-color: $color-primary;
+          box-shadow: 0 0 0 2px rgba($color-primary, 0.25);
+          background-color: lighten($bg-dark-input, 2%);
+        }
+
+        svg {
+          color: $color-text-muted;
+          margin-right: 0.5rem;
+          flex-shrink: 0;
+        }
+
+        input, textarea {
+          flex: 1;
+          background: transparent;
+          border: none;
+          padding: 0.75rem 0;
+          color: $color-text-main;
+          font-size: 0.95rem;
+          outline: none;
+          width: 100%;
+          font-family: inherit;
+
+          &::placeholder { color: rgba($color-text-muted, 0.5); }
+          
+          // Numara inputlarındaki okları gizle
+          &::-webkit-outer-spin-button,
+          &::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        }
+        
+        textarea {
+          resize: vertical;
+          min-height: 80px;
+          padding-top: 0.75rem;
+        }
+        
+        .textAreaIcon {
+            align-self: flex-start;
+            margin-top: 0.75rem;
+        }
+      }
+    }
+  }
+
+  // --- FOOTER (Butonlar) ---
+  .footer {
+    padding: 1.25rem 1.5rem;
+    background-color: darken($bg-dark-panel, 2%);
+    border-top: 1px solid $color-border;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+
+    button {
+      padding: 0.6rem 1.25rem;
+      border-radius: $radius-md;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+
+      &.cancelBtn {
+        background: transparent;
+        border: 1px solid $color-border;
+        color: $color-text-muted;
+        &:hover {
+          border-color: $color-text-muted;
+          color: $color-text-main;
+          background: rgba(255,255,255,0.05);
+        }
+      }
+
+      &.submitBtn {
+        // Mor Gradyan Buton
+        background: linear-gradient(135deg, $color-primary, darken($color-primary, 5%));
+        border: none;
+        color: white;
+        box-shadow: 0 4px 6px rgba($color-primary, 0.2);
+
+        &:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 6px 12px rgba($color-primary, 0.3);
+          background: linear-gradient(135deg, lighten($color-primary, 5%), $color-primary);
+        }
+
+        &:active { transform: translateY(0); }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+          transform: none;
+        }
+
+        .spin { animation: spin 1s linear infinite; }
       }
     }
   }
 }
+
+// Animasyonlar
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { 
+  from { opacity: 0; transform: translateY(20px) scale(0.95); } 
+  to { opacity: 1; transform: translateY(0) scale(1); } 
+}
+@keyframes spin { 100% { transform: rotate(360deg); } }

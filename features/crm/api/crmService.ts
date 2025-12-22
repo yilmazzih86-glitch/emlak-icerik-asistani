@@ -1,76 +1,179 @@
+// features/crm/api/crmService.ts
+
 import { createClient } from '@/lib/supabase/client';
-import { Customer, CrmDeal, PipelineStage, CrmActivity, CrmTask, CrmAppointment } from './types';
+import { 
+  Customer, 
+  CrmDeal, 
+  PipelineStage, 
+  CrmActivity, 
+  CrmTask, 
+  CrmAppointment,
+  CreateDealPayload,
+  CreateCustomerPayload,
+  Portfolio
+} from './types';
 
 const supabase = createClient();
 
 export const crmService = {
-  // --- Müşteri Havuzu (Customers) ---
-  async getCustomers() {
-    return await supabase
+  
+  // ---------------------------------------------------------------------------
+  // 1. MÜŞTERİ YÖNETİMİ (Customers)
+  // ---------------------------------------------------------------------------
+
+  // Sayfalamalı Müşteri Listesi Getir
+  async getCustomers(page: number = 1, limit: number = 20) {
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
+    const { data, error, count } = await supabase
       .from('customers')
-      .select('*')
-      .order('created_at', { ascending: false });
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    if (error) throw error;
+    return { data, count };
   },
 
+  // Hızlı Arama (Dropdown/Modal için) - Sadece gerekli alanları çeker
   async searchCustomers(query: string) {
+    if (!query) return [];
+    
     const { data, error } = await supabase
       .from('customers')
-      .select('id, full_name, phone')
-      .ilike('full_name', `%${query}%`)
-      .limit(5);
+      .select('id, full_name, phone, email, avatar_url')
+      .or(`full_name.ilike.%${query}%,phone.ilike.%${query}%`)
+      .limit(10); // Performans için limitli
+      
     if (error) throw error;
     return data;
   },
 
-  async createCustomer(data: Partial<Customer>) {
-    return await supabase.from('customers').insert(data).select().single();
+  async createCustomer(payload: CreateCustomerPayload) {
+    const { data, error } = await supabase
+      .from('customers')
+      .insert(payload)
+      .select()
+      .single();
+      
+    if (error) throw error;
+    return data;
   },
 
-  // --- Satış Pipeline (Deals) ---
+  async updateCustomer(id: string, updates: Partial<Customer>) {
+    const { data, error } = await supabase
+      .from('customers')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+      
+    if (error) throw error;
+    return data;
+  },
+
+  // ---------------------------------------------------------------------------
+  // 2. PORTFÖY YÖNETİMİ (Portfolios)
+  // ---------------------------------------------------------------------------
+
+  // Fırsat eklerken portföy aramak için
+  async searchPortfolios(query: string) {
+    if (!query) return [];
+
+    const { data, error } = await supabase
+      .from('portfolios')
+      .select('id, title, city, district, price, room_count, image_urls')
+      .eq('status', 'active') // Sadece aktif portföyleri öner
+      .ilike('title', `%${query}%`)
+      .limit(10);
+      
+    if (error) throw error;
+    return data as Partial<Portfolio>[];
+  },
+
+  // ---------------------------------------------------------------------------
+  // 3. FIRSAT / PIPELINE YÖNETİMİ (Deals)
+  // ---------------------------------------------------------------------------
+
   async getDeals() {
-    return await supabase
+    // Kanban panosu için tüm aktif fırsatları çeker
+    // Not: Müşteri ve Portföy bilgilerini "join" ile alır.
+    const { data, error } = await supabase
       .from('crm_deals')
       .select(`
         *,
-        customers (id, full_name, phone),
-        portfolios (id, title, price, district)
+        customers (id, full_name, phone, avatar_url),
+        portfolios (id, title, price, district, city)
       `)
       .order('created_at', { ascending: false });
+      
+    if (error) throw error;
+    return data;
   },
 
-  async createDealFull(data: any) {
-    const { data: newDeal, error } = await supabase
+  async createDeal(payload: CreateDealPayload) {
+    const { data, error } = await supabase
       .from('crm_deals')
       .insert({
-        customer_id: data.customer_id,
-        stage: data.stage.toUpperCase(), 
-        expected_amount: data.expected_amount,
-        portfolio_id: data.portfolio_id || null,
-        user_id: data.user_id
+        customer_id: payload.customer_id,
+        portfolio_id: payload.portfolio_id || null, // Boş gelebilir
+        user_id: payload.user_id,
+        stage: payload.stage,
+        expected_amount: payload.expected_amount || 0
       })
-      .select()
+      .select(`
+        *,
+        customers (id, full_name, phone, avatar_url),
+        portfolios (id, title, price, district)
+      `)
       .single();
+      
     if (error) throw error;
-    return newDeal;
+    return data;
   },
 
   async updateDealStage(dealId: string, newStage: PipelineStage) {
-    return await supabase
+    const { error } = await supabase
       .from('crm_deals')
-      .update({ stage: newStage.toUpperCase() })
+      .update({ stage: newStage, updated_at: new Date().toISOString() })
       .eq('id', dealId);
+      
+    if (error) throw error;
+    return true;
   },
 
-  // --- Müşteri Detay & Geçmiş Verileri ---
+  // ---------------------------------------------------------------------------
+  // 4. DETAY & ALT TABLOLAR (Tasks, Activities, Appointments)
+  // ---------------------------------------------------------------------------
+
+  // Müşteri Profil Sayfası için "Hepsi Bir Arada" veri çekme
   async getCustomerFullProfile(customerId: string) {
+    // Promise.all ile paralel istek atarak sayfa yükleme hızını artırıyoruz
     const [customer, tasks, activities, appointments, deals] = await Promise.all([
       supabase.from('customers').select('*').eq('id', customerId).single(),
-      supabase.from('crm_tasks').select('*').eq('customer_id', customerId).order('due_date', { ascending: true }),
-      supabase.from('crm_activities').select('*').eq('customer_id', customerId).order('created_at', { ascending: false }),
-      supabase.from('crm_appointments').select('*').eq('customer_id', customerId).order('appointment_date', { ascending: true }),
-      supabase.from('crm_deals').select('*, portfolios(title, price)').eq('customer_id', customerId)
+      
+      supabase.from('crm_tasks')
+        .select('*')
+        .eq('customer_id', customerId)
+        .order('due_date', { ascending: true }),
+        
+      supabase.from('crm_activities')
+        .select('*')
+        .eq('customer_id', customerId)
+        .order('created_at', { ascending: false }),
+        
+      supabase.from('crm_appointments')
+        .select('*')
+        .eq('customer_id', customerId)
+        .order('appointment_date', { ascending: true }),
+        
+      supabase.from('crm_deals')
+        .select('*, portfolios(title, price)')
+        .eq('customer_id', customerId)
     ]);
 
+    // Veri yoksa boş array veya null döndürme mantığı
     return {
       customer: customer.data,
       tasks: tasks.data || [],
@@ -80,12 +183,35 @@ export const crmService = {
     };
   },
 
-  // --- Alt Tablo İşlemleri (Ekleme) ---
-  async addActivity(activity: Partial<CrmActivity>) {
-    return await supabase.from('crm_activities').insert(activity).select().single();
+  // --- Ekleme Metodları ---
+
+  async createActivity(activity: Partial<CrmActivity>) {
+    const { data, error } = await supabase
+      .from('crm_activities')
+      .insert(activity)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
   },
   
-  async addTask(task: Partial<CrmTask>) {
-    return await supabase.from('crm_tasks').insert(task).select().single();
+  async createTask(task: Partial<CrmTask>) {
+    const { data, error } = await supabase
+      .from('crm_tasks')
+      .insert(task)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async createAppointment(appointment: Partial<CrmAppointment>) {
+    const { data, error } = await supabase
+      .from('crm_appointments')
+      .insert(appointment)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
   }
 };

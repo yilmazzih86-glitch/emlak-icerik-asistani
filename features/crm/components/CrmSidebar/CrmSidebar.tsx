@@ -1,33 +1,30 @@
+// features/crm/components/CrmSidebar/CrmSidebar.tsx (Eğer eksikse)
+
 'use client';
 
 import React from 'react';
-import { useCrmStore } from '../../hooks/useCrmStore';
+import { useCrmStore } from '@/features/crm/hooks/useCrmStore';
 import SidebarGlobal from './SidebarGlobal';
 import SidebarDetail from './SidebarDetail';
-import styles from './CrmSidebar.module.scss';
-import { X } from 'lucide-react';
+import styles from './CrmSidebar.module.scss'; //
 
-export default function CrmSidebar() {
+const CrmSidebar = () => {
   const { isSidebarOpen, viewMode, closeSidebar } = useCrmStore();
 
   return (
     <>
+      {/* Overlay (Mobilde arka planı karartmak için) */}
       <div 
         className={`${styles.overlay} ${isSidebarOpen ? styles.open : ''}`} 
         onClick={closeSidebar}
       />
-      
-      <aside className={`${styles.sidebarContainer} ${isSidebarOpen ? styles.open : ''}`}>
-        {/* Kapat butonu her zaman sağ üstte sabit */}
-        <button className={styles.closeBtn} onClick={closeSidebar}>
-            <X size={20} />
-        </button>
 
-        {/* İçerik viewMode'a göre değişir */}
-        <div className={styles.sidebarBody}>
-            {viewMode === 'global' ? <SidebarGlobal /> : <SidebarDetail />}
-        </div>
+      {/* Sidebar Ana Kapsayıcı */}
+      <aside className={`${styles.sidebarContainer} ${isSidebarOpen ? styles.open : ''}`}>
+        {viewMode === 'global' ? <SidebarGlobal /> : <SidebarDetail />}
       </aside>
     </>
   );
-}
+};
+
+export default CrmSidebar;

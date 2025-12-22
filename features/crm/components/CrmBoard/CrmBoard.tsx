@@ -1,106 +1,121 @@
-'use client';
+// features/crm/components/CrmBoard/CrmBoard.tsx
 
-import React, { useEffect, useState } from 'react';
-import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-import { useCrmStore } from '../../hooks/useCrmStore';
-import { STAGES, STAGE_LABELS, PipelineStage } from '../../api/types';
+import React, { useState, DragEvent } from 'react';
+import { useCrmStore } from '@/features/crm/hooks/useCrmStore';
+import { STAGES, STAGE_LABELS, PipelineStage, CrmDeal } from '@/features/crm/api/types';
+import { Plus, MoreHorizontal, Calendar, TrendingUp } from 'lucide-react';
+import NewDealModal from '../NewDealModal/NewDealModal';
 import styles from './CrmBoard.module.scss';
-import { Calendar, User, MapPin, Plus, UserPlus, Sparkles } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { NewCustomerModal } from '../NewCustomerModal/NewCustomerModal';
-import { NewDealModal } from '../NewDealModal/NewDealModal';
 
 export default function CrmBoard() {
-  const { deals, fetchInitialData, moveDealOptimistic, openCustomerDetail, refreshDeals, refreshCustomers } = useCrmStore();
-  const [isMounted, setIsMounted] = useState(false);
-  const [modals, setModals] = useState({ customer: false, deal: false });
+  const { deals, moveDealOptimistic, openCustomerDetail } = useCrmStore();
+  const [isDealModalOpen, setIsDealModalOpen] = useState(false);
+  
+  // Sürüklenen Kartın ID'sini tut
+  const [draggedDealId, setDraggedDealId] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchInitialData();
-    setIsMounted(true);
-  }, []);
-
-  const onDragEnd = (result: DropResult) => {
-    const { destination, draggableId } = result;
-    if (!destination) return;
-    moveDealOptimistic(draggableId, destination.droppableId as PipelineStage);
+  // --- DRAG & DROP HANDLERS ---
+  const handleDragStart = (e: DragEvent, dealId: string) => {
+    setDraggedDealId(dealId);
+    e.dataTransfer.effectAllowed = 'move';
+    // Görünmez hayalet resim ayarlanabilir ama default tarayıcı davranışı yeterli
   };
 
-  if (!isMounted) return <div className={styles.loading}>Yükleniyor...</div>;
+  const handleDragOver = (e: DragEvent) => {
+    e.preventDefault(); // Drop'a izin ver
+  };
+
+  const handleDrop = (e: DragEvent, targetStage: PipelineStage) => {
+    e.preventDefault();
+    if (draggedDealId) {
+      moveDealOptimistic(draggedDealId, targetStage);
+      setDraggedDealId(null);
+    }
+  };
+
+  // Helper: Para birimi
+  const formatMoney = (amount?: number) => {
+    if (!amount) return '';
+    return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(amount);
+  };
 
   return (
-    <div className={styles.boardWrapper}>
-      <header className={styles.premiumHeader}>
-        <div>
-          <h1>Satış Pipeline <Sparkles size={20} className={styles.aiGlowIcon} /></h1>
-          <p>Aktif fırsatlarınızı ve müşteri sürecinizi yönetin.</p>
+    <div className={styles.boardContainer}>
+      
+      {/* Üst Bar / Filtreler (Genişletilebilir) */}
+      <div className={styles.boardHeader}>
+        <div className={styles.stats}>
+          <span>Toplam Fırsat: <strong>{deals.length}</strong></span>
+          {/* İleride buraya toplam beklenen ciro da eklenebilir */}
         </div>
-        <div className={styles.actions}>
-          <button className={styles.btnSecondary} onClick={() => setModals({ ...modals, customer: true })}>
-            <UserPlus size={18} /> Yeni Müşteri
-          </button>
-          <button className={styles.btnPrimary} onClick={() => setModals({ ...modals, deal: true })}>
-            <Plus size={18} /> Yeni Fırsat
-          </button>
-        </div>
-      </header>
-
-      <div className={styles.boardContainer}>
-        <DragDropContext onDragEnd={onDragEnd}>
-          {STAGES.map((stage: PipelineStage) => (
-            <div key={stage} className={styles.column}>
-              <div className={`${styles.columnHeader} ${styles[stage.toLowerCase()]}`}>
-                <h3>{STAGE_LABELS[stage]}</h3>
-                <span className={styles.count}>{(deals || []).filter(d => d.stage === stage).length}</span>
-              </div>
-              
-              <Droppable droppableId={stage}>
-                {(provided, snapshot) => (
-                  <div ref={provided.innerRef} {...provided.droppableProps} className={`${styles.droppableArea} ${snapshot.isDraggingOver ? styles.draggingOver : ''}`}>
-                    <AnimatePresence>
-                      {(deals || []).filter(d => d.stage === stage).map((deal, index) => (
-                        <Draggable key={deal.id} draggableId={deal.id} index={index}>
-                          {(provided, snapshot) => {
-                            // DnD ve Motion çakışma çözümü
-                            const { onDragStart, ...dragHandleProps } = (provided.dragHandleProps || {}) as any;
-                            return (
-                              <motion.div
-                                layout
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...dragHandleProps}
-                                className={`${styles.dealCard} ${snapshot.isDragging ? styles.dragging : ''}`}
-                                onClick={() => openCustomerDetail(deal.customer_id, deal.id)}
-                              >
-                                <div className={styles.cardHeader}>
-                                  <div className={styles.avatar}>{deal.customers?.full_name?.charAt(0)}</div>
-                                  <span className={styles.name}>{deal.customers?.full_name}</span>
-                                </div>
-                                <div className={styles.cardPrice}>
-                                  {deal.expected_amount?.toLocaleString() || '0'} ₺
-                                </div>
-                                <div className={styles.cardFooter}>
-                                  <Calendar size={12}/> {new Date(deal.created_at).toLocaleDateString()}
-                                </div>
-                              </motion.div>
-                            );
-                          }}
-                        </Draggable>
-                      ))}
-                    </AnimatePresence>
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-            </div>
-          ))}
-        </DragDropContext>
+        <button className={styles.newDealBtn} onClick={() => setIsDealModalOpen(true)}>
+          <Plus size={16} /> Yeni Fırsat
+        </button>
       </div>
 
-      <NewCustomerModal isOpen={modals.customer} onClose={() => setModals({ ...modals, customer: false })} onSuccess={refreshCustomers} />
-      <NewDealModal isOpen={modals.deal} onClose={() => setModals({ ...modals, deal: false })} onSuccess={refreshDeals} />
+      {/* KANBAN SÜTUNLARI */}
+      <div className={styles.columnsWrapper}>
+        {STAGES.map((stage) => {
+          // Bu aşamadaki fırsatları filtrele
+          const stageDeals = deals.filter(d => d.stage === stage);
+          
+          return (
+            <div 
+              key={stage} 
+              className={styles.column}
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, stage)}
+            >
+              {/* Sütun Başlığı */}
+              <div className={styles.columnHeader}>
+                <span className={styles.stageTitle}>{STAGE_LABELS[stage]}</span>
+                <span className={styles.countBadge}>{stageDeals.length}</span>
+              </div>
+
+              {/* Sütun İçeriği */}
+              <div className={styles.columnContent}>
+                {stageDeals.map((deal) => (
+                  <div
+                    key={deal.id}
+                    className={styles.dealCard}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, deal.id)}
+                    onClick={() => openCustomerDetail(deal.customer_id, deal.id)}
+                  >
+                    <div className={styles.cardHeader}>
+                      <span className={styles.customerName}>
+                        {deal.customers?.full_name || 'İsimsiz Müşteri'}
+                      </span>
+                      <button className={styles.moreBtn}><MoreHorizontal size={14}/></button>
+                    </div>
+
+                    {deal.portfolios && (
+                      <div className={styles.portfolioInfo}>
+                        <span className={styles.pTitle}>{deal.portfolios.title}</span>
+                      </div>
+                    )}
+
+                    <div className={styles.cardFooter}>
+                      <span className={styles.price}>
+                        {formatMoney(deal.expected_amount)}
+                      </span>
+                      <span className={styles.date}>
+                        {new Date(deal.created_at).toLocaleDateString('tr-TR', {day:'numeric', month:'short'})}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* MODAL */}
+      <NewDealModal 
+        isOpen={isDealModalOpen} 
+        onClose={() => setIsDealModalOpen(false)} 
+      />
     </div>
   );
 }

@@ -1,106 +1,226 @@
-@import '@/styles/variables';
+// features/crm/components/CrmBoard/CrmBoard.module.scss
 
-.boardWrapper {
-  padding: 2.5rem;
-  background: radial-gradient(circle at top right, rgba(139, 92, 246, 0.05), transparent);
-  min-height: 100vh;
-}
+@import '@/styles/_variables.scss';
 
-.premiumHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 3rem;
-  
-  h1 { 
-    font-size: 2.5rem; 
-    font-weight: 900; 
-    background: linear-gradient(135deg, #ffffff 0%, #a78bfa 100%);
-    -webkit-background-clip: text;
-    background-clip: text; // HATA ÇÖZÜMÜ: Standart property eklendi
-    -webkit-text-fill-color: transparent;
-    letter-spacing: -0.03em;
-  }
-}
-
-.dealCard {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  padding: 1.5rem;
-  margin-bottom: 1.25rem;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  
-  &:hover {
-    transform: translateY(-8px) scale(1.02);
-    border-color: rgba(139, 92, 246, 0.5);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(139, 92, 246, 0.2);
-    background: rgba(255, 255, 255, 0.06);
-  }
-
-  .avatar {
-    background: linear-gradient(135deg, #8b5cf6, #f59e0b); // Mor-Turuncu geçiş
-    box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
-  }
-}
-
+// 1. ANA KAPLAYICI (Tüm Ekran)
 .boardContainer {
   display: flex;
-  gap: 1.5rem;
-  overflow-x: auto;
-  padding-bottom: 1rem;
-}
-
-.column {
-  min-width: 320px;
-  background: rgba(255, 255, 255, 0.03); // Glassmorphism
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 20px;
-  display: flex;
   flex-direction: column;
+  height: 100%;
+  overflow: hidden; // Sadece içerik kaydırılsın
+  padding: 0 1.5rem 1.5rem 1.5rem;
+  
+  // Mobilde padding azalt
+  @media (max-width: 768px) {
+    padding: 0 1rem 1rem 1rem;
+  }
 }
 
-.columnHeader {
-  padding: 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+// 2. ÜST BAR (Başlık & İstatistikler)
+.boardHeader {
+  flex-shrink: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  
-  h3 { color: #fff; font-size: 1rem; font-weight: 700; }
-  
-  &.new { border-top: 4px solid #8b5cf6; } // Mor
-  &.offer { border-top: 4px solid #f59e0b; } // Turuncu
-}
-
-.dealCard {
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 1.2rem;
   margin-bottom: 1rem;
-  cursor: grab;
-  transition: all 0.3s ease;
-  
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(139, 92, 246, 0.2); // Mor glow
-    border-color: #8b5cf6;
+  padding: 0.5rem 0;
+
+  .stats {
+    font-size: 0.9rem;
+    color: $color-text-muted;
+    strong {
+      color: $color-text-main;
+      margin-left: 0.25rem;
+    }
   }
-  
-  .avatar {
-    width: 32px; height: 32px;
-    background: linear-gradient(135deg, #8b5cf6, #d946ef);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 700; color: #fff;
+
+  .newDealBtn {
+    @include flex-center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, $color-primary, darken($color-primary, 10%)); // Mor Gradyan
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: $radius-md;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba($color-primary, 0.3);
+    transition: all 0.2s;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba($color-primary, 0.4);
+    }
+
+    &:active { transform: translateY(0); }
   }
 }
 
-.btnPrimary {
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-  color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 12px;
-  font-weight: 600; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+// 3. SÜTUNLAR ALANI (Yatay Kaydırma)
+.columnsWrapper {
+  flex: 1;
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 0.5rem; // Scrollbar için boşluk
+
+  // Scrollbar Tasarımı
+  &::-webkit-scrollbar { height: 8px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { 
+    background: $bg-dark-input; 
+    border-radius: 4px; 
+    &:hover { background: $color-border; }
+  }
+
+  // SÜTUN YAPISI
+  .column {
+    min-width: 300px;
+    width: 300px;
+    background: $bg-dark-panel; // Panel Rengi
+    border-radius: $radius-lg;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba($color-border, 0.5);
+    transition: background 0.2s;
+
+    // Sürükleme sırasında üzerine gelince
+    &.dragOver {
+      background: rgba($color-primary, 0.05);
+      border-color: $color-primary;
+    }
+
+    // SÜTUN BAŞLIĞI
+    .columnHeader {
+      padding: 1rem;
+      border-bottom: 1px solid rgba($color-border, 0.5);
+      @include flex-between;
+      
+      .stageTitle {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: $color-text-main;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .countBadge {
+        background: $bg-dark-input;
+        color: $color-text-muted;
+        font-size: 0.75rem;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-weight: bold;
+      }
+    }
+
+    // KARTLARIN OLDUĞU ALAN
+    .columnContent {
+      flex: 1;
+      padding: 0.75rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+
+      &::-webkit-scrollbar { width: 4px; }
+      &::-webkit-scrollbar-thumb { background: $bg-dark-input; border-radius: 4px; }
+    }
+  }
+}
+
+// 4. FIRSAT KARTI (DEAL CARD)
+.dealCard {
+  background: $bg-dark-app; // Sütundan biraz daha koyu veya açık ayrışmalı (Input rengi kullanıldı)
+  border: 1px solid transparent;
+  border-radius: $radius-md;
+  padding: 0.85rem;
+  cursor: grab;
+  box-shadow: $shadow-sm;
+  transition: all 0.2s ease;
+  position: relative;
+  
+  // Sol kenar vurgusu (Marka Moru)
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 10px; bottom: 10px;
+    width: 3px;
+    background: $color-primary;
+    border-radius: 0 4px 4px 0;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+    border-color: rgba($color-primary, 0.3);
+    
+    &::before { opacity: 1; }
+    .moreBtn { opacity: 1; }
+  }
+
+  &:active { cursor: grabbing; }
+
+  // Kart Başlığı
+  .cardHeader {
+    @include flex-between;
+    margin-bottom: 0.5rem;
+    
+    .customerName {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: $color-text-main;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .moreBtn {
+      background: transparent;
+      border: none;
+      color: $color-text-muted;
+      cursor: pointer;
+      opacity: 0; // Hover'da görünür
+      padding: 2px;
+      border-radius: 4px;
+      &:hover { background: rgba(255,255,255,0.1); color: $color-text-main; }
+    }
+  }
+
+  // Portföy Bilgisi
+  .portfolioInfo {
+    margin-bottom: 0.75rem;
+    padding: 4px 8px;
+    background: rgba($color-primary, 0.1);
+    border-radius: 4px;
+    
+    .pTitle {
+      display: block;
+      font-size: 0.75rem;
+      color: lighten($color-primary, 15%); // Açık Mor
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  // Alt Bilgiler (Fiyat & Tarih)
+  .cardFooter {
+    @include flex-between;
+    font-size: 0.8rem;
+
+    .price {
+      font-weight: 600;
+      color: $color-success; // Para birimi genelde yeşil iyidir, marka turuncusu da olabilir ($color-secondary)
+    }
+
+    .date {
+      color: $color-text-muted;
+      font-size: 0.7rem;
+    }
+  }
 }

@@ -1,525 +1,475 @@
-@import '@/styles/variables';
-@import '@/styles/mixins';
+// features/crm/components/CrmSidebar/CrmSidebar.module.scss
 
-/* --- Ana Sidebar Container --- */
-.sidebarContainer {
-  position: fixed;
-  top: 0;
-  right: -450px; // Başlangıçta gizli
-  width: 450px;
-  height: 100vh;
-  background-color: #fff;
-  box-shadow: -5px 0 25px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  transition: right 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  display: flex;
-  flex-direction: column;
+@import '@/styles/_variables.scss';
 
-  &.open {
-    right: 0;
-  }
-
-  @include mobile {
-    width: 100%; // Mobilde tam ekran
-    right: -100%;
-  }
-}
+// --- 1. ANA KONTEYNER VE OVERLAY ---
 
 .overlay {
   position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.3);
-  z-index: 999;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.6); // Arkası kararsın
   backdrop-filter: blur(2px);
+  z-index: 998;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
 
   &.open {
     opacity: 1;
-    pointer-events: auto;
+    visibility: visible;
   }
-}
-
-.closeBtn {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #666;
-  z-index: 10;
   
-  &:hover {
-    color: #000;
-    transform: rotate(90deg);
-    transition: transform 0.2s;
+  // Masaüstünde overlay gerekmez, sadece sidebar kaysın
+  @media (min-width: 1024px) {
+    display: none;
   }
 }
 
-.sidebarBody {
-  flex: 1;
-  overflow: hidden; // İçerik scroll olacak
-  display: flex;
-  flex-direction: column;
-}
-
-/* --- GLOBAL LİSTE (SidebarGlobal) --- */
-.globalContainer {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.searchHeader {
-  padding: 1.5rem;
-  border-bottom: 1px solid #eee;
-  background: #fff;
-
-  h2 {
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: #111;
-  }
-
-  .inputWrapper {
-    position: relative;
-    
-    .searchIcon {
-      position: absolute;
-      left: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #999;
-    }
-
-    input {
-      width: 100%;
-      padding: 0.75rem 0.75rem 0.75rem 2.5rem;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      transition: all 0.2s;
-
-      &:focus {
-        // DÜZELTME: $primary-color -> $color-primary
-        border-color: $color-primary;
-        box-shadow: 0 0 0 3px rgba($color-primary, 0.1);
-        outline: none;
-      }
-    }
-  }
-}
-
-.customerList {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0.5rem;
-
-  .customerRow {
-    display: flex;
-    align-items: center;
-    padding: 0.75rem;
-    margin-bottom: 4px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.2s;
-
-    &:hover {
-      background-color: #f5f7fa;
-      .arrow { opacity: 1; transform: translateX(0); }
-    }
-
-    .avatar {
-      width: 40px;
-      height: 40px;
-      background: #e0e7ff;
-      // DÜZELTME: $primary-color -> $color-primary
-      color: $color-primary;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-right: 12px;
-      flex-shrink: 0;
-    }
-
-    .info {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-
-      .name {
-        font-weight: 500;
-        color: #333;
-        font-size: 0.95rem;
-      }
-      .phone {
-        font-size: 0.8rem;
-        color: #888;
-      }
-    }
-
-    .arrow {
-      color: #ccc;
-      opacity: 0;
-      transform: translateX(-5px);
-      transition: all 0.2s;
-    }
-  }
-}
-
-/* --- DETAY GÖRÜNÜMÜ (SidebarDetail) --- */
-.detailContainer {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  background: #f9fafb;
-}
-
-.detailHeader {
-  background: #fff;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid #eee;
-
-  .backBtn {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    background: none;
-    border: none;
-    color: #666;
-    font-size: 0.9rem;
-    cursor: pointer;
-    margin-bottom: 1rem;
-    padding: 0;
-
-    &:hover { color: #000; }
-  }
-
-  .profileSummary {
-    h3 { margin: 0; font-size: 1.4rem; color: #111; }
-    span { color: #666; font-size: 0.9rem; }
-  }
-}
-
-/* --- SEKMELER (TABS) --- */
-.tabs {
-  display: flex;
-  background: #fff;
-  padding: 0 1.5rem;
-  border-bottom: 1px solid #eee;
-  gap: 1.5rem;
-
-  button {
-    background: none;
-    border: none;
-    padding: 1rem 0;
-    font-size: 0.95rem;
-    color: #666;
-    cursor: pointer;
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-
-    &::after {
-      content: '';
-      position: absolute;
-      bottom: -1px;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background: transparent;
-      transition: background 0.2s;
-    }
-
-    &.active {
-      // DÜZELTME: $primary-color -> $color-primary
-      color: $color-primary;
-      font-weight: 500;
-      &::after { background: $color-primary; }
-    }
-
-    // AI Tab Özel Stil
-    &.aiTab {
-      &.activeAi {
-        color: #8B5CF6; // Mor renk
-        &::after { background: #8B5CF6; }
-      }
-    }
-    
-    &:hover { color: #333; }
-  }
-}
-
-.contentArea {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1.5rem;
-}
-
-/* --- DETAY TAB İÇERİKLERİ --- */
-.infoTab {
-  .field {
-    margin-bottom: 1.5rem;
-    label {
-      display: block;
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: #999;
-      margin-bottom: 0.5rem;
-    }
-    div {
-      font-size: 1rem;
-      color: #333;
-    }
-
-    .tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      .tag {
-        background: #eef2ff;
-        // DÜZELTME: $primary-color -> $color-primary
-        color: $color-primary;
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-size: 0.85rem;
-      }
-    }
-  }
-}
-
-.historyTab {
-  .activityItem {
-    position: relative;
-    padding-left: 1.5rem;
-    margin-bottom: 1.5rem;
-    border-left: 2px solid #e5e7eb;
-
-    &::before {
-      content: '';
-      position: absolute;
-      left: -5px;
-      top: 0;
-      width: 8px;
-      height: 8px;
-      background: #fff;
-      border: 2px solid #ccc;
-      border-radius: 50%;
-    }
-
-    small { display: block; color: #999; font-size: 0.8rem; margin-bottom: 4px; }
-    p { margin: 0; color: #444; font-size: 0.95rem; line-height: 1.4; }
-    
-    .typeBadge {
-      display: inline-block;
-      margin-top: 6px;
-      font-size: 0.7rem;
-      background: #f3f4f6;
-      color: #666;
-      padding: 2px 6px;
-      border-radius: 4px;
-      text-transform: uppercase;
-    }
-  }
-}
-
-.loading {
-  padding: 2rem;
-  text-align: center;
-  color: #999;
-}
-
-.emptyState {
-  padding: 2rem;
-  text-align: center;
-  color: #999;
-  font-size: 0.9rem;
-}
 .sidebarContainer {
   position: fixed;
-  right: 0;
-  top: 0;
-  height: 100vh;
-  width: 400px;
-  background: rgba(13, 13, 18, 0.8);
-  backdrop-filter: blur(25px);
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
-  z-index: 1000;
-  transform: translateX(100%);
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  flex-direction: column;
-
-  &.open { transform: translateX(0); box-shadow: -10px 0 40px rgba(0,0,0,0.5); }
-}
-
-.globalContainer {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.sidebarHeader {
-  padding: 30px 24px 20px;
+  top: 0; right: 0; bottom: 0;
+  width: 400px; // Standart genişlik
+  background: $bg-dark-panel;
+  border-left: 1px solid $color-border;
+  box-shadow: -5px 0 25px rgba(0, 0, 0, 0.3);
+  z-index: 999;
   
-  .titleRow {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    h2 { font-size: 1.4rem; font-weight: 700; color: #fff; }
-    .badge { background: rgba(139, 92, 246, 0.15); color: #a78bfa; padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; }
-  }
-}
+  transform: translateX(100%); // Varsayılan kapalı
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-.searchBox {
-  position: relative;
-  input {
+  &.open {
+    transform: translateX(0);
+  }
+
+  // Mobilde tam ekran
+  @media (max-width: 480px) {
     width: 100%;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 12px 12px 12px 42px;
-    color: #fff;
-    outline: none;
-    transition: all 0.3s;
-    &:focus { border-color: #8b5cf6; box-shadow: 0 0 10px rgba(139, 92, 246, 0.2); }
   }
-  .searchIcon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #71717a; }
 }
 
-.listContainer {
-  flex: 1;
-  overflow-y: auto;
-  padding: 10px 20px;
-  
-  .customerCard {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 14px;
-    border-radius: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: 1px solid transparent;
+// --- 2. GLOBAL LİSTE GÖRÜNÜMÜ (SidebarGlobal) ---
 
-    &:hover {
-      background: rgba(255, 255, 255, 0.04);
-      border-color: rgba(255, 255, 255, 0.08);
-      .avatar { background: #8b5cf6; color: white; }
+.sidebarGlobal {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .header {
+    padding: 1rem;
+    border-bottom: 1px solid $color-border;
+    background: rgba($bg-dark-panel, 0.95);
+    
+    .titleRow {
+      @include flex-between;
+      margin-bottom: 1rem;
+      
+      h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        color: $color-text-main;
+        @include flex-center;
+        gap: 0.5rem;
+      }
+
+      .closeMobile {
+        background: transparent;
+        border: 1px solid $color-border;
+        color: $color-text-muted;
+        font-size: 0.8rem;
+        padding: 4px 8px;
+        border-radius: $radius-sm;
+        @media (min-width: 1024px) { display: none; }
+      }
     }
 
-    .avatar {
-      width: 42px;
-      height: 42px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 10px;
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+
+      .searchBox {
+        flex: 1;
+        @include flex-center;
+        background: $bg-dark-input;
+        border: 1px solid transparent;
+        border-radius: $radius-md;
+        padding: 0 0.75rem;
+        transition: border 0.2s;
+
+        &:focus-within {
+          border-color: $color-primary;
+          box-shadow: 0 0 0 2px rgba($color-primary, 0.1);
+        }
+
+        svg { color: $color-text-muted; }
+
+        input {
+          width: 100%;
+          background: transparent;
+          border: none;
+          padding: 0.6rem 0.5rem;
+          color: $color-text-main;
+          outline: none;
+          font-size: 0.9rem;
+          &::placeholder { color: rgba($color-text-muted, 0.6); }
+        }
+      }
+
+      .addBtn {
+        background: $color-primary;
+        color: white;
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: $radius-md;
+        @include flex-center;
+        cursor: pointer;
+        transition: background 0.2s;
+        
+        &:hover { background: $color-primary-hover; }
+      }
+    }
+  }
+
+  .listContainer {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem;
+
+    .customerRow {
       display: flex;
       align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      color: #a1a1aa;
-      transition: all 0.3s;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      border-radius: $radius-md;
+      cursor: pointer;
+      transition: background 0.2s;
+      border-bottom: 1px solid rgba($color-border, 0.3);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.03);
+        .arrow { opacity: 1; transform: translateX(2px); }
+      }
+
+      .avatar {
+        width: 40px; height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, $bg-dark-input, darken($bg-dark-input, 5%));
+        color: $color-primary;
+        font-weight: bold;
+        @include flex-center;
+        font-size: 1rem;
+        border: 1px solid $color-border;
+        
+        img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+      }
+
+      .info {
+        flex: 1;
+        h4 { margin: 0; font-size: 0.95rem; color: $color-text-main; font-weight: 500; }
+        .meta {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin-top: 0.25rem;
+          font-size: 0.8rem;
+          color: $color-text-muted;
+          
+          .tag {
+            background: rgba($color-secondary, 0.15);
+            color: lighten($color-secondary, 10%);
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            text-transform: capitalize;
+          }
+        }
+      }
+
+      .arrow {
+        color: $color-text-muted;
+        opacity: 0.5;
+        transition: all 0.2s;
+      }
     }
 
-    .mainInfo {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      .name { font-weight: 600; color: #efeff1; }
-      .phone { font-size: 0.8rem; color: #71717a; }
+    .loadMoreBtn {
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 0.5rem;
+      background: transparent;
+      border: 1px dashed $color-border;
+      color: $color-text-muted;
+      border-radius: $radius-md;
+      cursor: pointer;
+      &:hover { border-color: $color-text-muted; color: $color-text-main; }
     }
-    .arrow { color: #3f3f46; }
   }
 }
 
-.sidebarFooter {
-  padding: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  
-  .addBtn {
-    width: 100%;
-    padding: 14px;
-    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    cursor: pointer;
-    transition: transform 0.2s;
-    &:hover { transform: scale(1.02); }
-  }
-}
-.detailWrapper {
+// --- 3. DETAY SAYFASI (SidebarDetail) ---
+
+.sidebarDetail {
   height: 100%;
   display: flex;
   flex-direction: column;
-}
+  background: $bg-dark-panel;
 
-.detailHeader {
-  padding: 2.5rem 2rem;
-  background: linear-gradient(to bottom, rgba(139, 92, 246, 0.05) 0%, transparent 100%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  // Header Bölümü
+  .detailHeader {
+    padding: 1.5rem 1.5rem 0 1.5rem;
+    border-bottom: 1px solid $color-border;
 
-  .headerProfile {
-    margin-top: 1.5rem;
-    h2 { font-size: 1.8rem; font-weight: 900; color: #fff; letter-spacing: -0.02em; }
-    
-    .statusPill {
-      display: inline-block;
-      margin-top: 0.75rem;
-      padding: 4px 12px;
-      border-radius: 8px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
+    .headerTop {
+      @include flex-between;
+      margin-bottom: 1rem;
+
+      .closeBtn {
+        background: transparent;
+        border: none;
+        color: $color-text-muted;
+        cursor: pointer;
+        padding: 0;
+        &:hover { color: $color-text-main; }
+      }
+
+      .badge {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        
+        // Stage Renkleri
+        &.NEW { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+        &.CONTACT { background: rgba($color-primary, 0.2); color: lighten($color-primary, 10%); }
+        &.PRESENTATION { background: rgba($color-secondary, 0.2); color: lighten($color-secondary, 10%); }
+        &.OFFER { background: rgba(234, 179, 8, 0.2); color: #facc15; }
+        &.SOLD { background: rgba($color-success, 0.2); color: lighten($color-success, 10%); }
+      }
+    }
+
+    .profileSummary {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 1.5rem;
+
+      .avatarLarge {
+        width: 72px; height: 72px;
+        background: linear-gradient(135deg, $color-primary, darken($color-primary, 15%));
+        color: white;
+        font-size: 1.75rem;
+        font-weight: 600;
+        @include flex-center;
+        border-radius: 50%;
+        margin-bottom: 0.75rem;
+        box-shadow: 0 0 20px rgba($color-primary, 0.3);
+      }
+
+      h2 { margin: 0 0 0.5rem 0; color: $color-text-main; font-size: 1.25rem; }
       
-      &.new { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
-      &.sold { background: rgba(16, 185, 129, 0.15); color: #34d399; }
-      &.offer { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+      .quickContacts {
+        display: flex;
+        gap: 1rem;
+        .contactLink {
+          @include flex-center;
+          gap: 0.4rem;
+          color: $color-text-muted;
+          font-size: 0.85rem;
+          text-decoration: none;
+          padding: 4px 10px;
+          border-radius: 20px;
+          background: rgba(255, 255, 255, 0.05);
+          &:hover { background: rgba(255, 255, 255, 0.1); color: $color-text-main; }
+        }
+      }
+    }
+
+    // Tabs (Sekmeler)
+    .tabs {
+      display: flex;
+      gap: 1.5rem;
+      
+      button {
+        background: none;
+        border: none;
+        padding-bottom: 0.75rem;
+        color: $color-text-muted;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        transition: all 0.2s;
+
+        &:hover { color: $color-text-main; }
+
+        &.active {
+          color: $color-primary; // Aktif sekme Mor
+          border-bottom-color: $color-primary;
+        }
+
+        &.aiTab.active {
+          color: $color-secondary; // AI Sekmesi Turuncu
+          border-bottom-color: $color-secondary;
+          svg { color: $color-secondary; }
+        }
+      }
     }
   }
-}
 
-.tabNav {
-  display: flex;
-  padding: 0.5rem;
-  gap: 0.5rem;
-  background: rgba(0, 0, 0, 0.2);
-  margin: 1.5rem 2rem;
-  border-radius: 14px;
-
-  button {
+  // İçerik Alanı
+  .detailContent {
     flex: 1;
-    padding: 0.75rem;
-    border-radius: 10px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #71717a;
-    transition: all 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-
-    &.active { background: rgba(255, 255, 255, 0.05); color: #fff; }
+    overflow-y: auto;
+    padding: 1.5rem;
     
-    &.aiTab {
-      &.activeAi {
-        background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(217, 70, 239, 0.2) 100%);
-        color: #d946ef;
-        box-shadow: 0 0 15px rgba(217, 70, 239, 0.1);
+    // TAB 1: BİLGİ
+    .infoTab {
+      .section {
+        margin-bottom: 1.5rem;
+        h3 { 
+          font-size: 0.9rem; 
+          text-transform: uppercase; 
+          color: $color-text-muted; 
+          margin-bottom: 0.75rem;
+          letter-spacing: 0.5px;
+        }
+
+        .infoGrid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1rem;
+
+          .infoItem {
+            background: $bg-dark-input;
+            padding: 0.75rem;
+            border-radius: $radius-sm;
+            label { display: block; font-size: 0.75rem; color: $color-text-muted; margin-bottom: 4px; }
+            span { font-size: 0.9rem; color: $color-text-main; font-weight: 500; }
+          }
+        }
+
+        .noteBox {
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px dashed $color-border;
+          padding: 1rem;
+          border-radius: $radius-md;
+          font-size: 0.9rem;
+          line-height: 1.5;
+          color: $color-text-main;
+        }
+      }
+    }
+
+    // TAB 2: ZAMAN TÜNELİ
+    .timelineTab {
+      .timeline {
+        position: relative;
+        padding-left: 1rem;
+        
+        &::before {
+          content: '';
+          position: absolute;
+          left: 19px; top: 10px; bottom: 0;
+          width: 2px;
+          background: $color-border;
+        }
+
+        .timelineItem {
+          display: flex;
+          gap: 1rem;
+          margin-bottom: 1.5rem;
+          position: relative;
+
+          .icon {
+            width: 40px; height: 40px;
+            min-width: 40px;
+            border-radius: 50%;
+            background: $bg-dark-app;
+            border: 2px solid $color-border;
+            @include flex-center;
+            color: $color-text-muted;
+            z-index: 1;
+
+            // Aktivite Tipine Göre İkon Rengi
+            &.call { color: #3b82f6; border-color: rgba(59, 130, 246, 0.3); }
+            &.meeting { color: $color-secondary; border-color: rgba($color-secondary, 0.3); }
+            &.ai_log { color: $color-primary; border-color: rgba($color-primary, 0.3); background: rgba($color-primary, 0.1); }
+          }
+
+          .content {
+            background: $bg-dark-input;
+            padding: 0.75rem;
+            border-radius: $radius-md;
+            flex: 1;
+            
+            p { margin: 0 0 0.25rem 0; font-size: 0.9rem; color: $color-text-main; }
+            .date { font-size: 0.75rem; color: $color-text-muted; }
+          }
+        }
+      }
+    }
+
+    // TAB 3: GÖREVLER
+    .tasksTab {
+      h3 { font-size: 1rem; margin: 0 0 1rem 0; color: $color-text-main; }
+
+      .taskCard {
+        background: $bg-dark-input;
+        border-radius: $radius-md;
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        flex-direction: column;
+        border-left: 3px solid transparent;
+
+        &.completed {
+          opacity: 0.6;
+          text-decoration: line-through;
+        }
+        
+        .taskHeader {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.75rem;
+          color: $color-secondary;
+          margin-bottom: 0.25rem;
+        }
+
+        h4 { margin: 0 0 0.25rem 0; font-size: 0.95rem; color: $color-text-main; }
+        .location { font-size: 0.8rem; color: $color-text-muted; margin: 0; }
+        
+        // Checkbox stili
+        .checkbox {
+          float: left; margin-right: 10px;
+          .box { width: 18px; height: 18px; border: 2px solid $color-text-muted; border-radius: 4px; }
+        }
       }
     }
   }
 }
+
+// Loading Spinner
+.loadingState {
+  height: 100%;
+  @include flex-center;
+  flex-direction: column;
+  color: $color-text-muted;
+  gap: 1rem;
+  
+  .spinner {
+    width: 30px; height: 30px;
+    border: 3px solid rgba($color-primary, 0.3);
+    border-top-color: $color-primary;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+}
+
+@keyframes spin { 100% { transform: rotate(360deg); } }

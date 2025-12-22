@@ -1,72 +1,277 @@
 // features/crm/components/NewDealModal/NewDealModal.module.scss
-@import '@/styles/variables';
 
-.customSelect {
-  position: relative;
-  
-  .selectTrigger {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 14px;
-    padding: 0.85rem 1.1rem;
-    color: #fff;
-    cursor: pointer;
+@import '@/styles/_variables.scss';
+
+// 1. OVERLAY & MODAL CONTAINER
+.overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal {
+  background-color: $bg-dark-panel;
+  width: 90%;
+  max-width: 500px;
+  border-radius: $radius-lg;
+  border: 1px solid $color-border;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  overflow: visible; // Arama listesi taşabilsin diye
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+  // --- HEADER ---
+  .header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid $color-border;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: all 0.3s;
+    background-color: rgba($bg-dark-panel, 0.5);
 
-    &:hover { border-color: rgba(139, 92, 246, 0.4); }
-  }
-
-  .dropdownMenu {
-    position: absolute;
-    top: calc(100% + 8px);
-    left: 0; right: 0;
-    background: rgba(23, 23, 28, 0.98);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 18px;
-    z-index: 100;
-    overflow: hidden;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-
-    .searchInner {
-      padding: 1rem;
+    h2 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: $color-text-main;
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      color: #71717a;
+      
+      svg { color: $color-secondary; } // Turuncu Çanta İkonu
+    }
+
+    .closeBtn {
+      background: transparent;
+      border: none;
+      color: $color-text-muted;
+      cursor: pointer;
+      padding: 0.25rem;
+      border-radius: $radius-sm;
+      &:hover { color: $color-text-main; background: rgba(255,255,255,0.1); }
+    }
+  }
+
+  // --- BODY (FORM ALANI) ---
+  .body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  // ARAMA VE SEÇİM ALANLARI
+  .section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    position: relative; // Dropdown için referans
+
+    label {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: $color-text-muted;
+    }
+
+    // Arama Kutusu
+    .searchBox {
+      display: flex;
+      align-items: center;
+      background-color: $bg-dark-input;
+      border: 1px solid transparent;
+      border-radius: $radius-md;
+      padding: 0 0.75rem;
+      transition: all 0.2s;
+      position: relative;
+
+      &:focus-within {
+        border-color: $color-primary; // Mor Focus
+        box-shadow: 0 0 0 2px rgba($color-primary, 0.25);
+      }
+
+      .icon { color: $color-text-muted; margin-right: 0.5rem; }
 
       input {
+        flex: 1;
         background: transparent;
         border: none;
-        color: #fff;
-        width: 100%;
+        padding: 0.75rem 0;
+        color: $color-text-main;
+        font-size: 0.95rem;
         outline: none;
+        width: 100%;
+        &::placeholder { color: rgba($color-text-muted, 0.5); }
+      }
+
+      // AUTOCOMPLETE LİSTESİ (Dropdown)
+      .resultsList {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        margin-top: 0.5rem;
+        background-color: $bg-dark-panel;
+        border: 1px solid $color-border;
+        border-radius: $radius-md;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+        list-style: none;
+        padding: 0;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 50;
+
+        &::-webkit-scrollbar { width: 4px; }
+        &::-webkit-scrollbar-thumb { background: $color-border; border-radius: 2px; }
+
+        li {
+          padding: 0.75rem 1rem;
+          cursor: pointer;
+          border-bottom: 1px solid rgba($color-border, 0.5);
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.9rem;
+          color: $color-text-main;
+          transition: background 0.1s;
+
+          &:last-child { border-bottom: none; }
+          
+          // Hover Durumu
+          &:hover {
+            background-color: rgba($color-primary, 0.15); // Açık Mor Hover
+            color: lighten($color-primary, 10%);
+          }
+          
+          .sub {
+            margin-left: auto;
+            font-size: 0.75rem;
+            color: $color-text-muted;
+          }
+        }
       }
     }
 
-    .optionsScroll {
-      max-height: 250px;
-      overflow-y: auto;
-      padding: 0.5rem;
-
-      .option {
-        padding: 0.8rem 1rem;
-        border-radius: 10px;
-        cursor: pointer;
+    // SEÇİLMİŞ KART GÖRÜNÜMÜ
+    .selectedCard {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      background: rgba($color-primary, 0.1); // Mor Zemin
+      border: 1px solid rgba($color-primary, 0.3);
+      border-radius: $radius-md;
+      animation: fadeIn 0.2s;
+      
+      .info {
         display: flex;
         flex-direction: column;
-        transition: background 0.2s;
-
-        span { color: #fff; font-weight: 500; font-size: 0.95rem; }
-        small { color: #71717a; font-size: 0.8rem; }
-
-        &:hover { background: rgba(139, 92, 246, 0.1); }
-        &.selected { background: rgba(139, 92, 246, 0.2); border-left: 3px solid #8b5cf6; }
+        gap: 2px;
+        .label { font-size: 0.7rem; color: lighten($color-primary, 20%); text-transform: uppercase; letter-spacing: 0.5px; }
+        strong { font-size: 0.95rem; color: $color-text-main; }
+      }
+      
+      button {
+        background: rgba($bg-dark-panel, 0.5);
+        border: 1px solid rgba($color-danger, 0.3);
+        border-radius: 50%;
+        width: 28px; height: 28px;
+        @include flex-center;
+        color: $color-danger; // Kırmızı Silme Butonu
+        cursor: pointer;
+        transition: all 0.2s;
+        
+        &:hover {
+          background: $color-danger;
+          color: white;
+          border-color: $color-danger;
+        }
       }
     }
   }
+
+  // YAN YANA INPUTLAR (Stage & Amount)
+  .row {
+    display: flex;
+    gap: 1rem;
+    
+    .formGroup {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      
+      label { font-size: 0.85rem; color: $color-text-muted; font-weight: 500; }
+      
+      select, input {
+        width: 100%;
+        background-color: $bg-dark-input;
+        border: 1px solid transparent;
+        color: $color-text-main;
+        padding: 0.75rem;
+        border-radius: $radius-md;
+        outline: none;
+        font-size: 0.9rem;
+        
+        &:focus {
+          border-color: $color-primary;
+          box-shadow: 0 0 0 2px rgba($color-primary, 0.25);
+        }
+      }
+    }
+  }
+
+  // --- FOOTER ---
+  .footer {
+    padding: 1.25rem 1.5rem;
+    border-top: 1px solid $color-border;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    background-color: darken($bg-dark-panel, 2%);
+
+    .cancelBtn {
+      padding: 0.6rem 1.25rem;
+      background: transparent;
+      border: 1px solid $color-border;
+      color: $color-text-muted;
+      border-radius: $radius-md;
+      cursor: pointer;
+      &:hover { border-color: $color-text-muted; color: $color-text-main; }
+    }
+
+    .submitBtn {
+      padding: 0.6rem 1.25rem;
+      background: linear-gradient(135deg, $color-secondary, darken($color-secondary, 5%)); // Turuncu Buton (Satış aksiyonu)
+      border: none;
+      color: white;
+      border-radius: $radius-md;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 6px rgba($color-secondary, 0.2);
+      transition: all 0.2s;
+
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 12px rgba($color-secondary, 0.3);
+      }
+      
+      &:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    }
+  }
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { 
+  from { opacity: 0; transform: translateY(20px); } 
+  to { opacity: 1; transform: translateY(0); } 
 }

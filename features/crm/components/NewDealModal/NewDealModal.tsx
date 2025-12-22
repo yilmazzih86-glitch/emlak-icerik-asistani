@@ -1,84 +1,196 @@
 // features/crm/components/NewDealModal/NewDealModal.tsx
-'use client';
-import React, { useState } from 'react';
-import { useCrmStore } from '../../hooks/useCrmStore';
-import { crmService } from '../../api/crmService';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Search, ChevronDown, User } from 'lucide-react';
+
+import React, { useState, useEffect } from 'react';
+import { useCrmStore } from '@/features/crm/hooks/useCrmStore';
+import { crmService } from '@/features/crm/api/crmService';
+import { STAGES, STAGE_LABELS, PipelineStage } from '@/features/crm/api/types';
+import { X, Search, Briefcase, ChevronRight, UserCheck, Building2, CheckCircle2 } from 'lucide-react';
 import styles from './NewDealModal.module.scss';
 
-export function NewDealModal({ isOpen, onClose, onSuccess }: any) {
-  const { customers } = useCrmStore(); // Müşteri havuzundan verileri alıyoruz
-  const [search, setSearch] = useState('');
-  const [selectedId, setSelectedId] = useState('');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+interface NewDealModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function NewDealModal({ isOpen, onClose }: NewDealModalProps) {
+  const { refreshDeals } = useCrmStore();
+  
+  // Arama State'leri
+  const [custQuery, setCustQuery] = useState('');
+  const [portQuery, setPortQuery] = useState('');
+  const [custResults, setCustResults] = useState<any[]>([]);
+  const [portResults, setPortResults] = useState<any[]>([]);
+  
+  // Seçim State'leri
+  const [selectedCust, setSelectedCust] = useState<any>(null);
+  const [selectedPort, setSelectedPort] = useState<any>(null);
+  const [stage, setStage] = useState<PipelineStage>('NEW');
   const [amount, setAmount] = useState('');
-
-  const filtered = customers.filter(c => c.full_name.toLowerCase().includes(search.toLowerCase()));
-
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedId) return;
-    
-    await crmService.createDealFull({
-      customer_id: selectedId,
-      stage: 'NEW',
-      expected_amount: Number(amount)
-    });
-    onSuccess();
-    onClose();
-  };
+  
+  const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
 
+  // --- Müşteri Arama (Debounce yapılabilir, şimdilik direct call) ---
+  const handleCustSearch = async (val: string) => {
+    setCustQuery(val);
+    if (val.length > 1) {
+      const res = await crmService.searchCustomers(val);
+      setCustResults(res || []);
+    } else {
+      setCustResults([]);
+    }
+  };
+
+  // --- Portföy Arama ---
+  const handlePortSearch = async (val: string) => {
+    setPortQuery(val);
+    if (val.length > 1) {
+      const res = await crmService.searchPortfolios(val);
+      setPortResults(res || []);
+    } else {
+      setPortResults([]);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedCust) return alert('Lütfen bir müşteri seçin.');
+    
+    setLoading(true);
+    try {
+      await crmService.createDeal({
+        customer_id: selectedCust.id,
+        portfolio_id: selectedPort?.id || null,
+        stage: stage,
+        expected_amount: amount ? Number(amount) : 0,
+        user_id: 'current_user_id' // Auth'dan gelecek
+      });
+      
+      await refreshDeals();
+      onClose();
+      // State reset
+      setSelectedCust(null);
+      setSelectedPort(null);
+      setCustQuery('');
+      setPortQuery('');
+    } catch (error) {
+      console.error(error);
+      alert('Fırsat oluşturulamadı.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className={styles.overlay}>
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className={styles.premiumModal}>
-        <div className={styles.modalHeader}>
-          <h3><User size={20}/> Yeni Fırsat Kaydı</h3>
-          <button onClick={onClose}><X size={20}/></button>
-        </div>
+      <div className={styles.modal}>
+        <header className={styles.header}>
+          <h2><Briefcase size={20} /> Yeni Satış Fırsatı</h2>
+          <button onClick={onClose} className={styles.closeBtn}><X size={20} /></button>
+        </header>
 
-        <form onSubmit={handleCreate}>
-          <div className={styles.formGroup}>
-            <label>Müşteri Seçin</label>
-            <div className={styles.customSelect}>
-              <div className={styles.selectTrigger} onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
-                {selectedId ? customers.find(c => c.id === selectedId)?.full_name : "Müşteri Ara..."}
-                <ChevronDown size={16} />
-              </div>
-              
-              <AnimatePresence>
-                {isDropdownOpen && (
-                  <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className={styles.dropdownMenu}>
-                    <div className={styles.searchInner}>
-                      <Search size={14} />
-                      <input placeholder="Hızlı ara..." value={search} onChange={(e) => setSearch(e.target.value)} autoFocus />
-                    </div>
-                    <div className={styles.optionsScroll}>
-                      {filtered.map(c => (
-                        <div key={c.id} className={styles.option} onClick={() => { setSelectedId(c.id); setIsDropdownOpen(false); }}>
-                          <span>{c.full_name}</span>
-                          <small>{c.phone}</small>
-                        </div>
-                      ))}
-                    </div>
-                  </motion.div>
+        <div className={styles.body}>
+          
+          {/* 1. ADIM: Müşteri Seçimi */}
+          <div className={styles.section}>
+            <label>Müşteri Seçimi *</label>
+            {!selectedCust ? (
+              <div className={styles.searchBox}>
+                <Search size={16} className={styles.icon}/>
+                <input 
+                  placeholder="Müşteri adı veya telefon..." 
+                  value={custQuery}
+                  onChange={(e) => handleCustSearch(e.target.value)}
+                  autoFocus
+                />
+                {custResults.length > 0 && (
+                  <ul className={styles.resultsList}>
+                    {custResults.map(c => (
+                      <li key={c.id} onClick={() => { setSelectedCust(c); setCustResults([]); }}>
+                        <UserCheck size={14}/> {c.full_name} <span className={styles.sub}>{c.phone}</span>
+                      </li>
+                    ))}
+                  </ul>
                 )}
-              </AnimatePresence>
+              </div>
+            ) : (
+              <div className={styles.selectedCard}>
+                <div className={styles.info}>
+                  <span className={styles.label}>Seçilen Müşteri</span>
+                  <strong>{selectedCust.full_name}</strong>
+                </div>
+                <button onClick={() => setSelectedCust(null)}><X size={16}/></button>
+              </div>
+            )}
+          </div>
+
+          {/* 2. ADIM: Portföy Seçimi (Opsiyonel) */}
+          <div className={styles.section}>
+            <label>İlgilenilen Portföy (Opsiyonel)</label>
+            {!selectedPort ? (
+              <div className={styles.searchBox}>
+                <Search size={16} className={styles.icon}/>
+                <input 
+                  placeholder="Portföy başlığı, il veya ilçe..." 
+                  value={portQuery}
+                  onChange={(e) => handlePortSearch(e.target.value)}
+                />
+                {portResults.length > 0 && (
+                  <ul className={styles.resultsList}>
+                    {portResults.map(p => (
+                      <li key={p.id} onClick={() => { setSelectedPort(p); setPortResults([]); }}>
+                        <Building2 size={14}/> {p.title} 
+                        <span className={styles.sub}>{p.district} / {p.price}₺</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ) : (
+              <div className={styles.selectedCard}>
+                <div className={styles.info}>
+                  <span className={styles.label}>Seçilen Portföy</span>
+                  <strong>{selectedPort.title}</strong>
+                </div>
+                <button onClick={() => setSelectedPort(null)}><X size={16}/></button>
+              </div>
+            )}
+          </div>
+
+          {/* 3. ADIM: Aşama ve Tutar */}
+          <div className={styles.row}>
+            <div className={styles.formGroup}>
+              <label>Başlangıç Aşaması</label>
+              <select value={stage} onChange={(e) => setStage(e.target.value as PipelineStage)}>
+                {STAGES.map(s => (
+                  <option key={s} value={s}>{STAGE_LABELS[s]}</option>
+                ))}
+              </select>
+            </div>
+            <div className={styles.formGroup}>
+              <label>Beklenen Tutar (₺)</label>
+              <input 
+                type="number" 
+                value={amount} 
+                onChange={e => setAmount(e.target.value)}
+                placeholder="Örn: 5000000"
+              />
             </div>
           </div>
 
-          <div className={styles.formGroup}>
-            <label>Tahmini İşlem Tutarı (₺)</label>
-            <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" />
-          </div>
+        </div>
 
-          <button type="submit" className={styles.btnSubmit} disabled={!selectedId}>
-            Fırsatı Başlat
+        <footer className={styles.footer}>
+          <button onClick={onClose} className={styles.cancelBtn}>İptal</button>
+          <button 
+            onClick={handleSubmit} 
+            className={styles.submitBtn}
+            disabled={loading || !selectedCust}
+          >
+            {loading ? 'Kaydediliyor...' : <><CheckCircle2 size={18}/> Fırsatı Oluştur</>}
           </button>
-        </form>
-      </motion.div>
+        </footer>
+      </div>
     </div>
   );
 }
