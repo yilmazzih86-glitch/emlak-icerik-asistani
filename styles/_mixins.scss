@@ -1,5 +1,7 @@
-// DÜZELTME: './' kaldırıldı, doğrudan dosya adı kullanıldı
-@import 'variables';
+// styles/_mixins.scss
+
+// HATA ÇÖZÜMÜ: Alias (@) kullanımı en garantisidir.
+@import '@/styles/variables'; 
 
 // Esnek Kutu Düzeni
 @mixin flex($justify: flex-start, $align: center, $gap: 0) {
@@ -9,7 +11,7 @@
   gap: $gap;
 }
 
-// Kart Görünümü (Koyu Tema Uyumlu)
+// Kart Görünümü
 @mixin card-surface {
   background: $color-bg-surface;
   border: 1px solid $color-border;
@@ -17,7 +19,6 @@
 }
 
 // --- RESPONSIVE MIXINS ---
-
 @mixin mobile {
   @media (max-width: 768px) {
     @content;

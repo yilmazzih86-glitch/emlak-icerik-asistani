@@ -78,5 +78,32 @@ export const crmService = {
   // Örnek bir ekleme fonksiyonu
   async addTask(task: Partial<CrmTask>) {
     return await supabase.from('crm_tasks').insert(task).select().single();
+  },
+  async getCustomerFullProfile(customerId: string) {
+    const [customer, tasks, activities, appointments, deals] = await Promise.all([
+      supabase.from('customers').select('*').eq('id', customerId).single(),
+      supabase.from('crm_tasks').select('*').eq('customer_id', customerId).order('due_date', { ascending: true }),
+      supabase.from('crm_activities').select('*').eq('customer_id', customerId).order('created_at', { ascending: false }),
+      supabase.from('crm_appointments').select('*').eq('customer_id', customerId).order('appointment_date', { ascending: true }),
+      supabase.from('crm_deals').select('*, portfolios(title, price)').eq('customer_id', customerId)
+    ]);
+
+    return {
+      customer: customer.data,
+      tasks: tasks.data || [],
+      activities: activities.data || [],
+      appointments: appointments.data || [],
+      deals: deals.data || []
+    };
+  },
+
+  // AI Aktivitesini loglamak için
+  async logAiActivity(customerId: string, toolMode: string, summary: string) {
+    return await supabase.from('crm_activities').insert({
+      customer_id: customerId,
+      type: 'ai_log',
+      description: `AI (${toolMode}) kullanıldı: ${summary}`,
+      created_at: new Date().toISOString()
+    });
   }
 };

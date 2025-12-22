@@ -1,0 +1,218 @@
+@import '@/styles/variables';
+
+.aiContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Araç Seçim Grid'i --- */
+.toolGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); // 3 sütunlu yapı
+  gap: 10px;
+
+  .toolBtn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1rem 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    span {
+      font-size: 0.75rem;
+      color: #555;
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    &:hover {
+      background: #f9fafb;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    &.active {
+      background: #fdf2f8; // Hafif pembe/mor background
+      border-color: currentColor; // Butonun inline rengini alır
+      border-width: 2px;
+      
+      span {
+        font-weight: 600;
+        color: #111;
+      }
+    }
+  }
+}
+
+/* --- Prompt Giriş Alanı --- */
+.activeZone {
+  background: #fff;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+
+  .inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    input {
+      width: 100%;
+      padding: 0.8rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      
+      &:focus {
+        outline: none;
+        border-color: #8B5CF6;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+      }
+    }
+
+    .runBtn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #8B5CF6 0%, #6366f1 100%);
+      color: white;
+      border: none;
+      padding: 0.8rem;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.2s;
+
+      &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+      
+      &:hover:not(:disabled) {
+        opacity: 0.9;
+      }
+    }
+  }
+}
+
+/* --- Sonuç Alanı --- */
+.resultBox {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Mod 1: Mesaj Taslağı */
+.messageDraft {
+  padding: 1rem;
+  background: #f0fdf4; // Hafif yeşil (WhatsApp vibe)
+
+  .bubble {
+    background: #fff;
+    padding: 1rem;
+    border-radius: 0 12px 12px 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    color: #333;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    position: relative;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -8px;
+      width: 0;
+      height: 0;
+      border-top: 10px solid #fff;
+      border-left: 10px solid transparent;
+    }
+  }
+
+  .copyBtn {
+    margin-top: 10px;
+    width: 100%;
+    background: #fff;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-weight: 500;
+    
+    &:hover { background: #dcfce7; }
+  }
+}
+
+/* Mod 2: Eşleşme Listesi */
+.matchList {
+  display: flex;
+  flex-direction: column;
+
+  .matchItem {
+    display: flex;
+    align-items: flex-start;
+    padding: 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    gap: 12px;
+
+    &:last-child { border-bottom: none; }
+
+    .score {
+      background: #eff6ff;
+      color: #2563eb;
+      font-weight: 700;
+      font-size: 0.9rem;
+      padding: 6px;
+      border-radius: 8px;
+      min-width: 45px;
+      text-align: center;
+    }
+
+    .details {
+      h5 {
+        margin: 0 0 4px 0;
+        font-size: 0.95rem;
+        color: #1f2937;
+      }
+      p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #6b7280;
+        line-height: 1.4;
+      }
+    }
+  }
+}
+
+/* Genel İçerik (Markdown vb.) */
+.genericContent {
+  padding: 1.5rem;
+  font-size: 0.95rem;
+  color: #374151;
+  line-height: 1.6;
+  white-space: pre-wrap; // Satır boşluklarını koru
+}

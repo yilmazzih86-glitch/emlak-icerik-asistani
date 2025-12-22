@@ -70,6 +70,38 @@ export interface CrmAppointment {
   created_at: string;
 }
 
+// features/crm/api/types.ts
+
+// Mevcut tiplere ek olarak:
+
+// 1. AI Araç Modları
+export type AiToolMode = 
+  | 'message_draft'       // 1. Mesaj Hazırlama
+  | 'smart_match'         // 2. Akıllı Eşleştirme
+  | 'silence_detection'   // 3. Takip & Sessizlik
+  | 'post_sale'           // 4. Satış Sonrası
+  | 'consultant_insight'; // 5. Danışman İçgörü
+
+// 2. AI Yanıt Yapıları (n8n'den dönecek JSON formatı)
+export interface AiResponse {
+  type: AiToolMode;
+  content: string; // Markdown formatında genel metin
+  data?: any;      // Yapısal veri (örn: eşleşen portföy listesi)
+  suggested_actions?: {
+    label: string;
+    action_type: 'copy_text' | 'create_task' | 'update_stage';
+    payload: any;
+  }[];
+}
+
+// 3. Veritabanı İlişkileri (Supabase Joinleri için)
+export interface CustomerDetail extends Customer {
+  tasks: CrmTask[];
+  activities: CrmActivity[];
+  appointments: CrmAppointment[];
+  deals: CrmDeal[];
+}
+
 // AI Yanıt Tipleri
 export type AiAutomationMode = 
   | 'message_draft' 
