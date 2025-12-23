@@ -18,7 +18,8 @@ type DetailTab = 'info' | 'history' | 'ai' | 'tasks'; // 'tasks' sekmesi eklendi
 interface CrmState {
   // --- Global Veriler ---
   deals: CrmDeal[];       
-  customers: Customer[]; 
+  customers: Customer[];
+  removeCustomerFromState: (customerId: string) => void;
   
   // --- Pagination & Filtre ---
   pagination: {
@@ -57,6 +58,8 @@ interface CrmState {
   // --- Aksiyonlar (Detay Güncellemeleri - Optimistic) ---
   addActivityToState: (activity: CrmActivity) => void;
   addTaskToState: (task: CrmTask) => void;
+  removeTaskFromState: (taskId: string) => void;
+  removeActivityFromState: (activityId: string) => void;
   addAppointmentToState: (appointment: CrmAppointment) => void;
 }
 
@@ -217,6 +220,17 @@ export const useCrmStore = create<CrmState>((set, get) => ({
       };
     });
   },
+  removeActivityFromState: (activityId) => {
+    set((state) => {
+      if (!state.selectedCustomerDetail) return state;
+      return {
+        selectedCustomerDetail: {
+          ...state.selectedCustomerDetail,
+          activities: state.selectedCustomerDetail.activities.filter(a => a.id !== activityId)
+        }
+      };
+    });
+  },
 
   addTaskToState: (task) => {
     set((state) => {
@@ -226,6 +240,34 @@ export const useCrmStore = create<CrmState>((set, get) => ({
           ...state.selectedCustomerDetail,
           tasks: [...state.selectedCustomerDetail.tasks, task]
         }
+      };
+    });
+  },
+  removeTaskFromState: (taskId) => {
+    set((state) => {
+      if (!state.selectedCustomerDetail) return state;
+      return {
+        selectedCustomerDetail: {
+          ...state.selectedCustomerDetail,
+          tasks: state.selectedCustomerDetail.tasks.filter(t => t.id !== taskId)
+        }
+      };
+    });
+  },
+  removeCustomerFromState: (customerId) => {
+    set((state) => {
+      // 1. Listeden çıkar
+      const updatedCustomers = state.customers.filter(c => c.id !== customerId);
+      
+      // 2. Eğer silinen müşteri şu an ekranda açıksa paneli kapat
+      const shouldClose = state.selectedCustomerId === customerId;
+
+      return {
+        customers: updatedCustomers,
+        // Silinen müşteri açıksa her şeyi sıfırla ve kapat
+        isSidebarOpen: shouldClose ? false : state.isSidebarOpen,
+        selectedCustomerId: shouldClose ? null : state.selectedCustomerId,
+        selectedCustomerDetail: shouldClose ? null : state.selectedCustomerDetail
       };
     });
   },

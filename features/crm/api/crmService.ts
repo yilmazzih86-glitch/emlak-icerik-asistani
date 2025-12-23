@@ -72,6 +72,15 @@ export const crmService = {
     if (error) throw error;
     return data;
   },
+  async deleteCustomer(id: string) {
+    const { error } = await supabase
+      .from('customers') // Sadece customers'dan silmek yeterlidir (Cascade varsa)
+      .delete()
+      .eq('id', id);
+      
+    if (error) throw error;
+    return true;
+  },
 
   // ---------------------------------------------------------------------------
   // 2. PORTFÖY YÖNETİMİ (Portfolios)
@@ -213,5 +222,25 @@ export const crmService = {
       .single();
     if (error) throw error;
     return data;
+  },
+  async deleteActivity(activityId: string) {
+    const { error } = await supabase
+      .from('crm_activities')
+      .delete()
+      .eq('id', activityId);
+      
+    if (error) throw error;
+    return true;
+  },
+  async deleteTask(taskId: string) {
+    const { error, count } = await supabase
+      .from('crm_tasks')
+      .delete({ count: 'exact' })
+      .eq('id', taskId);
+      
+    if (error) throw error;
+    if (count === 0) throw new Error("Görev silinemedi veya bulunamadı.");
+    
+    return true;
   }
 };

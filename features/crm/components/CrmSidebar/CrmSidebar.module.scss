@@ -488,8 +488,10 @@
 
   .headerTop {
     display: flex;
-    justify-content: space-between;
-    padding: 1rem;
+    justify-content: flex-end; // Butonları sağa yaslar
+    align-items: center;
+    gap: 12px; // Butonlar arası boşluk
+    margin-bottom: 16px;
 
     .backBtn {
       background: none;
@@ -503,6 +505,24 @@
       &:hover {
         background-color: rgba(255, 255, 255, 0.05);
         color: $color-text-main;
+      }
+    }
+    .deleteCustomerBtn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: $color-text-muted;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: $radius-md;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &:hover {
+        color: #ef4444; // Kırmızı
+        background-color: rgba(#ef4444, 0.1);
+        border-color: rgba(#ef4444, 0.2);
       }
     }
   }
@@ -789,6 +809,44 @@
           font-size: 0.75rem;
           color: $color-text-muted;
         }
+        .actType {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: capitalize;
+            color: $color-primary; // Veya mevcut renk
+          }
+
+          .date {
+            font-size: 11px;
+            color: $color-text-muted;
+            margin-left: 8px;
+          }
+
+          // --- YENİ EKLENECEK KISIM (SİLME BUTONU) ---
+          .deleteBtn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: $radius-sm;
+            color: $color-text-muted; // Varsayılan olarak gri olsun
+            transition: all 0.2s ease;
+            margin-left: auto; // En sağa itmek için garanti
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            &:hover {
+              color: $color-danger; // Hover olunca kırmızı (#ef4444)
+              background-color: rgba($color-danger, 0.1); // Hafif kırmızı zemin
+            }
+
+            // Mobilde parmakla basmayı kolaylaştırmak için
+            &:active {
+              transform: scale(0.95);
+            }
+          }
       }
 
       p {
@@ -857,6 +915,144 @@
         font-size: 0.8rem;
         color: $color-text-muted;
       }
+    }
+  }
+}
+.tasksTab {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  // Yeni Görev Formu
+  .newTaskBox {
+    background-color: $bg-dark-panel; // Variables'dan gelen renk
+    padding: 12px;
+    border-radius: $radius-md;
+    border: 1px solid $color-border;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    .taskInput {
+      width: 100%;
+      background: transparent;
+      border: 1px solid $color-border;
+      color: $color-text-main;
+      padding: 8px;
+      border-radius: $radius-sm;
+      
+      &:focus {
+        border-color: $color-primary;
+        outline: none;
+      }
+    }
+
+    .taskFooter {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+
+      .dateInput {
+        background: transparent;
+        border: 1px solid $color-border;
+        color: $color-text-muted;
+        padding: 6px;
+        border-radius: $radius-sm;
+        font-size: 12px;
+        
+        &::-webkit-calendar-picker-indicator {
+          filter: invert(1); // Dark mode için takvim ikonunu beyaz yap
+          opacity: 0.6;
+        }
+      }
+
+      .addBtn {
+        background-color: $color-primary;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: $radius-sm;
+        font-size: 13px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        &:hover:not(:disabled) {
+          background-color: $color-primary-hover;
+        }
+      }
+    }
+  }
+
+  // Görev Listesi
+  .taskList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .taskCard {
+      background-color: rgba($bg-dark-panel, 0.5);
+      border: 1px solid $color-border;
+      padding: 10px;
+      border-radius: $radius-md;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s;
+
+      &:hover {
+        border-color: $color-primary-light;
+      }
+
+      .taskInfo {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        .taskTitle {
+          font-size: 14px;
+          color: $color-text-main;
+        }
+
+        .taskDate {
+          font-size: 11px;
+          color: $color-text-muted;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+      }
+
+      .deleteTaskBtn {
+        background: transparent;
+        border: none;
+        color: $color-text-muted;
+        padding: 6px;
+        border-radius: $radius-sm;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &:hover {
+          color: $color-danger;
+          background-color: rgba($color-danger, 0.1);
+        }
+      }
+    }
+
+    .emptyText {
+      text-align: center;
+      color: $color-text-muted;
+      font-size: 13px;
+      margin-top: 10px;
     }
   }
 }
