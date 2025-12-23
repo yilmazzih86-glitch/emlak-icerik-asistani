@@ -2,66 +2,70 @@
 
 @import '@/styles/_variables.scss';
 
-// 1. OVERLAY & MODAL CONTAINER
+// 1. OVERLAY & MODAL CONTAINER (PREMIUM GLASSMORPHISM)
 .overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background-color: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(4px);
+  background-color: rgba(0, 0, 0, 0.4); // Daha şeffaf zemin
+  backdrop-filter: blur(12px); // Marka derinliği için yüksek blur
   z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: fadeIn 0.2s ease-out;
+  animation: fadeIn 0.3s ease-out;
 }
 
 .modal {
-  background-color: $bg-dark-panel;
+  // Markanın derin siyah zemini ve şeffaflık
+  background-color: rgba(10, 10, 10, 0.85); 
+  backdrop-filter: blur(24px);
   width: 90%;
   max-width: 500px;
-  border-radius: $radius-lg;
-  border: 1px solid $color-border;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  border-radius: 20px; // Daha modern geniş köşeler
+  border: 1px solid rgba(255, 255, 255, 0.08); // İnce parlayan sınır
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
   display: flex;
   flex-direction: column;
-  overflow: visible; // Arama listesi taşabilsin diye
-  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: visible;
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 
-  // --- HEADER ---
+  // --- HEADER (MARKAYA UYUMLU BAŞLIK) ---
   .header {
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid $color-border;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: rgba($bg-dark-panel, 0.5);
+    background-color: rgba(255, 255, 255, 0.01);
 
     h2 {
       margin: 0;
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: $color-text-main;
+      font-size: 1.25rem;
+      font-weight: 800; // Daha güçlü ağırlık
+      color: #ffffff;
       display: flex;
       align-items: center;
       gap: 0.75rem;
+      letter-spacing: -0.02em;
       
-      svg { color: $color-secondary; } // Turuncu Çanta İkonu
+      svg { color: #f97316; } // Marka Turuncusu (Fırsat İkonu)
     }
 
     .closeBtn {
-      background: transparent;
-      border: none;
-      color: $color-text-muted;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.4);
       cursor: pointer;
-      padding: 0.25rem;
-      border-radius: $radius-sm;
-      &:hover { color: $color-text-main; background: rgba(255,255,255,0.1); }
+      padding: 0.4rem;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      &:hover { color: #ef4444; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); transform: rotate(90deg); }
     }
   }
 
   // --- BODY (FORM ALANI) ---
   .body {
-    padding: 1.5rem;
+    padding: 2rem;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
@@ -71,207 +75,232 @@
   .section {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    position: relative; // Dropdown için referans
+    gap: 0.6rem;
+    position: relative;
 
     label {
-      font-size: 0.85rem;
-      font-weight: 500;
-      color: $color-text-muted;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.3);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
-    // Arama Kutusu
+    // Arama Kutusu (Modern Deep Input)
     .searchBox {
       display: flex;
       align-items: center;
-      background-color: $bg-dark-input;
-      border: 1px solid transparent;
-      border-radius: $radius-md;
-      padding: 0 0.75rem;
-      transition: all 0.2s;
+      background-color: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 0 1rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
 
       &:focus-within {
-        border-color: $color-primary; // Mor Focus
-        box-shadow: 0 0 0 2px rgba($color-primary, 0.25);
+        border-color: rgba(124, 58, 237, 0.5); // Marka Moru Focus
+        background-color: rgba(0, 0, 0, 0.4);
+        box-shadow: 0 0 15px rgba(124, 58, 237, 0.15);
       }
 
-      .icon { color: $color-text-muted; margin-right: 0.5rem; }
+      .icon { color: rgba(255, 255, 255, 0.2); margin-right: 0.6rem; }
 
       input {
         flex: 1;
         background: transparent;
         border: none;
-        padding: 0.75rem 0;
-        color: $color-text-main;
+        padding: 0.85rem 0;
+        color: #ffffff;
         font-size: 0.95rem;
+        font-weight: 500;
         outline: none;
         width: 100%;
-        &::placeholder { color: rgba($color-text-muted, 0.5); }
+        &::placeholder { color: rgba(255, 255, 255, 0.2); }
       }
 
-      // AUTOCOMPLETE LİSTESİ (Dropdown)
+      // AUTOCOMPLETE LİSTESİ (Glass Dropdown)
       .resultsList {
         position: absolute;
         top: 100%;
         left: 0;
         right: 0;
-        margin-top: 0.5rem;
-        background-color: $bg-dark-panel;
-        border: 1px solid $color-border;
-        border-radius: $radius-md;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+        margin-top: 0.6rem;
+        background-color: rgba(15, 15, 15, 0.9);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
         list-style: none;
-        padding: 0;
-        max-height: 200px;
+        padding: 0.5rem;
+        max-height: 220px;
         overflow-y: auto;
         z-index: 50;
 
         &::-webkit-scrollbar { width: 4px; }
-        &::-webkit-scrollbar-thumb { background: $color-border; border-radius: 2px; }
+        &::-webkit-scrollbar-thumb { background: rgba(124, 58, 237, 0.2); border-radius: 10px; }
 
         li {
-          padding: 0.75rem 1rem;
+          padding: 0.8rem 1rem;
           cursor: pointer;
-          border-bottom: 1px solid rgba($color-border, 0.5);
+          border-radius: 8px;
+          margin-bottom: 2px;
           display: flex;
           align-items: center;
-          gap: 0.5rem;
+          gap: 0.6rem;
           font-size: 0.9rem;
-          color: $color-text-main;
-          transition: background 0.1s;
+          font-weight: 500;
+          color: rgba(255, 255, 255, 0.8);
+          transition: all 0.2s;
 
-          &:last-child { border-bottom: none; }
+          &:last-child { margin-bottom: 0; }
           
-          // Hover Durumu
           &:hover {
-            background-color: rgba($color-primary, 0.15); // Açık Mor Hover
-            color: lighten($color-primary, 10%);
+            background-color: rgba(124, 58, 237, 0.15); // Marka Moru Hover
+            color: #a78bfa;
+            transform: translateX(4px);
           }
           
           .sub {
             margin-left: auto;
             font-size: 0.75rem;
-            color: $color-text-muted;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.3);
           }
         }
       }
     }
 
-    // SEÇİLMİŞ KART GÖRÜNÜMÜ
+    // SEÇİLMİŞ KART GÖRÜMÜMÜ (Neon Accent)
     .selectedCard {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.75rem 1rem;
-      background: rgba($color-primary, 0.1); // Mor Zemin
-      border: 1px solid rgba($color-primary, 0.3);
-      border-radius: $radius-md;
-      animation: fadeIn 0.2s;
+      padding: 1rem 1.25rem;
+      background: rgba(124, 58, 237, 0.05); // Hafif Mor Glow
+      border: 1px solid rgba(124, 58, 237, 0.3);
+      border-radius: 12px;
+      animation: fadeIn 0.3s;
       
       .info {
         display: flex;
         flex-direction: column;
         gap: 2px;
-        .label { font-size: 0.7rem; color: lighten($color-primary, 20%); text-transform: uppercase; letter-spacing: 0.5px; }
-        strong { font-size: 0.95rem; color: $color-text-main; }
+        .label { font-size: 0.65rem; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.1em; }
+        strong { font-size: 1rem; color: #ffffff; font-weight: 700; }
       }
       
       button {
-        background: rgba($bg-dark-panel, 0.5);
-        border: 1px solid rgba($color-danger, 0.3);
-        border-radius: 50%;
-        width: 28px; height: 28px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        border-radius: 10px;
+        width: 32px; height: 32px;
         @include flex-center;
-        color: $color-danger; // Kırmızı Silme Butonu
+        color: rgba(239, 68, 68, 0.6);
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         
         &:hover {
-          background: $color-danger;
+          background: #ef4444;
           color: white;
-          border-color: $color-danger;
+          border-color: #ef4444;
+          transform: scale(1.1);
         }
       }
     }
   }
 
-  // YAN YANA INPUTLAR (Stage & Amount)
+  // YAN YANA INPUTLAR
   .row {
     display: flex;
-    gap: 1rem;
+    gap: 1.25rem;
     
     .formGroup {
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0.6rem;
       
-      label { font-size: 0.85rem; color: $color-text-muted; font-weight: 500; }
+      label { font-size: 0.8rem; font-weight: 700; color: rgba(255, 255, 255, 0.3); text-transform: uppercase; }
       
       select, input {
         width: 100%;
-        background-color: $bg-dark-input;
-        border: 1px solid transparent;
-        color: $color-text-main;
-        padding: 0.75rem;
-        border-radius: $radius-md;
+        background-color: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        color: #ffffff;
+        padding: 0.85rem 1rem;
+        border-radius: 12px;
         outline: none;
         font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
         
         &:focus {
-          border-color: $color-primary;
-          box-shadow: 0 0 0 2px rgba($color-primary, 0.25);
+          border-color: rgba(124, 58, 237, 0.5);
+          background-color: rgba(0, 0, 0, 0.4);
         }
+      }
+
+      // Dropdown oku (dark mode)
+      select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='rgba(255,255,255,0.3)' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
       }
     }
   }
 
-  // --- FOOTER ---
+  // --- FOOTER (ACTION BAR) ---
   .footer {
-    padding: 1.25rem 1.5rem;
-    border-top: 1px solid $color-border;
+    padding: 1.5rem 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
     display: flex;
     justify-content: flex-end;
-    gap: 0.75rem;
-    background-color: darken($bg-dark-panel, 2%);
+    gap: 1rem;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 0 0 20px 20px;
 
     .cancelBtn {
-      padding: 0.6rem 1.25rem;
-      background: transparent;
-      border: 1px solid $color-border;
-      color: $color-text-muted;
-      border-radius: $radius-md;
+      padding: 0.75rem 1.5rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.5);
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
       cursor: pointer;
-      &:hover { border-color: $color-text-muted; color: $color-text-main; }
+      transition: all 0.3s ease;
+      &:hover { border-color: rgba(255, 255, 255, 0.2); color: #ffffff; background: rgba(255, 255, 255, 0.06); }
     }
 
     .submitBtn {
-      padding: 0.6rem 1.25rem;
-      background: linear-gradient(135deg, $color-secondary, darken($color-secondary, 5%)); // Turuncu Buton (Satış aksiyonu)
+      padding: 0.75rem 1.5rem;
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); // Marka Turuncusu
       border: none;
       color: white;
-      border-radius: $radius-md;
-      font-weight: 500;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      box-shadow: 0 4px 6px rgba($color-secondary, 0.2);
-      transition: all 0.2s;
+      gap: 0.6rem;
+      box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
       &:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 6px 12px rgba($color-secondary, 0.3);
+        transform: translateY(-2px);
+        filter: brightness(1.1);
+        box-shadow: 0 8px 25px rgba(249, 115, 22, 0.4);
       }
       
-      &:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+      &:disabled { opacity: 0.5; cursor: not-allowed; transform: none; filter: grayscale(1); }
     }
   }
 }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideUp { 
-  from { opacity: 0; transform: translateY(20px); } 
-  to { opacity: 1; transform: translateY(0); } 
+  from { opacity: 0; transform: translateY(30px) scale(0.95); } 
+  to { opacity: 1; transform: translateY(0) scale(1); } 
 }

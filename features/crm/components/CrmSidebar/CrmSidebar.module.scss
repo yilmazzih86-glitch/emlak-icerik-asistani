@@ -7,19 +7,18 @@
 .overlay {
   position: fixed;
   top: 0; left: 0; width: 100vw; height: 100vh;
-  background: rgba(0, 0, 0, 0.6); // Arkası kararsın
-  backdrop-filter: blur(2px);
+  background: rgba(0, 0, 0, 0.4); 
+  backdrop-filter: blur(8px); // Marka derinliği için blur eklendi
   z-index: 998;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 
   &.open {
     opacity: 1;
     visibility: visible;
   }
   
-  // Masaüstünde overlay gerekmez, sadece sidebar kaysın
   @media (min-width: 1024px) {
     display: none;
   }
@@ -28,17 +27,29 @@
 .sidebarContainer {
   position: fixed;
   top: 0; right: 0; bottom: 0;
-  width: 400px; // Standart genişlik
-  background: $bg-dark-panel;
-  border-left: 1px solid $color-border;
-  box-shadow: -5px 0 25px rgba(0, 0, 0, 0.3);
+  width: 480px; 
+  // Markanın şeffaf koyu zemini ve cam efekti
+  background: rgba(10, 10, 10, 0.75);
+  backdrop-filter: blur(32px);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: -20px 0 50px rgba(0, 0, 0, 0.5);
   z-index: 999;
-  
-  transform: translateX(100%); // Varsayılan kapalı
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 
   &.open {
     transform: translateX(0);
+  }
+
+  // Sol kenarda markanın imzası olan mor neon çizgi
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 1px; height: 100%;
+    background: linear-gradient(to bottom, transparent, #7c3aed, transparent);
+    opacity: 0.5;
   }
 
   // Mobilde tam ekran
@@ -49,83 +60,101 @@
 
 // --- 2. GLOBAL LİSTE GÖRÜNÜMÜ (SidebarGlobal) ---
 
+// --- 2. GLOBAL LİSTE GÖRÜMÜÜ (SidebarGlobal) ---
+
 .sidebarGlobal {
   height: 100%;
   display: flex;
   flex-direction: column;
+  background: transparent; // Ana konteynerin cam efektini bozmamak için
 
   .header {
-    padding: 1rem;
-    border-bottom: 1px solid $color-border;
-    background: rgba($bg-dark-panel, 0.95);
+    padding: 1.5rem 1.25rem; // Biraz daha genişletilmiş ferah alan
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(15, 15, 15, 0.4); // Hafif şeffaf header
+    backdrop-filter: blur(10px);
     
     .titleRow {
       @include flex-between;
-      margin-bottom: 1rem;
+      margin-bottom: 1.25rem;
       
       h3 {
         margin: 0;
-        font-size: 1.1rem;
-        color: $color-text-main;
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #ffffff;
         @include flex-center;
-        gap: 0.5rem;
+        gap: 0.6rem;
+        letter-spacing: -0.02em;
+        
+        svg { color: #7c3aed; } // İkon Marka Moru
       }
 
       .closeMobile {
-        background: transparent;
-        border: 1px solid $color-border;
-        color: $color-text-muted;
-        font-size: 0.8rem;
-        padding: 4px 8px;
-        border-radius: $radius-sm;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 5px 10px;
+        border-radius: 8px;
         @media (min-width: 1024px) { display: none; }
+        
+        &:hover { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
       }
     }
 
     .actions {
       display: flex;
-      gap: 0.5rem;
+      gap: 0.75rem;
 
       .searchBox {
         flex: 1;
         @include flex-center;
-        background: $bg-dark-input;
-        border: 1px solid transparent;
-        border-radius: $radius-md;
-        padding: 0 0.75rem;
-        transition: border 0.2s;
+        background: rgba(0, 0, 0, 0.2); // Derin arama kutusu
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 0 1rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
         &:focus-within {
-          border-color: $color-primary;
-          box-shadow: 0 0 0 2px rgba($color-primary, 0.1);
+          border-color: rgba(124, 58, 237, 0.5); // Odaklanınca mor ışık
+          background: rgba(0, 0, 0, 0.4);
+          box-shadow: 0 0 15px rgba(124, 58, 237, 0.1);
         }
 
-        svg { color: $color-text-muted; }
+        svg { color: rgba(255, 255, 255, 0.3); }
 
         input {
           width: 100%;
           background: transparent;
           border: none;
-          padding: 0.6rem 0.5rem;
-          color: $color-text-main;
+          padding: 0.7rem 0.6rem;
+          color: #ffffff;
           outline: none;
           font-size: 0.9rem;
-          &::placeholder { color: rgba($color-text-muted, 0.6); }
+          font-weight: 500;
+          &::placeholder { color: rgba(255, 255, 255, 0.2); }
         }
       }
 
       .addBtn {
-        background: $color-primary;
+        background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); // Gradient Mor
         color: white;
         border: none;
-        width: 36px;
-        height: 36px;
-        border-radius: $radius-md;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
         @include flex-center;
         cursor: pointer;
-        transition: background 0.2s;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
         
-        &:hover { background: $color-primary-hover; }
+        &:hover { 
+          transform: translateY(-2px);
+          box-shadow: 0 6px 18px rgba(124, 58, 237, 0.4);
+          filter: brightness(1.1);
+        }
       }
     }
   }
@@ -133,75 +162,88 @@
   .listContainer {
     flex: 1;
     overflow-y: auto;
-    padding: 0.5rem;
+    padding: 0.75rem;
 
     .customerRow {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      padding: 0.75rem;
-      border-radius: $radius-md;
+      gap: 0.85rem;
+      padding: 1rem;
+      border-radius: 14px;
       cursor: pointer;
-      transition: background 0.2s;
-      border-bottom: 1px solid rgba($color-border, 0.3);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      margin-bottom: 0.25rem;
 
       &:hover {
-        background: rgba(255, 255, 255, 0.03);
-        .arrow { opacity: 1; transform: translateX(2px); }
+        background: rgba(124, 58, 237, 0.04);
+        border-color: rgba(124, 58, 237, 0.2);
+        .arrow { opacity: 1; transform: translateX(4px); color: #7c3aed; }
       }
 
       .avatar {
-        width: 40px; height: 40px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, $bg-dark-input, darken($bg-dark-input, 5%));
-        color: $color-primary;
-        font-weight: bold;
+        width: 44px; height: 44px;
+        border-radius: 12px; // Modern yuvarlak köşeli kare
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(0, 0, 0, 0.3));
+        color: #a78bfa;
+        font-weight: 800;
         @include flex-center;
-        font-size: 1rem;
-        border: 1px solid $color-border;
+        font-size: 1.1rem;
+        border: 1px solid rgba(124, 58, 237, 0.2);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         
-        img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        img { width: 100%; height: 100%; border-radius: 12px; object-fit: cover; }
       }
 
       .info {
         flex: 1;
-        h4 { margin: 0; font-size: 0.95rem; color: $color-text-main; font-weight: 500; }
+        h4 { margin: 0; font-size: 1rem; color: #ffffff; font-weight: 700; letter-spacing: -0.01em; }
         .meta {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
-          margin-top: 0.25rem;
+          gap: 0.6rem;
+          margin-top: 0.35rem;
           font-size: 0.8rem;
-          color: $color-text-muted;
+          color: rgba(255, 255, 255, 0.4);
           
           .tag {
-            background: rgba($color-secondary, 0.15);
-            color: lighten($color-secondary, 10%);
-            padding: 1px 6px;
-            border-radius: 4px;
+            background: rgba(249, 115, 22, 0.1); // Marka Turuncusu soft arka plan
+            color: #f97316; // Turuncu Vurgu
+            padding: 2px 8px;
+            border-radius: 6px;
             font-size: 0.7rem;
-            text-transform: capitalize;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            border: 1px solid rgba(249, 115, 22, 0.1);
           }
         }
       }
 
       .arrow {
-        color: $color-text-muted;
+        color: rgba(255, 255, 255, 0.2);
         opacity: 0.5;
-        transition: all 0.2s;
+        transition: all 0.3s ease;
       }
     }
 
     .loadMoreBtn {
       width: 100%;
-      padding: 0.75rem;
-      margin-top: 0.5rem;
-      background: transparent;
-      border: 1px dashed $color-border;
-      color: $color-text-muted;
-      border-radius: $radius-md;
+      padding: 0.85rem;
+      margin-top: 1rem;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px dashed rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.4);
+      font-weight: 600;
+      font-size: 0.85rem;
+      border-radius: 12px;
       cursor: pointer;
-      &:hover { border-color: $color-text-muted; color: $color-text-main; }
+      transition: all 0.3s ease;
+      &:hover { 
+        border-color: rgba(124, 58, 237, 0.4); 
+        color: #a78bfa;
+        background: rgba(124, 58, 237, 0.05);
+      }
     }
   }
 }
@@ -212,40 +254,52 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: $bg-dark-panel;
+  background: transparent; // Ana sidebar'ın cam efektini yansıtması için şeffaf bırakıldı
 
-  // Header Bölümü
+  // Header Bölümü (Premium Cam Efekti)
   .detailHeader {
     padding: 1.5rem 1.5rem 0 1.5rem;
-    border-bottom: 1px solid $color-border;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.01);
 
     .headerTop {
       @include flex-between;
-      margin-bottom: 1rem;
+      margin-bottom: 1.25rem;
 
       .closeBtn {
-        background: transparent;
-        border: none;
-        color: $color-text-muted;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.4);
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        @include flex-center;
         cursor: pointer;
-        padding: 0;
-        &:hover { color: $color-text-main; }
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        
+        &:hover { 
+          background: rgba(239, 68, 68, 0.1); 
+          color: #ef4444; 
+          transform: rotate(90deg);
+          border-color: rgba(239, 68, 68, 0.2);
+        }
       }
 
       .badge {
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-size: 0.75rem;
-        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: 99px; // Modern pill shape
+        font-size: 0.7rem;
+        font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.05em;
+        border: 1px solid transparent;
         
-        // Stage Renkleri
-        &.NEW { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
-        &.CONTACT { background: rgba($color-primary, 0.2); color: lighten($color-primary, 10%); }
-        &.PRESENTATION { background: rgba($color-secondary, 0.2); color: lighten($color-secondary, 10%); }
-        &.OFFER { background: rgba(234, 179, 8, 0.2); color: #facc15; }
-        &.SOLD { background: rgba($color-success, 0.2); color: lighten($color-success, 10%); }
+        // Marka Kimliğiyle Uyumlu Stage Renkleri (Neon Efektli)
+        &.NEW { background: rgba(59, 130, 246, 0.1); color: #60a5fa; border-color: rgba(59, 130, 246, 0.2); }
+        &.CONTACT { background: rgba(124, 58, 237, 0.1); color: #a78bfa; border-color: rgba(124, 58, 237, 0.2); }
+        &.PRESENTATION { background: rgba(249, 115, 22, 0.1); color: #fb923c; border-color: rgba(249, 115, 22, 0.2); }
+        &.OFFER { background: rgba(234, 179, 8, 0.1); color: #facc15; border-color: rgba(234, 179, 8, 0.2); }
+        &.SOLD { background: rgba(34, 197, 94, 0.1); color: #4ade80; border-color: rgba(34, 197, 94, 0.2); }
       }
     }
 
@@ -257,32 +311,49 @@
       margin-bottom: 1.5rem;
 
       .avatarLarge {
-        width: 72px; height: 72px;
-        background: linear-gradient(135deg, $color-primary, darken($color-primary, 15%));
+        width: 80px; height: 80px;
+        // Marka Moru Gradyanı
+        background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
         color: white;
-        font-size: 1.75rem;
-        font-weight: 600;
+        font-size: 1.85rem;
+        font-weight: 800;
         @include flex-center;
-        border-radius: 50%;
-        margin-bottom: 0.75rem;
-        box-shadow: 0 0 20px rgba($color-primary, 0.3);
+        border-radius: 24px; // Daha modern yuvarlak köşeli kare
+        margin-bottom: 1rem;
+        box-shadow: 0 10px 25px rgba(124, 58, 237, 0.4);
+        border: 2px solid rgba(255, 255, 255, 0.1);
       }
 
-      h2 { margin: 0 0 0.5rem 0; color: $color-text-main; font-size: 1.25rem; }
+      h2 { 
+        margin: 0 0 0.5rem 0; 
+        color: #ffffff; 
+        font-size: 1.5rem; 
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
       
       .quickContacts {
         display: flex;
-        gap: 1rem;
+        gap: 0.75rem;
         .contactLink {
           @include flex-center;
-          gap: 0.4rem;
-          color: $color-text-muted;
-          font-size: 0.85rem;
+          gap: 0.5rem;
+          color: rgba(255, 255, 255, 0.5);
+          font-size: 0.8rem;
+          font-weight: 600;
           text-decoration: none;
-          padding: 4px 10px;
-          border-radius: 20px;
-          background: rgba(255, 255, 255, 0.05);
-          &:hover { background: rgba(255, 255, 255, 0.1); color: $color-text-main; }
+          padding: 6px 14px;
+          border-radius: 99px;
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          transition: all 0.3s ease;
+          
+          &:hover { 
+            background: rgba(124, 58, 237, 0.1); 
+            color: #a78bfa; 
+            border-color: rgba(124, 58, 237, 0.2);
+            transform: translateY(-1px);
+          }
         }
       }
     }
@@ -296,27 +367,29 @@
         background: none;
         border: none;
         padding-bottom: 0.75rem;
-        color: $color-text-muted;
+        color: rgba(255, 255, 255, 0.4); // Muted Brand White
         font-size: 0.9rem;
-        font-weight: 500;
+        font-weight: 700;
         cursor: pointer;
         border-bottom: 2px solid transparent;
         display: flex;
         align-items: center;
         gap: 0.4rem;
-        transition: all 0.2s;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-        &:hover { color: $color-text-main; }
+        &:hover { color: #ffffff; }
 
         &.active {
-          color: $color-primary; // Aktif sekme Mor
-          border-bottom-color: $color-primary;
+          color: #7c3aed; // Aktif sekme Marka Moru
+          border-bottom-color: #7c3aed;
+          text-shadow: 0 0 10px rgba(124, 58, 237, 0.3);
         }
 
         &.aiTab.active {
-          color: $color-secondary; // AI Sekmesi Turuncu
-          border-bottom-color: $color-secondary;
-          svg { color: $color-secondary; }
+          color: #f97316; // AI Sekmesi Marka Turuncusu
+          border-bottom-color: #f97316;
+          text-shadow: 0 0 10px rgba(249, 115, 22, 0.3);
+          svg { color: #f97316; }
         }
       }
     }
@@ -331,13 +404,14 @@
     // TAB 1: BİLGİ
     .infoTab {
       .section {
-        margin-bottom: 1.5rem;
+        margin-bottom: 2rem;
         h3 { 
-          font-size: 0.9rem; 
+          font-size: 0.8rem; 
+          font-weight: 800;
           text-transform: uppercase; 
-          color: $color-text-muted; 
-          margin-bottom: 0.75rem;
-          letter-spacing: 0.5px;
+          color: rgba(255, 255, 255, 0.3); 
+          margin-bottom: 1rem;
+          letter-spacing: 0.1em;
         }
 
         .infoGrid {
@@ -346,22 +420,23 @@
           gap: 1rem;
 
           .infoItem {
-            background: $bg-dark-input;
-            padding: 0.75rem;
-            border-radius: $radius-sm;
-            label { display: block; font-size: 0.75rem; color: $color-text-muted; margin-bottom: 4px; }
-            span { font-size: 0.9rem; color: $color-text-main; font-weight: 500; }
+            background: rgba(255, 255, 255, 0.02);
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            label { display: block; font-size: 0.7rem; color: rgba(255, 255, 255, 0.3); margin-bottom: 4px; font-weight: 600; }
+            span { font-size: 0.9rem; color: #ffffff; font-weight: 600; }
           }
         }
 
         .noteBox {
-          background: rgba(255, 255, 255, 0.03);
-          border: 1px dashed $color-border;
-          padding: 1rem;
-          border-radius: $radius-md;
+          background: rgba(124, 58, 237, 0.03);
+          border: 1px dashed rgba(124, 58, 237, 0.2);
+          padding: 1.25rem;
+          border-radius: 16px;
           font-size: 0.9rem;
-          line-height: 1.5;
-          color: $color-text-main;
+          line-height: 1.6;
+          color: rgba(255, 255, 255, 0.8);
         }
       }
     }
@@ -377,59 +452,76 @@
           position: absolute;
           left: 19px; top: 10px; bottom: 0;
           width: 2px;
-          background: $color-border;
+          background: linear-gradient(to bottom, rgba(124, 58, 237, 0.2), transparent);
         }
 
         .timelineItem {
           display: flex;
-          gap: 1rem;
+          gap: 1.25rem;
           margin-bottom: 1.5rem;
           position: relative;
 
           .icon {
             width: 40px; height: 40px;
             min-width: 40px;
-            border-radius: 50%;
-            background: $bg-dark-app;
-            border: 2px solid $color-border;
+            border-radius: 12px;
+            background: #0a0a0a;
+            border: 2px solid rgba(255, 255, 255, 0.1);
             @include flex-center;
-            color: $color-text-muted;
+            color: rgba(255, 255, 255, 0.3);
             z-index: 1;
+            transition: all 0.3s ease;
 
             // Aktivite Tipine Göre İkon Rengi
-            &.call { color: #3b82f6; border-color: rgba(59, 130, 246, 0.3); }
-            &.meeting { color: $color-secondary; border-color: rgba($color-secondary, 0.3); }
-            &.ai_log { color: $color-primary; border-color: rgba($color-primary, 0.3); background: rgba($color-primary, 0.1); }
+            &.call { color: #3b82f6; border-color: rgba(59, 130, 246, 0.4); box-shadow: 0 0 15px rgba(59, 130, 246, 0.1); }
+            &.meeting { color: #f97316; border-color: rgba(249, 115, 22, 0.4); box-shadow: 0 0 15px rgba(249, 115, 22, 0.1); }
+            &.ai_log { 
+              color: #7c3aed; 
+              border-color: rgba(124, 58, 237, 0.5); 
+              background: rgba(124, 58, 237, 0.1); 
+              box-shadow: 0 0 20px rgba(124, 58, 237, 0.2);
+            }
           }
 
           .content {
-            background: $bg-dark-input;
-            padding: 0.75rem;
-            border-radius: $radius-md;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 1rem;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
             flex: 1;
             
-            p { margin: 0 0 0.25rem 0; font-size: 0.9rem; color: $color-text-main; }
-            .date { font-size: 0.75rem; color: $color-text-muted; }
+            p { margin: 0 0 0.25rem 0; font-size: 0.9rem; color: #ffffff; font-weight: 500; }
+            .date { font-size: 0.75rem; color: rgba(255, 255, 255, 0.3); font-weight: 600; }
           }
         }
       }
     }
 
     // TAB 3: GÖREVLER
-    .tasksTab {
-      h3 { font-size: 1rem; margin: 0 0 1rem 0; color: $color-text-main; }
+    
+.tasksTab {
+      h3 { font-size: 1rem; margin: 0 0 1rem 0; color: #ffffff; font-weight: 800; }
 
       .taskCard {
-        background: $bg-dark-input;
-        border-radius: $radius-md;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 14px;
         padding: 0.75rem 1rem;
         margin-bottom: 0.75rem;
         display: flex;
         flex-direction: column;
         border-left: 3px solid transparent;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.05);
+          border-color: rgba(124, 58, 237, 0.3);
+          transform: translateY(-2px);
+        }
 
         &.completed {
-          opacity: 0.6;
+          opacity: 0.4;
+          filter: grayscale(1);
           text-decoration: line-through;
         }
         
@@ -438,17 +530,24 @@
           align-items: center;
           gap: 0.5rem;
           font-size: 0.75rem;
-          color: $color-secondary;
+          color: #f97316; // Marka Turuncusu
           margin-bottom: 0.25rem;
+          font-weight: 700;
+          text-transform: uppercase;
         }
 
-        h4 { margin: 0 0 0.25rem 0; font-size: 0.95rem; color: $color-text-main; }
-        .location { font-size: 0.8rem; color: $color-text-muted; margin: 0; }
+        h4 { margin: 0 0 0.25rem 0; font-size: 0.95rem; color: #ffffff; font-weight: 700; }
+        .location { font-size: 0.8rem; color: rgba(255, 255, 255, 0.4); margin: 0; font-weight: 500; }
         
         // Checkbox stili
         .checkbox {
           float: left; margin-right: 10px;
-          .box { width: 18px; height: 18px; border: 2px solid $color-text-muted; border-radius: 4px; }
+          .box { 
+            width: 18px; height: 18px; 
+            border: 2px solid rgba(255, 255, 255, 0.2); 
+            border-radius: 4px; 
+            transition: all 0.2s ease;
+          }
         }
       }
     }
@@ -460,13 +559,13 @@
   height: 100%;
   @include flex-center;
   flex-direction: column;
-  color: $color-text-muted;
+  color: rgba(255, 255, 255, 0.4);
   gap: 1rem;
   
   .spinner {
     width: 30px; height: 30px;
-    border: 3px solid rgba($color-primary, 0.3);
-    border-top-color: $color-primary;
+    border: 3px solid rgba(124, 58, 237, 0.1);
+    border-top-color: #7c3aed; // Marka Moru
     border-radius: 50%;
     animation: spin 1s linear infinite;
   }
@@ -475,54 +574,54 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: $bg-dark-panel;
-  color: $color-text-main;
-  overflow: hidden; // İçerik taşarsa contentArea scroll olsun
+  background-color: transparent; // Glassmorphism derinliği için
+  color: #ffffff;
+  overflow: hidden;
 }
 
 // --- ÜST BAŞLIK & PROFİL ---
 .detailHeader {
-  flex-shrink: 0; // Header küçülmesin
-  border-bottom: 1px solid $color-border;
-  background-color: rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 0.01);
 
   .headerTop {
     display: flex;
-    justify-content: flex-end; // Butonları sağa yaslar
+    justify-content: flex-end;
     align-items: center;
-    gap: 12px; // Butonlar arası boşluk
+    gap: 12px;
     margin-bottom: 16px;
 
     .backBtn {
       background: none;
       border: none;
-      color: $color-text-muted;
+      color: rgba(255, 255, 255, 0.4);
       cursor: pointer;
       padding: 0.5rem;
-      border-radius: $radius-md;
-      transition: all 0.2s;
+      border-radius: 10px;
+      transition: all 0.3s ease;
 
       &:hover {
         background-color: rgba(255, 255, 255, 0.05);
-        color: $color-text-main;
+        color: #ffffff;
       }
     }
     .deleteCustomerBtn {
       background: transparent;
       border: 1px solid transparent;
-      color: $color-text-muted;
+      color: rgba(255, 255, 255, 0.4);
       cursor: pointer;
       padding: 6px;
-      border-radius: $radius-md;
-      transition: all 0.2s;
+      border-radius: 10px;
+      transition: all 0.3s ease;
       display: flex;
       align-items: center;
       justify-content: center;
 
       &:hover {
-        color: #ef4444; // Kırmızı
-        background-color: rgba(#ef4444, 0.1);
-        border-color: rgba(#ef4444, 0.2);
+        color: #ef4444;
+        background-color: rgba(239, 68, 68, 0.1);
+        border-color: rgba(239, 68, 68, 0.2);
       }
     }
   }
@@ -535,14 +634,17 @@
     padding: 0 1.5rem 1.5rem 1.5rem;
 
     h2 {
-      font-size: 1.25rem;
-      font-weight: 600;
+      font-size: 1.5rem;
+      font-weight: 800;
       margin: 0.5rem 0 0 0;
+      color: #ffffff;
+      letter-spacing: -0.02em;
     }
 
     .subInfo {
-      color: $color-text-muted;
+      color: rgba(255, 255, 255, 0.4);
       font-size: 0.9rem;
+      font-weight: 500;
     }
 
     .tags {
@@ -551,14 +653,16 @@
       margin-top: 0.5rem;
     }
     
-    // Eğer Badge bileşeni yerine span kullanılıyorsa
     .stageBadge {
-      font-size: 0.75rem;
-      padding: 0.25rem 0.75rem;
-      background-color: rgba($color-primary, 0.15);
-      color: lighten($color-primary, 10%);
+      font-size: 0.7rem;
+      padding: 0.25rem 0.85rem;
+      background-color: rgba(124, 58, 237, 0.1);
+      color: #a78bfa;
       border-radius: 99px;
-      border: 1px solid rgba($color-primary, 0.2);
+      border: 1px solid rgba(124, 58, 237, 0.2);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
   }
 
@@ -567,25 +671,25 @@
     display: flex;
     padding: 0 1rem;
     gap: 1.5rem;
-    border-top: 1px solid $color-border;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
 
     button {
       background: none;
       border: none;
-      padding: 1rem 0.25rem;
-      color: $color-text-muted;
+      padding: 1.25rem 0.25rem;
+      color: rgba(255, 255, 255, 0.4);
       font-size: 0.9rem;
-      font-weight: 500;
+      font-weight: 700;
       cursor: pointer;
       position: relative;
-      transition: color 0.2s;
+      transition: all 0.3s ease;
 
       &:hover {
-        color: $color-text-main;
+        color: #ffffff;
       }
 
       &.active {
-        color: $color-primary;
+        color: #7c3aed; // Marka Moru
 
         &::after {
           content: '';
@@ -594,8 +698,9 @@
           left: 0;
           right: 0;
           height: 2px;
-          background-color: $color-primary;
+          background-color: #7c3aed;
           border-radius: 2px 2px 0 0;
+          box-shadow: 0 0 10px rgba(124, 58, 237, 0.5);
         }
       }
     }
@@ -606,15 +711,14 @@
 .contentArea {
   flex: 1;
   overflow-y: auto;
-  padding: 1.5rem;
+  padding: 2rem;
 
-  // Scrollbar özelleştirme
   &::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
   }
   &::-webkit-scrollbar-thumb {
-    background-color: $color-border;
-    border-radius: 3px;
+    background-color: rgba(124, 58, 237, 0.2);
+    border-radius: 10px;
   }
 }
 
@@ -622,38 +726,40 @@
 .infoTab {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.5rem;
 
   .infoGroup {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: 0.5rem;
 
     label {
       font-size: 0.8rem;
-      color: $color-text-muted;
-      font-weight: 500;
+      color: rgba(255, 255, 255, 0.3);
+      font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.1em;
     }
 
     p {
       font-size: 0.95rem;
-      color: $color-text-main;
+      color: #ffffff;
       margin: 0;
-      line-height: 1.5;
+      line-height: 1.6;
+      font-weight: 500;
 
       &.notes {
-        background-color: rgba(0, 0, 0, 0.2);
-        padding: 1rem;
-        border-radius: $radius-md;
-        border: 1px solid $color-border;
-        white-space: pre-wrap; // Satır atlamalarını korur
+        background-color: rgba(124, 58, 237, 0.03);
+        padding: 1.25rem;
+        border-radius: 16px;
+        border: 1px dashed rgba(124, 58, 237, 0.2);
+        white-space: pre-wrap;
+        color: rgba(255, 255, 255, 0.8);
       }
     }
   }
 }
-
+// --- TAB 2: GEÇMİŞ (HISTORY) & AKTİVİTE EKLEME ---
 // --- TAB 2: GEÇMİŞ (HISTORY) & AKTİVİTE EKLEME ---
 .historyTab {
   display: flex;
@@ -661,15 +767,15 @@
   gap: 2rem;
 }
 
-// Yeni Aktivite Kutusu
+// Yeni Aktivite Kutusu (Glass Design)
 .newActivityBox {
-  background-color: rgba($color-primary, 0.05); // Hafif mor zemin
-  border: 1px solid rgba($color-primary, 0.2);
+  background-color: rgba(124, 58, 237, 0.03); // Hafif marka moru glow
+  border: 1px solid rgba(124, 58, 237, 0.2);
   border-radius: $radius-md;
-  padding: 1rem;
+  padding: 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
+  gap: 1rem;
 
   .boxHeader {
     display: flex;
@@ -677,39 +783,45 @@
   }
 
   .typeSelect {
-    background-color: $bg-dark-app;
-    border: 1px solid $color-border;
-    color: $color-text-main;
-    padding: 0.4rem 0.8rem;
-    border-radius: $radius-sm;
+    background-color: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    padding: 0.5rem 0.8rem;
+    border-radius: 8px;
     font-size: 0.85rem;
+    font-weight: 600;
     cursor: pointer;
     outline: none;
+    transition: all 0.3s ease;
 
     &:focus {
-      border-color: $color-primary;
+      border-color: #7c3aed;
+      box-shadow: 0 0 10px rgba(124, 58, 237, 0.2);
     }
   }
 
   textarea {
     width: 100%;
-    background-color: $bg-dark-app;
-    border: 1px solid $color-border;
-    border-radius: $radius-md;
-    padding: 0.8rem;
-    color: $color-text-main;
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 1rem;
+    color: #ffffff;
     font-size: 0.9rem;
+    font-weight: 500;
     resize: vertical;
-    min-height: 70px;
+    min-height: 80px;
     font-family: inherit;
+    transition: all 0.3s ease;
 
     &:focus {
       outline: none;
-      border-color: $color-primary;
+      border-color: #7c3aed;
+      background-color: rgba(0, 0, 0, 0.4);
     }
     
     &::placeholder {
-      color: rgba($color-text-muted, 0.5);
+      color: rgba(255, 255, 255, 0.2);
     }
   }
 
@@ -718,142 +830,142 @@
     justify-content: flex-end;
 
     .sendBtn {
-      background-color: $color-primary;
+      background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
       color: white;
       border: none;
-      padding: 0.5rem 1rem;
-      border-radius: $radius-sm;
+      padding: 0.6rem 1.2rem;
+      border-radius: 10px;
       font-size: 0.85rem;
-      font-weight: 500;
+      font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 0.4rem;
-      transition: background-color 0.2s;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
 
       &:hover:not(:disabled) {
-        background-color: darken($color-primary, 5%);
+        transform: translateY(-1px);
+        filter: brightness(1.1);
+        box-shadow: 0 6px 15px rgba(124, 58, 237, 0.4);
       }
 
       &:disabled {
-        opacity: 0.6;
+        opacity: 0.5;
         cursor: not-allowed;
+        filter: grayscale(1);
       }
     }
   }
 }
 
-// Zaman Çizelgesi (Timeline)
+// Zaman Çizelgesi (Timeline - Neon Path)
 .timeline {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  padding-left: 0.5rem; // Çizgi için pay
+  padding-left: 0.5rem;
 
   .timelineItem {
     display: flex;
-    gap: 1rem;
+    gap: 1.25rem;
     position: relative;
 
-    // Dikey Bağlantı Çizgisi
+    // Dikey Bağlantı Çizgisi (Gradient)
     &::before {
       content: '';
       position: absolute;
-      left: 15px; // İkonun tam ortası (30px / 2)
+      left: 17px;
       top: 32px;
-      bottom: -24px; // Bir sonraki öğeye kadar uzat
-      width: 1px;
-      background-color: $color-border;
+      bottom: -24px;
+      width: 2px;
+      background: linear-gradient(to bottom, rgba(124, 58, 237, 0.3), transparent);
       z-index: 0;
     }
 
     &:last-child::before {
-      display: none; // Son elemanda çizgi olmasın
+      display: none;
     }
 
     .iconWrapper {
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      background-color: $bg-dark-panel;
-      border: 1px solid $color-border;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px; // Modern yuvarlak köşeli kare
+      background-color: #0a0a0a;
+      border: 2px solid rgba(255, 255, 255, 0.1);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: $color-text-muted;
+      color: rgba(255, 255, 255, 0.3);
       z-index: 1;
       flex-shrink: 0;
+      transition: all 0.3s ease;
     }
 
     .itemContent {
       flex: 1;
       background-color: rgba(255, 255, 255, 0.02);
       border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: $radius-md;
-      padding: 0.85rem;
+      border-radius: 14px;
+      padding: 1rem;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.04);
+        border-color: rgba(124, 58, 237, 0.2);
+      }
 
       .itemHeader {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 0.4rem;
+        margin-bottom: 0.5rem;
 
         .actType {
           font-size: 0.85rem;
-          font-weight: 600;
-          color: $color-text-main;
-          text-transform: capitalize;
+          font-weight: 800;
+          color: #7c3aed; // Marka Moru
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
         }
 
         .date {
           font-size: 0.75rem;
-          color: $color-text-muted;
+          color: rgba(255, 255, 255, 0.3);
+          font-weight: 600;
         }
-        .actType {
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: capitalize;
-            color: $color-primary; // Veya mevcut renk
+
+        .deleteBtn {
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          padding: 6px;
+          border-radius: 8px;
+          color: rgba(255, 255, 255, 0.2);
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          margin-left: auto;
+
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          &:hover {
+            color: #ef4444; // Marka Tehlike Rengi
+            background-color: rgba(239, 68, 68, 0.1);
           }
 
-          .date {
-            font-size: 11px;
-            color: $color-text-muted;
-            margin-left: 8px;
+          &:active {
+            transform: scale(0.9);
           }
-
-          // --- YENİ EKLENECEK KISIM (SİLME BUTONU) ---
-          .deleteBtn {
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            padding: 4px;
-            border-radius: $radius-sm;
-            color: $color-text-muted; // Varsayılan olarak gri olsun
-            transition: all 0.2s ease;
-            margin-left: auto; // En sağa itmek için garanti
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            &:hover {
-              color: $color-danger; // Hover olunca kırmızı (#ef4444)
-              background-color: rgba($color-danger, 0.1); // Hafif kırmızı zemin
-            }
-
-            // Mobilde parmakla basmayı kolaylaştırmak için
-            &:active {
-              transform: scale(0.95);
-            }
-          }
+        }
       }
 
       p {
         font-size: 0.9rem;
-        color: rgba($color-text-main, 0.9);
+        color: rgba(255, 255, 255, 0.8);
         margin: 0;
-        line-height: 1.4;
+        line-height: 1.5;
+        font-weight: 500;
       }
     }
   }
@@ -863,196 +975,224 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 3rem 1rem;
-    color: $color-text-muted;
-    gap: 0.8rem;
-    border: 1px dashed $color-border;
-    border-radius: $radius-md;
+    padding: 3.5rem 1rem;
+    color: rgba(255, 255, 255, 0.3);
+    gap: 1rem;
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.01);
     
-    p { margin: 0; font-size: 0.9rem; }
+    p { margin: 0; font-size: 0.9rem; font-weight: 600; }
   }
 }
 
-// --- TAB 3: GÖREVLER (TASKS) ---
+// --- TAB 3: GÖREVLER (TASKS - Neon Style) ---
 .tasksTab {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 
   h3 {
-    font-size: 1rem;
-    color: $color-text-main;
+    font-size: 1.1rem;
+    color: #ffffff;
     margin: 0 0 0.5rem 0;
-    font-weight: 600;
+    font-weight: 800;
+    letter-spacing: -0.01em;
   }
 
   .taskCard {
     background-color: rgba(255, 255, 255, 0.02);
-    border: 1px solid $color-border;
-    border-radius: $radius-md;
-    padding: 0.75rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 14px;
+    padding: 1rem 1.25rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     &:hover {
-      border-color: $color-primary;
-      background-color: rgba($color-primary, 0.05);
+      border-color: rgba(124, 58, 237, 0.3);
+      background-color: rgba(124, 58, 237, 0.04);
+      transform: translateY(-2px);
     }
 
     .taskInfo {
       display: flex;
       flex-direction: column;
-      gap: 0.2rem;
+      gap: 0.3rem;
 
       span {
         font-size: 0.95rem;
-        color: $color-text-main;
+        font-weight: 700;
+        color: #ffffff;
       }
 
       .dueDate {
-        font-size: 0.8rem;
-        color: $color-text-muted;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #f97316; // Marka Turuncusu
+        text-transform: uppercase;
       }
     }
   }
 }
+
 .tasksTab {
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 16px;
 
-  // Yeni Görev Formu
+  // Yeni Görev Formu (Premium Glass)
   .newTaskBox {
-    background-color: $bg-dark-panel; // Variables'dan gelen renk
-    padding: 12px;
-    border-radius: $radius-md;
-    border: 1px solid $color-border;
+    background-color: rgba(255, 255, 255, 0.02);
+    padding: 1.25rem;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 1rem;
+    backdrop-filter: blur(10px);
 
     .taskInput {
       width: 100%;
-      background: transparent;
-      border: 1px solid $color-border;
-      color: $color-text-main;
-      padding: 8px;
-      border-radius: $radius-sm;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+      padding: 0.8rem;
+      border-radius: 10px;
+      font-weight: 500;
       
       &:focus {
-        border-color: $color-primary;
+        border-color: #7c3aed;
         outline: none;
+        background: rgba(0, 0, 0, 0.3);
       }
     }
 
     .taskFooter {
       display: flex;
       justify-content: space-between;
-      gap: 8px;
+      gap: 1rem;
 
       .dateInput {
-        background: transparent;
-        border: 1px solid $color-border;
-        color: $color-text-muted;
-        padding: 6px;
-        border-radius: $radius-sm;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.4);
+        padding: 0.6rem;
+        border-radius: 8px;
         font-size: 12px;
+        font-weight: 600;
         
         &::-webkit-calendar-picker-indicator {
-          filter: invert(1); // Dark mode için takvim ikonunu beyaz yap
-          opacity: 0.6;
+          filter: invert(1);
+          opacity: 0.5;
         }
       }
 
       .addBtn {
-        background-color: $color-primary;
+        background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
         color: white;
         border: none;
-        padding: 6px 12px;
-        border-radius: $radius-sm;
-        font-size: 13px;
+        padding: 0.6rem 1.25rem;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 700;
         cursor: pointer;
         display: flex;
         align-items: center;
-        gap: 4px;
+        gap: 0.5rem;
+        box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
 
         &:disabled {
           opacity: 0.5;
           cursor: not-allowed;
+          filter: grayscale(1);
         }
 
         &:hover:not(:disabled) {
-          background-color: $color-primary-hover;
+          filter: brightness(1.1);
+          transform: translateY(-1px);
         }
       }
     }
   }
 
-  // Görev Listesi
+
+  // Görev Listesi (Brand Identity Optimized)
   .taskList {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px; // Daha ferah bir boşluk
 
     .taskCard {
-      background-color: rgba($bg-dark-panel, 0.5);
-      border: 1px solid $color-border;
-      padding: 10px;
-      border-radius: $radius-md;
+      background-color: rgba(255, 255, 255, 0.02); // Marka cam efekti
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 12px 14px;
+      border-radius: 14px; // Daha modern yuvarlak köşeler
       display: flex;
       align-items: center;
       justify-content: space-between;
-      transition: all 0.2s;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
       &:hover {
-        border-color: $color-primary-light;
+        background-color: rgba(255, 255, 255, 0.04);
+        border-color: rgba(124, 58, 237, 0.3); // Marka Moru vurgusu
+        transform: translateY(-2px); // Hafif yükselme efekti
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
       }
 
       .taskInfo {
         display: flex;
         flex-direction: column;
-        gap: 4px;
+        gap: 6px;
 
         .taskTitle {
           font-size: 14px;
-          color: $color-text-main;
+          font-weight: 700;
+          color: #ffffff; // Net beyaz başlık
+          letter-spacing: -0.01em;
         }
 
         .taskDate {
           font-size: 11px;
-          color: $color-text-muted;
+          font-weight: 700;
+          color: #f97316; // Marka Turuncusu (Aksiyon/Zaman vurgusu)
           display: flex;
           align-items: center;
-          gap: 4px;
+          gap: 6px;
+          text-transform: uppercase;
         }
       }
 
       .deleteTaskBtn {
         background: transparent;
         border: none;
-        color: $color-text-muted;
-        padding: 6px;
-        border-radius: $radius-sm;
+        color: rgba(255, 255, 255, 0.2);
+        padding: 8px;
+        border-radius: 8px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
+        transition: all 0.2s ease;
 
         &:hover {
-          color: $color-danger;
-          background-color: rgba($color-danger, 0.1);
+          color: #ef4444; // Marka Tehlike Rengi
+          background-color: rgba(239, 68, 68, 0.1);
+          transform: scale(1.1);
         }
       }
     }
 
     .emptyText {
       text-align: center;
-      color: $color-text-muted;
+      color: rgba(255, 255, 255, 0.3);
       font-size: 13px;
-      margin-top: 10px;
+      font-weight: 500;
+      margin-top: 15px;
+      font-style: italic;
     }
   }
 }
