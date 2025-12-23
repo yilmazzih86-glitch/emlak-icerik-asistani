@@ -1,13 +1,11 @@
-// features/crm/components/NewCustomerModal/NewCustomerModal.module.scss
-
 @import '@/styles/_variables.scss';
 
-// 1. ARKA PLAN OVERLAY (Karartma)
+// 1. ARKA PLAN OVERLAY
 .overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background-color: rgba(0, 0, 0, 0.75); // Koyu karartma
-  backdrop-filter: blur(4px); // Arkası bulanıklaşsın
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -17,204 +15,216 @@
 
 // 2. MODAL KUTUSU
 .modal {
-  background-color: $bg-dark-panel; // Panel Rengi
+  background-color: $bg-dark-panel; // Variables.scss'den
   width: 90%;
-  max-width: 550px;
+  max-width: 500px;
   border-radius: $radius-lg;
   border: 1px solid $color-border;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
-  
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  max-height: 90vh; // Ekranın dışına taşmasın
-  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  max-height: 90vh;
+}
 
-  // --- HEADER ---
-  .header {
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid $color-border;
+// 3. BAŞLIK
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid $color-border;
+  background-color: rgba(255, 255, 255, 0.02);
+
+  h2 {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    background-color: rgba($bg-dark-panel, 0.5);
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: $color-text-main;
+    margin: 0;
+  }
 
-    h2 {
-      margin: 0;
-      font-size: 1.1rem;
-      font-weight: 600;
+  .closeBtn {
+    background: none;
+    border: none;
+    color: $color-text-muted;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: $radius-md;
+    transition: all 0.2s;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
       color: $color-text-main;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-
-      // İkon Rengi (Mor)
-      svg { color: $color-primary; }
-    }
-
-    .closeBtn {
-      background: transparent;
-      border: none;
-      color: $color-text-muted;
-      cursor: pointer;
-      padding: 0.25rem;
-      border-radius: $radius-sm;
-      transition: all 0.2s;
-
-      &:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-        color: $color-text-main;
-      }
     }
   }
+}
 
-  // --- FORM ALANI ---
-  .form {
-    padding: 1.5rem;
-    display: flex;
+// 4. FORM İÇERİĞİ
+.body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: $color-border;
+    border-radius: 3px;
+  }
+}
+
+// Form Düzeni Elemanları
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.row {
+  display: flex;
+  gap: 1rem;
+  @media (max-width: 600px) {
     flex-direction: column;
-    gap: 1.25rem;
-    overflow-y: auto; // İçerik uzunsa kaydır
+  }
+}
 
-    // Scrollbar
-    &::-webkit-scrollbar { width: 6px; }
-    &::-webkit-scrollbar-thumb { background: $bg-dark-input; border-radius: 3px; }
+.formGroup {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 
-    .row {
-      display: flex;
-      gap: 1rem;
-      @media (max-width: 640px) { flex-direction: column; gap: 1.25rem; }
+  label {
+    font-size: 0.85rem;
+    color: $color-text-muted;
+    font-weight: 500;
+  }
+}
+
+// İkonlu Input Alanı
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  // İkon Stili
+  svg {
+    position: absolute;
+    left: 12px;
+    color: $color-text-muted;
+    pointer-events: none;
+    transition: color 0.2s;
+  }
+
+  // Textarea için ikon ayarı
+  .textAreaIcon {
+    top: 12px;
+  }
+
+  input, textarea {
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    padding: 0.7rem 1rem 0.7rem 2.5rem; // İkon için soldan boşluk
+    color: $color-text-main;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    font-family: inherit;
+
+    &::placeholder {
+      color: rgba($color-text-muted, 0.6);
     }
 
-    .formGroup {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-
-      label {
-        font-size: 0.85rem;
-        font-weight: 500;
-        color: $color-text-muted;
-      }
-
-      .inputWrapper {
-        display: flex;
-        align-items: center;
-        background-color: $bg-dark-input; // Input içi koyu
-        border: 1px solid transparent;
-        border-radius: $radius-md;
-        padding: 0 0.75rem;
-        transition: all 0.2s;
-        position: relative;
-
-        // Focus olunca Mor Çerçeve
-        &:focus-within {
-          border-color: $color-primary;
-          box-shadow: 0 0 0 2px rgba($color-primary, 0.25);
-          background-color: lighten($bg-dark-input, 2%);
-        }
-
-        svg {
-          color: $color-text-muted;
-          margin-right: 0.5rem;
-          flex-shrink: 0;
-        }
-
-        input, textarea {
-          flex: 1;
-          background: transparent;
-          border: none;
-          padding: 0.75rem 0;
-          color: $color-text-main;
-          font-size: 0.95rem;
-          outline: none;
-          width: 100%;
-          font-family: inherit;
-
-          &::placeholder { color: rgba($color-text-muted, 0.5); }
-          
-          // Numara inputlarındaki okları gizle
-          &::-webkit-outer-spin-button,
-          &::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        }
-        
-        textarea {
-          resize: vertical;
-          min-height: 80px;
-          padding-top: 0.75rem;
-        }
-        
-        .textAreaIcon {
-            align-self: flex-start;
-            margin-top: 0.75rem;
-        }
+    &:focus {
+      outline: none;
+      border-color: $color-primary;
+      background-color: rgba(0, 0, 0, 0.3);
+      
+      // Input odaklanınca ikon rengi değişsin
+      ~ svg { 
+        color: $color-primary; // (CSS'de sibling selector ile yapılabilir veya JS gerekebilir, şimdilik sabit kalsın)
       }
     }
   }
 
-  // --- FOOTER (Butonlar) ---
-  .footer {
-    padding: 1.25rem 1.5rem;
-    background-color: darken($bg-dark-panel, 2%);
-    border-top: 1px solid $color-border;
+  textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+}
+
+// 5. ALT BUTONLAR
+.footer {
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid $color-border;
+  background-color: rgba(255, 255, 255, 0.02);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+
+  button {
     display: flex;
-    justify-content: flex-end;
-    gap: 0.75rem;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.4rem;
+    border-radius: $radius-md;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
 
-    button {
-      padding: 0.6rem 1.25rem;
-      border-radius: $radius-md;
-      font-size: 0.9rem;
-      font-weight: 500;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      transition: all 0.2s;
-
-      &.cancelBtn {
-        background: transparent;
-        border: 1px solid $color-border;
-        color: $color-text-muted;
-        &:hover {
-          border-color: $color-text-muted;
-          color: $color-text-main;
-          background: rgba(255,255,255,0.05);
-        }
-      }
-
-      &.submitBtn {
-        // Mor Gradyan Buton
-        background: linear-gradient(135deg, $color-primary, darken($color-primary, 5%));
-        border: none;
-        color: white;
-        box-shadow: 0 4px 6px rgba($color-primary, 0.2);
-
-        &:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 6px 12px rgba($color-primary, 0.3);
-          background: linear-gradient(135deg, lighten($color-primary, 5%), $color-primary);
-        }
-
-        &:active { transform: translateY(0); }
-
-        &:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-          transform: none;
-        }
-
-        .spin { animation: spin 1s linear infinite; }
-      }
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
+  }
+
+  .cancelBtn {
+    background: transparent;
+    border: 1px solid $color-border;
+    color: $color-text-muted;
+
+    &:hover:not(:disabled) {
+      border-color: $color-text-muted;
+      color: $color-text-main;
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+  }
+
+  .submitBtn {
+    background: linear-gradient(135deg, $color-primary, darken($color-primary, 10%));
+    border: none;
+    color: white;
+    box-shadow: 0 4px 6px rgba($color-primary, 0.2);
+
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 12px rgba($color-primary, 0.3);
+      filter: brightness(1.1);
+    }
+    
+    &:active { transform: translateY(0); }
   }
 }
 
-// Animasyonlar
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slideUp { 
-  from { opacity: 0; transform: translateY(20px) scale(0.95); } 
-  to { opacity: 1; transform: translateY(0) scale(1); } 
+// Loading Animasyonu
+.spin {
+  animation: spin 1s linear infinite;
 }
-@keyframes spin { 100% { transform: rotate(360deg); } }
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}

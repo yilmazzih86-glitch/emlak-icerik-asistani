@@ -4,16 +4,16 @@
 // 1. SABİTLER VE ENUM'LAR
 // ---------------------------------------------------------------------------
 
-export type PipelineStage = 'NEW' | 'CONTACT' | 'PRESENTATION' | 'OFFER' | 'SOLD';
+export type PipelineStage = 'new' | 'contacted' | 'presentation' | 'offer' | 'sold';
 
-export const STAGES: PipelineStage[] = ['NEW', 'CONTACT', 'PRESENTATION', 'OFFER', 'SOLD'];
+export const STAGES: PipelineStage[] = ['new', 'contacted', 'presentation', 'offer', 'sold'];
 
 export const STAGE_LABELS: Record<PipelineStage, string> = {
-  NEW: 'Yeni Müşteri',
-  CONTACT: 'Görüşüldü',
-  PRESENTATION: 'Sunum Yapıldı',
-  OFFER: 'Teklif / Pazarlık',
-  SOLD: 'Satış Başarılı'
+  new: 'Yeni Müşteri',
+  contacted: 'Görüşüldü',       // DB'de 'contacted' olarak geçiyor
+  presentation: 'Sunum Yapıldı',
+  offer: 'Teklif / Pazarlık',
+  sold: 'Satış Başarılı'
 };
 
 // AI Araç Modları (n8n Webhook'ları ile eşleşir)

@@ -1,5 +1,4 @@
 @import '@/styles/variables';
-@import '@/styles/mixins';
 
 .badge {
   display: inline-flex;
@@ -12,39 +11,45 @@
   letter-spacing: 0.05em;
   white-space: nowrap;
 
-  // Varsayılan (Gri/Nötr)
-  background: rgba($text-muted, 0.15);
-  color: $text-secondary;
-  border: 1px solid rgba($text-muted, 0.2);
+  // Varsayılan (Gri/Nötr) - DÜZELTME: Değişken adları güncellendi
+  background: rgba($color-text-muted, 0.15);
+  color: $color-text-muted; 
+  border: 1px solid rgba($color-text-muted, 0.2);
 
-  // Varyasyonlar
-  &--info { // Yeni Müşteri
-    background: rgba(#3b82f6, 0.15);
+  // --- VARYASYONLAR ---
+
+  // 1. INFO (Mavi - Genelde Yeni Müşteri vb.)
+  &--info { 
+    background: rgba(#3b82f6, 0.15); // Değişken yoksa hardcoded mavi
     color: #60a5fa;
     border-color: rgba(#3b82f6, 0.2);
   }
 
-  &--warning { // Görüşülüyor / Teklif
+  // 2. WARNING (Turuncu/Sarı - Bekleyen İşler)
+  &--warning {
     background: rgba($color-warning, 0.15);
     color: lighten($color-warning, 10%);
     border-color: rgba($color-warning, 0.2);
   }
 
-  &--success { // Satış
+  // 3. SUCCESS (Yeşil - Tamamlananlar)
+  &--success {
     background: rgba($color-success, 0.15);
     color: lighten($color-success, 10%);
     border-color: rgba($color-success, 0.2);
   }
 
-  &--danger { // Kayıp
+  // 4. DANGER (Kırmızı - Hatalar/Silinenler)
+  &--danger {
     background: rgba($color-danger, 0.15);
     color: lighten($color-danger, 10%);
     border-color: rgba($color-danger, 0.2);
   }
-  
-  &--purple { // Özel Etiketler
-    background: rgba($brand-purple, 0.15);
-    color: lighten($brand-purple, 10%);
-    border-color: rgba($brand-purple, 0.2);
+
+  // 5. PURPLE (Mor - Özel Etiketler)
+  &--purple {
+    background: rgba($color-primary, 0.15);
+    color: lighten($color-primary, 10%);
+    border-color: rgba($color-primary, 0.2);
   }
 }

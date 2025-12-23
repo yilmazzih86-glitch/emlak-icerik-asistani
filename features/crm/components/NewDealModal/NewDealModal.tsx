@@ -1,11 +1,13 @@
 // features/crm/components/NewDealModal/NewDealModal.tsx
 
 import React, { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
 import { useCrmStore } from '@/features/crm/hooks/useCrmStore';
 import { crmService } from '@/features/crm/api/crmService';
 import { STAGES, STAGE_LABELS, PipelineStage } from '@/features/crm/api/types';
 import { X, Search, Briefcase, ChevronRight, UserCheck, Building2, CheckCircle2 } from 'lucide-react';
 import styles from './NewDealModal.module.scss';
+
 
 interface NewDealModalProps {
   isOpen: boolean;
@@ -24,10 +26,22 @@ export default function NewDealModal({ isOpen, onClose }: NewDealModalProps) {
   // Seçim State'leri
   const [selectedCust, setSelectedCust] = useState<any>(null);
   const [selectedPort, setSelectedPort] = useState<any>(null);
-  const [stage, setStage] = useState<PipelineStage>('NEW');
+  const [stage, setStage] = useState<PipelineStage>('new');
   const [amount, setAmount] = useState('');
-  
+
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setCurrentUserId(user.id);
+      }
+    };
+    fetchUser();
+  }, []);
 
   if (!isOpen) return null;
 
@@ -55,6 +69,7 @@ export default function NewDealModal({ isOpen, onClose }: NewDealModalProps) {
 
   const handleSubmit = async () => {
     if (!selectedCust) return alert('Lütfen bir müşteri seçin.');
+    if (!currentUserId) return alert('Oturum bilgisi alınamadı. Lütfen sayfayı yenileyin.');
     
     setLoading(true);
     try {
@@ -63,7 +78,7 @@ export default function NewDealModal({ isOpen, onClose }: NewDealModalProps) {
         portfolio_id: selectedPort?.id || null,
         stage: stage,
         expected_amount: amount ? Number(amount) : 0,
-        user_id: 'current_user_id' // Auth'dan gelecek
+        user_id: currentUserId // Auth'dan gelecek
       });
       
       await refreshDeals();

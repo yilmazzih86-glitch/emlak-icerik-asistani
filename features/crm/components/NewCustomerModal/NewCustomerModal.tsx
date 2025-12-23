@@ -1,11 +1,13 @@
 // features/crm/components/NewCustomerModal/NewCustomerModal.tsx
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
 import { useCrmStore } from '@/features/crm/hooks/useCrmStore';
 import { crmService } from '@/features/crm/api/crmService';
 import { X, Save, User, Phone, Mail, Banknote, FileText, Loader2 } from 'lucide-react';
 import styles from './NewCustomerModal.module.scss';
 
+// TypeScript hatası almamak için basit bir tip tanımı
 interface NewCustomerModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -13,9 +15,8 @@ interface NewCustomerModalProps {
 
 export default function NewCustomerModal({ isOpen, onClose }: NewCustomerModalProps) {
   const { loadCustomers } = useCrmStore();
-  const [loading, setLoading] = useState(false);
   
-  // Form State
+  // 1. DÜZELTME: JSX ile uyumlu olması için tek bir formData state'i kullanıyoruz.
   const [formData, setFormData] = useState({
     full_name: '',
     phone: '',
@@ -25,8 +26,23 @@ export default function NewCustomerModal({ isOpen, onClose }: NewCustomerModalPr
     notes: ''
   });
 
-  if (!isOpen) return null;
+  const [loading, setLoading] = useState(false);
 
+  // 2. DÜZELTME: Kullanıcı ID'sini tutacak state ve useEffect
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setCurrentUserId(user.id);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  // Form elemanları değiştiğinde çalışacak fonksiyon
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -34,34 +50,51 @@ export default function NewCustomerModal({ isOpen, onClose }: NewCustomerModalPr
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    
+    // Güvenlik: Kullanıcı oturumu yoksa işlem yapma
+    if (!currentUserId) {
+      alert("Oturum bilgisi alınamadı. Lütfen sayfayı yenileyin.");
+      return;
+    }
 
+    setLoading(true);
     try {
-      // 1. Müşteriyi Oluştur
+      // 3. DÜZELTME: user_id ekleniyor ve sayılar dönüştürülüyor
       await crmService.createCustomer({
+        user_id: currentUserId,
         full_name: formData.full_name,
         phone: formData.phone,
         email: formData.email || undefined,
+        // Sayısal alanları dönüştür, boşsa undefined gönder
         budget_min: formData.budget_min ? Number(formData.budget_min) : undefined,
         budget_max: formData.budget_max ? Number(formData.budget_max) : undefined,
-        notes: formData.notes,
-        user_id: 'current_user_id', // Auth entegrasyonunda burası dinamik olacak
-        source: 'manual_entry'
+        notes: formData.notes || undefined,
+        // CSV analizine göre 'type' genelde 'buy' (alıcı) olarak varsayılıyor, gerekirse eklenebilir.
       });
 
-      // 2. Listeyi Yenile ve Kapat
-      await loadCustomers(1); // İlk sayfaya dön
+      // Listeyi yenile ve modalı kapat
+      await loadCustomers(1); 
       onClose();
+      
       // Formu temizle
-      setFormData({ full_name: '', phone: '', email: '', budget_min: '', budget_max: '', notes: '' });
+      setFormData({
+        full_name: '',
+        phone: '',
+        email: '',
+        budget_min: '',
+        budget_max: '',
+        notes: ''
+      });
       
     } catch (error) {
       console.error(error);
-      alert('Müşteri oluşturulurken bir hata oluştu.');
+      alert('Müşteri oluşturulamadı! (Lütfen zorunlu alanları kontrol edin)');
     } finally {
       setLoading(false);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className={styles.overlay}>
@@ -71,18 +104,19 @@ export default function NewCustomerModal({ isOpen, onClose }: NewCustomerModalPr
           <button onClick={onClose} className={styles.closeBtn}><X size={20} /></button>
         </header>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <form onSubmit={handleSubmit} className={styles.body}>
           
-          <div className={styles.formGroup}>
+          <div className={styles.section}>
             <label>Ad Soyad *</label>
             <div className={styles.inputWrapper}>
               <User size={16} />
               <input 
-                name="full_name" 
-                required 
+                name="full_name" // name alanı state anahtarı ile aynı olmalı
                 placeholder="Örn: Ahmet Yılmaz" 
                 value={formData.full_name}
                 onChange={handleChange}
+                required
+                autoFocus
               />
             </div>
           </div>
@@ -93,21 +127,21 @@ export default function NewCustomerModal({ isOpen, onClose }: NewCustomerModalPr
               <div className={styles.inputWrapper}>
                 <Phone size={16} />
                 <input 
-                  name="phone" 
-                  required 
+                  name="phone"
                   placeholder="0555..." 
                   value={formData.phone}
                   onChange={handleChange}
+                  required
                 />
               </div>
             </div>
             <div className={styles.formGroup}>
-              <label>E-posta</label>
+              <label>E-Posta</label>
               <div className={styles.inputWrapper}>
                 <Mail size={16} />
                 <input 
-                  name="email" 
-                  type="email" 
+                  name="email"
+                  type="email"
                   placeholder="ornek@mail.com" 
                   value={formData.email}
                   onChange={handleChange}
