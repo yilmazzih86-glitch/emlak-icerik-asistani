@@ -1,15 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useCrmStore } from '@/features/crm/hooks/useCrmStore'; //
-import { AiToolMode } from '@/features/crm/api/types'; //
+import { useCrmStore } from '@/features/crm/hooks/useCrmStore';
+import { AiToolMode, SmartMatchSuggestion } from '@/features/crm/api/types'; // Tipi import etmeyi unutmayın
 import { 
   MessageSquare, Sparkles, Activity, 
-  Copy, RefreshCw, Check, Loader2, AlertCircle 
-} from 'lucide-react';
-import styles from './AiToolsPanel.module.scss'; //
+  Copy, RefreshCw, Check, Loader2, AlertCircle,
+  TrendingUp, Info, ExternalLink, MapPin
+} from 'lucide-react'; // Eksik ikonları import edin
+import styles from './AiToolsPanel.module.scss';
 
-// Araç Tanımları
+// ... AI_TOOLS dizisi aynı kalacak ...
 const AI_TOOLS: { mode: AiToolMode; label: string; icon: any; desc: string }[] = [
   { 
     mode: 'message_draft', 
@@ -35,13 +36,11 @@ export default function AiToolsPanel({ currentMode = 'message_draft' }: { curren
   const { selectedCustomerId, selectedDealId } = useCrmStore();
   const [activeMode, setActiveMode] = useState<AiToolMode>(currentMode);
   
-  // UI State
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<{ draft?: string; whatsapp_url?: string } | null>(null);
+  const [result, setResult] = useState<any>(null); // Tip any veya union type olabilir
   const [error, setError] = useState<string | null>(null);
   const [isCopied, setIsCopied] = useState(false);
 
-  // Çalıştır Butonu Mantığı
   const handleRunTool = async () => {
     if (!selectedCustomerId) {
       setError("Lütfen önce listeden bir müşteri seçin.");
@@ -53,29 +52,35 @@ export default function AiToolsPanel({ currentMode = 'message_draft' }: { curren
     setResult(null);
 
     try {
-      // Sadece 'message_draft' modu için özel backend rotamızı kullanıyoruz
+      let endpoint = '';
+      let body = {};
+
+      // MODA GÖRE ENDPOINT SEÇİMİ
       if (activeMode === 'message_draft') {
-        const response = await fetch('/api/crm/message-draft', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            customer_id: selectedCustomerId,
-            deal_id: selectedDealId, // Opsiyonel
-            message_goal: 'follow_up'
-          }),
-        });
-
-        if (!response.ok) {
-          const errData = await response.json();
-          throw new Error(errData.error || 'İşlem başarısız.');
-        }
-
-        const data = await response.json();
-        setResult(data); 
-      } else {
-        // Diğer modlar için placeholder (İleride eklenebilir)
-        setError("Bu özellik henüz aktif değil.");
+        endpoint = '/api/crm/message-draft';
+        body = { customer_id: selectedCustomerId, deal_id: selectedDealId, message_goal: 'follow_up' };
+      } 
+      else if (activeMode === 'smart_match') {
+        endpoint = '/api/crm/smart-match';
+        body = { customer_id: selectedCustomerId };
       }
+      else {
+        throw new Error("Bu özellik henüz aktif değil.");
+      }
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || 'İşlem başarısız.');
+      }
+
+      const data = await response.json();
+      setResult(data);
 
     } catch (err: any) {
       console.error(err);
@@ -97,7 +102,7 @@ export default function AiToolsPanel({ currentMode = 'message_draft' }: { curren
 
   return (
     <div className={styles.container}>
-      {/* 1. ÜST MENÜ (Tablar) */}
+      {/* 1. ÜST MENÜ */}
       <div className={styles.toolsMenu}>
         {AI_TOOLS.map((tool) => (
           <button
@@ -113,14 +118,11 @@ export default function AiToolsPanel({ currentMode = 'message_draft' }: { curren
 
       {/* 2. İÇERİK ALANI */}
       <div className={styles.contentArea}>
-        
-        {/* Başlık */}
         <div className={styles.toolHeader}>
           <h4>{activeToolDef?.label}</h4>
           <p>{activeToolDef?.desc}</p>
         </div>
 
-        {/* Hata Bildirimi */}
         {error && (
           <div className={styles.errorMsg}>
             <AlertCircle size={16} />
@@ -128,12 +130,11 @@ export default function AiToolsPanel({ currentMode = 'message_draft' }: { curren
           </div>
         )}
 
-        {/* SONUÇ GÖSTERİMİ */}
         {result ? (
           <div className={styles.resultContainer}>
             
-            {/* Mesaj Taslağı */}
-            {result.draft && (
+            {/* --- MOD: MESAJ TASLAĞI --- */}
+            {activeMode === 'message_draft' && result.draft && (
               <div className={styles.draftBox}>
                 <div className={styles.draftHeader}>
                   <span>Mesaj Taslağı</span>
@@ -141,53 +142,95 @@ export default function AiToolsPanel({ currentMode = 'message_draft' }: { curren
                     {isCopied ? <Check size={16} color="green"/> : <Copy size={16}/>}
                   </button>
                 </div>
-                <textarea 
-                  readOnly 
-                  value={result.draft} 
-                  className={styles.draftTextarea}
-                />
+                <textarea readOnly value={result.draft} className={styles.draftTextarea}/>
               </div>
             )}
 
-            {/* Aksiyon Butonları */}
+            {/* --- MOD: AKILLI EŞLEŞME (YENİ KISIM) --- */}
+            {activeMode === 'smart_match' && result.suggestions && (
+               <div className={styles.matchList}>
+                  {result.suggestions.map((item: SmartMatchSuggestion) => (
+                    <div key={item.portfolio_id} className={styles.matchCard}>
+                      
+                      {/* Skor ve Etiket */}
+                      <div className={styles.cardHeader}>
+                         <div className={styles.scoreBadge} title="AI Uyum Skoru">
+                            <TrendingUp size={14} />
+                            <span>%{item.score} Uyum</span>
+                         </div>
+                         <span className={styles.labelBadge}>{item.label}</span>
+                      </div>
+
+                      {/* Portföy Detayları (Supabase'den) */}
+                      <div className={styles.portfolioInfo}>
+                          <h5>{item.portfolio_details?.title || 'İsimsiz Portföy'}</h5>
+                          <div className={styles.priceLoc}>
+                             <span className={styles.price}>
+                               {item.portfolio_details?.price 
+                                 ? new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(item.portfolio_details.price)
+                                 : '-'}
+                             </span>
+                             <span className={styles.loc}>
+                                <MapPin size={12}/> {item.portfolio_details?.district}/{item.portfolio_details?.city}
+                             </span>
+                          </div>
+                      </div>
+
+                      {/* AI Analizi */}
+                      <div className={styles.aiAnalysis}>
+                          <p className={styles.oneLiner}>{item.one_liner}</p>
+                          
+                          <div className={styles.reasons}>
+                            <strong><Check size={12}/> Neden Uygun?</strong>
+                            <ul>
+                                {item.fit_reasons.map((r, i) => <li key={i}>{r}</li>)}
+                            </ul>
+                          </div>
+
+                          <div className={styles.tipBox}>
+                             <Info size={14} className={styles.tipIcon} />
+                             <p>{item.presentation_tip}</p>
+                          </div>
+                      </div>
+
+                      {/* Aksiyon */}
+                      <a 
+                        href={`/dashboard/portfolios/${item.portfolio_id}`} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className={styles.viewBtn}
+                      >
+                        Portföyü İncele <ExternalLink size={14} />
+                      </a>
+                    </div>
+                  ))}
+               </div>
+            )}
+
+            {/* ORTAK BUTONLAR */}
             <div className={styles.actionButtons}>
               <button className={styles.secondaryBtn} onClick={() => setResult(null)}>
-                <RefreshCw size={16} /> Yeniden
+                <RefreshCw size={16} /> Yeniden Analiz Et
               </button>
               
               {result.whatsapp_url && (
-                <a 
-                  href={result.whatsapp_url} 
-                  target="_blank" 
-                  rel="noreferrer"
-                  className={styles.whatsappBtn}
-                >
-                  <MessageSquare size={18} /> WhatsApp'ta Aç
+                <a href={result.whatsapp_url} target="_blank" rel="noreferrer" className={styles.whatsappBtn}>
+                  <MessageSquare size={18} /> WhatsApp
                 </a>
               )}
             </div>
           </div>
         ) : (
-          /* BOŞ DURUM: ÇALIŞTIR BUTONU */
+          /* BOŞ DURUM (Loading & Run Button) */
           <div className={styles.emptyState}>
-            <button 
-              className={styles.runBtn} 
-              onClick={handleRunTool} 
-              disabled={isLoading}
-            >
+            <button className={styles.runBtn} onClick={handleRunTool} disabled={isLoading}>
               {isLoading ? (
-                <>
-                  <Loader2 className={styles.spin} size={20} />
-                  Mesaj Hazırlanıyor...
-                </>
+                <><Loader2 className={styles.spin} size={20} /> Analiz Ediliyor...</>
               ) : (
-                <>
-                  <Sparkles size={20} />
-                  {activeToolDef?.label} Çalıştır
-                </>
+                <><Sparkles size={20} /> {activeToolDef?.label} Çalıştır</>
               )}
             </button>
-            {isLoading && <p className={styles.loadingText}>Veriler analiz ediliyor, lütfen bekleyin...</p>}
+            {isLoading && <p className={styles.loadingText}>Yapay zeka verileri analiz ediyor...</p>}
           </div>
         )}
       </div>

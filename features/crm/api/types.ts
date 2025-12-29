@@ -171,3 +171,29 @@ export interface CreateCustomerPayload {
   source?: string;
   user_id: string; // created_by
 }
+// features/crm/api/types.ts içine eklenebilir
+
+export interface SmartMatchSuggestion {
+  portfolio_id: string;
+  score: number;
+  label: string; // Örn: "Alternatif", "Tam Eşleşme"
+  one_liner: string;
+  fit_reasons: string[];
+  risk_reasons: string[];
+  presentation_tip: string;
+  // API tarafında ekleyeceğimiz Supabase verisi:
+  portfolio_details?: {
+    title: string;
+    price: number;
+    currency: string;
+    city: string;
+    district: string;
+    image_url?: string;
+  };
+}
+
+export interface SmartMatchResponse {
+  ok: boolean;
+  customer_id: string;
+  suggestions: SmartMatchSuggestion[];
+}
