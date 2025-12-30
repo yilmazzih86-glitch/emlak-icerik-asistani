@@ -170,6 +170,11 @@ export interface CreateCustomerPayload {
   notes?: string;
   source?: string;
   user_id: string; // created_by
+
+  type: 'sale' | 'rent';               // Zorunlu
+  interested_cities: string[];        // Zorunlu (En az 1 il)
+  interested_districts: string[];     // Zorunlu (En az 1 ilçe)
+  preferred_room_counts?: string[];    // Opsiyonel
 }
 // features/crm/api/types.ts içine eklenebilir
 

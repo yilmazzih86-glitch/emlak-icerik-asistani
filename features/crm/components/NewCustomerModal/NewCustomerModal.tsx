@@ -4,8 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useCrmStore } from '@/features/crm/hooks/useCrmStore';
 import { crmService } from '@/features/crm/api/crmService';
-import { X, Save, User, Phone, Mail, Banknote, FileText, Loader2 } from 'lucide-react';
+import { X, Save, User, Phone, Mail, Banknote, FileText, Loader2, MapPin } from 'lucide-react';
 import styles from './NewCustomerModal.module.scss';
+import { getCities, getDistrictsByCityCode } from 'turkey-neighbourhoods';
 
 // TypeScript hatası almamak için basit bir tip tanımı
 interface NewCustomerModalProps {
@@ -23,8 +24,14 @@ export default function NewCustomerModal({ isOpen, onClose }: NewCustomerModalPr
     email: '',
     budget_min: '',
     budget_max: '',
-    notes: ''
+    notes: '',
+    type: 'buy' as 'buy' | 'rent', // Varsayılan Alıcı
+    interested_cities: [] as string[],
+    interested_districts: [] as string[],
+    preferred_room_counts: [] as string[]
   });
+  const [cityList] = useState(getCities()); // Şehirler statik olduğu için direkt alabiliriz
+  const [districtList, setDistrictList] = useState<any[]>([]);
 
   const [loading, setLoading] = useState(false);
 
@@ -32,15 +39,53 @@ export default function NewCustomerModal({ isOpen, onClose }: NewCustomerModalPr
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setCurrentUserId(user.id);
-      }
-    };
-    fetchUser();
-  }, []);
+  const cityCode = formData.interested_cities[0];
+
+  if (cityCode) {
+    // Doğrudan kodu kullanarak ilçeleri çekiyoruz
+    const districts = getDistrictsByCityCode(cityCode);
+    setDistrictList(districts || []);
+    
+    console.log(`${cityCode} kodlu ilin ilçeleri yüklendi:`, districts);
+  } else {
+    setDistrictList([]);
+  }
+}, [formData.interested_cities]);
+useEffect(() => {
+  const cityCode = formData.interested_cities[0];
+
+  if (cityCode) {
+    // Doğrudan kodu kullanarak ilçeleri çekiyoruz
+    const districts = getDistrictsByCityCode(cityCode);
+    setDistrictList(districts || []);
+    
+    console.log(`${cityCode} kodlu ilin ilçeleri yüklendi:`, districts);
+  } else {
+    setDistrictList([]);
+  }
+}, [formData.interested_cities]);
+
+    useEffect(() => {
+    if (formData.interested_cities.length > 0) {
+      const selectedCityName = formData.interested_cities[0];
+      // Şimdilik ilk seçilen ile göre ilçeleri getiriyoruz (Geliştirilebilir)
+      const selectedCity = cityList.find(
+      c => c.name.toLowerCase() === selectedCityName.toLowerCase()
+    );
+    console.log("Bulunan Şehir Objesi:", selectedCity);
+      if (selectedCity) {
+      // 3. İlçeleri çek
+      const districts = getDistrictsByCityCode(selectedCity.code);
+      console.log("Çekilen İlçe Listesi:", districts);
+      
+      setDistrictList(districts || []);
+    }
+    } else {
+      setDistrictList([]);
+    }
+  }, [formData.interested_cities, cityList]);
+    
+
 
   // Form elemanları değiştiğinde çalışacak fonksiyon
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -59,17 +104,25 @@ export default function NewCustomerModal({ isOpen, onClose }: NewCustomerModalPr
 
     setLoading(true);
     try {
-      // 3. DÜZELTME: user_id ekleniyor ve sayılar dönüştürülüyor
+      // Plaka kodunu şehir ismine çeviriyoruz
+      const selectedCityCode = formData.interested_cities[0];
+      const cityObject = cityList.find(c => c.code === selectedCityCode);
+      const finalCityName = cityObject ? cityObject.name : selectedCityCode;
+
       await crmService.createCustomer({
         user_id: currentUserId,
         full_name: formData.full_name,
         phone: formData.phone,
         email: formData.email || undefined,
-        // Sayısal alanları dönüştür, boşsa undefined gönder
         budget_min: formData.budget_min ? Number(formData.budget_min) : undefined,
         budget_max: formData.budget_max ? Number(formData.budget_max) : undefined,
         notes: formData.notes || undefined,
-        // CSV analizine göre 'type' genelde 'buy' (alıcı) olarak varsayılıyor, gerekirse eklenebilir.
+        
+        // Yeni Alanlar:
+        type: formData.type,
+        interested_cities: finalCityName ? [finalCityName] : [],
+        interested_districts: formData.interested_districts,
+        preferred_room_counts: formData.preferred_room_counts
       });
 
       // Listeyi yenile ve modalı kapat
@@ -78,22 +131,28 @@ export default function NewCustomerModal({ isOpen, onClose }: NewCustomerModalPr
       
       // Formu temizle
       setFormData({
-        full_name: '',
-        phone: '',
-        email: '',
-        budget_min: '',
-        budget_max: '',
-        notes: ''
+        full_name: '', phone: '', email: '',
+        budget_min: '', budget_max: '', notes: '',
+        type: 'buy',
+        interested_cities: [],
+        interested_districts: [],
+        preferred_room_counts: []
       });
       
-    } catch (error) {
+    } catch (error: any) {
+  // Hatanın tüm detaylarını bir popup olarak ekrana basar
+  const errorMsg = error.message || "Bilinmeyen hata";
+  const errorCode = error.code || "Kod yok";
+  const errorDetails = error.details || "Detay yok";
+  
+  alert(`HATA: ${error.message || 'Kayıt başarısız'}`);
       console.error(error);
-      alert('Müşteri oluşturulamadı! (Lütfen zorunlu alanları kontrol edin)');
     } finally {
       setLoading(false);
     }
-  };
+  }; // handleSubmit fonksiyonu burada bitmeli
 
+  // Modal kapalıysa hiçbir şey render etme
   if (!isOpen) return null;
 
   return (
@@ -120,6 +179,25 @@ export default function NewCustomerModal({ isOpen, onClose }: NewCustomerModalPr
               />
             </div>
           </div>
+          <div className={styles.section}>
+  <label>Müşteri Tipi *</label>
+  <div className={styles.typeToggle}>
+    <button 
+      type="button"
+      className={formData.type === 'buy' ? styles.activeType : ''} 
+      onClick={() => setFormData(prev => ({ ...prev, type: 'buy' }))}
+    >
+      Alıcı (Satılık)
+    </button>
+    <button 
+      type="button"
+      className={formData.type === 'rent' ? styles.activeType : ''} 
+      onClick={() => setFormData(prev => ({ ...prev, type: 'rent' }))}
+    >
+      Kiracı (Kiralık)
+    </button>
+  </div>
+</div>
 
           <div className={styles.row}>
             <div className={styles.formGroup}>
@@ -151,6 +229,59 @@ export default function NewCustomerModal({ isOpen, onClose }: NewCustomerModalPr
           </div>
 
           <div className={styles.row}>
+  {/* ŞEHİR SEÇİMİ */}
+  <div className={styles.formGroup}>
+    <label>İl *</label>
+    <div className={styles.inputWrapper}>
+      <MapPin size={16} />
+      <select 
+  name="interested_cities"
+  value={formData.interested_cities[0] || ''}
+  onChange={(e) => {
+    const selectedCode = e.target.value;
+    setFormData(prev => ({ 
+      ...prev, 
+      interested_cities: [selectedCode], // Artık '34' gibi kod saklanacak
+      interested_districts: [] // İl değişince ilçeyi sıfırla
+    }));
+  }}
+  required
+>
+  <option value="">İl Seçiniz</option>
+  {cityList.map(city => (
+    // Value değerini city.code yaptık
+    <option key={city.code} value={city.code}>{city.name}</option>
+  ))}
+</select>
+    </div>
+  </div>
+
+  {/* İLÇE SEÇİMİ */}
+  <div className={styles.formGroup}>
+    <label>İlçe *</label>
+    <div className={styles.inputWrapper}>
+      <MapPin size={16} />
+      <select 
+  name="interested_districts"
+  value={formData.interested_districts[0] || ''}
+  onChange={(e) => setFormData(prev => ({ 
+    ...prev, 
+    interested_districts: [e.target.value] 
+  }))}
+  disabled={!formData.interested_cities.length}
+  required
+>
+  <option value="">İlçe Seçiniz</option>
+  {districtList.map((districtName) => (
+    // Eğer districtList string dizisiyse doğrudan değeri kullanıyoruz
+    <option key={districtName} value={districtName}>{districtName}</option>
+  ))}
+</select>
+    </div>
+  </div>
+</div>
+
+          <div className={styles.row}>
             <div className={styles.formGroup}>
               <label>Min Bütçe</label>
               <div className={styles.inputWrapper}>
@@ -178,6 +309,30 @@ export default function NewCustomerModal({ isOpen, onClose }: NewCustomerModalPr
               </div>
             </div>
           </div>
+
+          <div className={styles.section}>
+  <label>Oda Sayısı Tercihi</label>
+  <div className={styles.checkboxGroup}>
+    {['1+0', '1+1', '2+1', '3+1', '4+1', '4+2', 'Villa'].map(room => (
+      <label key={room} className={styles.checkboxLabel}>
+        <input 
+          type="checkbox"
+          checked={formData.preferred_room_counts.includes(room)}
+          onChange={(e) => {
+            const checked = e.target.checked;
+            setFormData(prev => ({
+              ...prev,
+              preferred_room_counts: checked 
+                ? [...prev.preferred_room_counts, room]
+                : prev.preferred_room_counts.filter(r => r !== room)
+            }));
+          }}
+        />
+        <span>{room}</span>
+      </label>
+    ))}
+  </div>
+</div>
 
           <div className={styles.formGroup}>
             <label>Notlar</label>

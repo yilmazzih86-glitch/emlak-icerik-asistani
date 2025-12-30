@@ -191,6 +191,135 @@
     }
   }
 }
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  label {
+    font-size: 0.8rem;
+    color: #a1a1aa; // $color-text-muted alternatifi
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+/* 1. Müşteri Tipi Toggle Butonları */
+.typeToggle {
+  display: flex;
+  gap: 0.5rem;
+  background-color: #121212; // Input arka planı ile uyumlu
+  padding: 0.25rem;
+  border-radius: 0.5rem;
+  border: 1px solid #262626;
+
+  button {
+    flex: 1;
+    padding: 0.6rem;
+    border: none;
+    border-radius: 0.4rem;
+    background: transparent;
+    color: #a1a1aa;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+  }
+
+  .activeType {
+    background-color: #7c3aed !important; // Marka Moru ($color-primary)
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+  }
+}
+
+/* 2. Select Box Tasarımı (InputWrapper içindeki select'ler için) */
+.inputWrapper {
+  select {
+    width: 100%;
+    background-color: #121212;
+    border: 1px solid #262626;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem 0.75rem 2.8rem;
+    color: #ffffff;
+    font-size: 0.95rem;
+    appearance: none; // Varsayılan ok işaretini kaldır
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:focus {
+      border-color: #7c3aed;
+      background-color: rgba(124, 58, 237, 0.05);
+      outline: none;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    option {
+      background-color: #171717;
+      color: #ffffff;
+    }
+  }
+}
+
+/* 3. Oda Sayısı Checkbox Grubu */
+.checkboxGroup {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background-color: #121212;
+  border: 1px solid #262626;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+
+  input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    accent-color: #7c3aed; // Checkbox rengi marka moru
+    cursor: pointer;
+  }
+
+  span {
+    font-size: 0.8rem;
+    color: #f9fafb;
+    font-weight: 500;
+  }
+
+  &:hover {
+    border-color: #52525b;
+    background-color: rgba(255, 255, 255, 0.03);
+  }
+
+  /* Seçili durum için görsel geri bildirim (opsiyonel) */
+  &:has(input:checked) {
+    border-color: rgba(124, 58, 237, 0.5);
+    background-color: rgba(124, 58, 237, 0.03);
+    
+    span {
+      color: #7c3aed;
+    }
+  }
+}
 
 /* ANIMASYONLAR */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
