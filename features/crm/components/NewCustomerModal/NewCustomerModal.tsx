@@ -16,6 +16,7 @@ interface NewCustomerModalProps {
 
 export default function NewCustomerModal({ isOpen, onClose }: NewCustomerModalProps) {
   const { loadCustomers } = useCrmStore();
+  const supabase = createClient();
   
   // 1. DÜZELTME: JSX ile uyumlu olması için tek bir formData state'i kullanıyoruz.
   const [formData, setFormData] = useState({
@@ -25,11 +26,12 @@ export default function NewCustomerModal({ isOpen, onClose }: NewCustomerModalPr
     budget_min: '',
     budget_max: '',
     notes: '',
-    type: 'buy' as 'buy' | 'rent', // Varsayılan Alıcı
+    type: 'sale' as 'sale' | 'rent', // Varsayılan Alıcı
     interested_cities: [] as string[],
     interested_districts: [] as string[],
     preferred_room_counts: [] as string[]
   });
+
   const [cityList] = useState(getCities()); // Şehirler statik olduğu için direkt alabiliriz
   const [districtList, setDistrictList] = useState<any[]>([]);
 
@@ -37,6 +39,18 @@ export default function NewCustomerModal({ isOpen, onClose }: NewCustomerModalPr
 
   // 2. DÜZELTME: Kullanıcı ID'sini tutacak state ve useEffect
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function getUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setCurrentUserId(user.id);
+      }
+    }
+    if (isOpen) {
+      getUser();
+    }
+  }, [isOpen]);
 
   useEffect(() => {
   const cityCode = formData.interested_cities[0];
@@ -133,7 +147,7 @@ useEffect(() => {
       setFormData({
         full_name: '', phone: '', email: '',
         budget_min: '', budget_max: '', notes: '',
-        type: 'buy',
+        type: 'sale',
         interested_cities: [],
         interested_districts: [],
         preferred_room_counts: []
@@ -184,8 +198,8 @@ useEffect(() => {
   <div className={styles.typeToggle}>
     <button 
       type="button"
-      className={formData.type === 'buy' ? styles.activeType : ''} 
-      onClick={() => setFormData(prev => ({ ...prev, type: 'buy' }))}
+      className={formData.type === 'sale' ? styles.activeType : ''} 
+      onClick={() => setFormData(prev => ({ ...prev, type: 'sale' }))}
     >
       Alıcı (Satılık)
     </button>
