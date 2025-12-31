@@ -3,12 +3,12 @@
 import React, { useState, DragEvent } from 'react';
 import { useCrmStore } from '@/features/crm/hooks/useCrmStore';
 import { STAGES, STAGE_LABELS, PipelineStage, CrmDeal } from '@/features/crm/api/types';
-import { Plus, MoreHorizontal, Calendar, TrendingUp } from 'lucide-react';
+import { Plus, Trash2, Calendar, TrendingUp } from 'lucide-react';
 import NewDealModal from '../NewDealModal/NewDealModal';
 import styles from './CrmBoard.module.scss';
 
 export default function CrmBoard() {
-  const { deals, moveDealOptimistic, openCustomerDetail } = useCrmStore();
+  const { deals, moveDealOptimistic, openCustomerDetail,deleteDeal } = useCrmStore();
   const [isDealModalOpen, setIsDealModalOpen] = useState(false);
   
   // Sürüklenen Kartın ID'sini tut
@@ -86,7 +86,18 @@ export default function CrmBoard() {
                       <span className={styles.customerName}>
                         {deal.customers?.full_name || 'İsimsiz Müşteri'}
                       </span>
-                      <button className={styles.moreBtn}><MoreHorizontal size={14}/></button>
+                      <button 
+  className={styles.deleteBtn}
+  onClick={(e) => {
+    e.stopPropagation(); // Kartın detay panelini açmasını engeller
+    if (confirm("Bu fırsatı silmek istediğinize emin misiniz? Müşteri kaydı korunacaktır.")) {
+      deleteDeal(deal.id);
+    }
+  }}
+  title="Fırsatı Sil"
+>
+  <Trash2 size={14}/>
+</button>
                     </div>
 
                     {deal.portfolios && (

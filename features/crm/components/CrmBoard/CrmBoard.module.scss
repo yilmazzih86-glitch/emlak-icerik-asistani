@@ -144,13 +144,21 @@
       color: #ffffff;
     }
 
-    .moreBtn {
-      color: rgba(255, 255, 255, 0.3);
+    .deleteBtn {
+      @include flex-center; // Mixin kullanarak ortalayalım
+      color: rgba(255, 255, 255, 0.3); // Varsayılan sönük renk
       background: none;
       border: none;
-      padding: 0;
+      padding: 4px;
+      border-radius: 6px;
       cursor: pointer;
-      &:hover { color: white; }
+      transition: all 0.2s ease;
+
+      &:hover {
+        background-color: rgba(239, 68, 68, 0.15); // Hafif şeffaf kırmızı arka plan
+        color: #ef4444; // Net kırmızı ikon rengi
+        transform: scale(1.1); // Küçük bir büyüme efekti
+      }
     }
   }
 

@@ -54,6 +54,8 @@ interface CrmState {
   // --- Aksiyonlar (Pipeline) ---
   moveDealOptimistic: (dealId: string, newStage: PipelineStage) => Promise<void>;
   refreshDeals: () => Promise<void>;
+  deleteDeal: (dealId: string) => Promise<void>;
+
 
   // --- Aksiyonlar (Detay Güncellemeleri - Optimistic) ---
   addActivityToState: (activity: CrmActivity) => void;
@@ -207,6 +209,20 @@ export const useCrmStore = create<CrmState>((set, get) => ({
     const data = await crmService.getDeals();
     set({ deals: data || [] });
   },
+  deleteDeal: async (dealId: string) => {
+  try {
+    // 1. Veritabanından sil
+    await crmService.deleteDeal(dealId);
+    
+    // 2. State'i güncelle (Arayüzden anında kaldır)
+    set((state) => ({
+      deals: state.deals.filter((d) => d.id !== dealId)
+    }));
+  } catch (error) {
+    console.error("Fırsat silme hatası:", error);
+    alert("Fırsat silinirken bir hata oluştu.");
+  }
+},
 
   // 7. Detay Ekranı İçin Yardımcı Metodlar (UI anında güncellensin diye)
   addActivityToState: (activity) => {

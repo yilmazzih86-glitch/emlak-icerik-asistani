@@ -151,6 +151,15 @@ export const crmService = {
     if (error) throw error;
     return true;
   },
+  async deleteDeal(id: string) {
+  const { error } = await supabase
+    .from('crm_deals')
+    .delete()
+    .eq('id', id);
+    
+  if (error) throw error;
+  return true;
+},
 
   // ---------------------------------------------------------------------------
   // 4. DETAY & ALT TABLOLAR (Tasks, Activities, Appointments)
