@@ -13,7 +13,7 @@
 
 // Kart Görünümü
 @mixin card-surface {
-  background: $color-bg-surface;
+  background: $bg-dark-panel; // $color-bg-surface yerine mevcut değişkeni yazdık
   border: 1px solid $color-border;
   border-radius: $radius-md;
 }

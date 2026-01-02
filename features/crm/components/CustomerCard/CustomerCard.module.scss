@@ -1,86 +1,130 @@
+// features/crm/components/CrmBoard/CrmBoard.module.scss
 @import '@/styles/variables';
 @import '@/styles/mixins';
 
-.card {
-  @include card-surface; // Mixin kullanımı (Koyu tema uyumlu)
-  padding: 1rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
-  overflow: hidden;
+.boardContainer {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 100px); 
+  padding: 1.5rem 2rem;
+  gap: 1.5rem;
+  background-color: $bg-dark-app; // Merkezi arka plan rengi
+}
 
-  &:hover {
-    border-color: rgba($brand-purple, 0.5);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  }
-
-  // Sol taraftaki renkli şerit (Aşamayı belli eder)
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: $brand-purple; // Varsayılan
-    opacity: 0.7;
-  }
-
-  &__header {
-    @include flex(space-between, flex-start);
-    margin-bottom: 0.75rem;
-  }
-
-  &__info {
-    @include flex(flex-start, center, 0.75rem);
-    
-    h4 {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: $text-main;
-      margin-bottom: 0.2rem;
-    }
-    
-    p {
-      font-size: 0.8rem;
-      color: $text-muted;
-    }
-  }
-
-  &__price {
-    font-weight: 700;
-    color: $color-success; // Para her zaman yeşil/güçlü dursun
+.boardHeader {
+  @include flex-between; // Mixin kullanımı
+  
+  .stats {
     font-size: 0.9rem;
-    background: rgba($color-success, 0.1);
-    padding: 2px 6px;
-    border-radius: 4px;
+    color: $color-text-muted;
+    strong { 
+      color: $color-primary; // Marka Moru
+      font-weight: 700; 
+    }
   }
 
-  &__details {
-    margin-top: 0.75rem;
-    padding-top: 0.75rem;
-    border-top: 1px solid rgba($text-muted, 0.1);
-    
-    // Grid yapısı: İkon ve metinleri hizalamak için
-    display: grid;
-    grid-template-columns: 1fr auto;
+  .newDealBtn {
+    @include flex-center;
     gap: 0.5rem;
-    align-items: center;
-    font-size: 0.8rem;
-    color: $text-muted;
+    background: linear-gradient(135deg, $color-primary 0%, #4f46e5 100%);
+    color: white;
+    padding: 0.65rem 1.25rem;
+    border-radius: $radius-md;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: $shadow-sm;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: $shadow-lg;
+      filter: brightness(1.1);
+    }
+  }
+}
+
+.columnsWrapper {
+  display: flex;
+  gap: 1.25rem;
+  flex: 1;
+  overflow-x: auto;
+  padding-bottom: 1rem;
+
+  &::-webkit-scrollbar { height: 6px; }
+  &::-webkit-scrollbar-thumb { 
+    background: rgba($color-primary, 0.2); 
+    border-radius: $radius-full; 
+  }
+}
+
+.column {
+  flex: 0 0 300px;
+  background: rgba($bg-dark-panel, 0.5); // Panel rengi
+  border-radius: $radius-lg;
+  border: 1px solid $color-border;
+  display: flex;
+  flex-direction: column;
+}
+
+.columnHeader {
+  padding: 1.25rem;
+  @include flex-between;
+  border-bottom: 2px solid rgba($color-primary, 0.2);
+
+  .stageTitle {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: $color-text-main;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
-  &__portfolio {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    
-    svg { color: $brand-orange; }
+  .countBadge {
+    background: rgba($color-primary, 0.1);
+    color: $color-primary;
+    padding: 2px 8px;
+    border-radius: $radius-full;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+}
+
+.columnContent {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+}
+
+.dealCardWrapper {
+  position: relative;
+  
+  .deleteBtn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+    background: rgba($bg-dark-panel, 0.8);
+    border: 1px solid rgba($color-danger, 0.2);
+    color: $color-text-muted;
+    padding: 5px;
+    border-radius: $radius-sm;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    opacity: 0; // Sadece üzerine gelince görünsün
+
+    &:hover {
+      background: $color-danger;
+      color: white;
+      border-color: $color-danger;
+      transform: scale(1.1);
+    }
   }
 
-  &__actions {
-    display: flex;
-    gap: 0.5rem;
+  &:hover .deleteBtn {
+    opacity: 1;
   }
 }

@@ -56,6 +56,8 @@ export interface Customer {
   full_name: string;
   phone: string;
   email?: string;
+
+  type?: 'sale' | 'rent';
   
   // Tercih & Filtreleme Kriterleri
   budget_min?: number;

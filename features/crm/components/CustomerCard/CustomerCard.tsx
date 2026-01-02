@@ -3,51 +3,68 @@
 
 import React from 'react';
 import styles from './CustomerCard.module.scss';
-import { Deal } from '@/features/crm/api/types';
-import { Phone, Home, BadgeDollarSign } from 'lucide-react';
+import { CrmDeal } from '@/features/crm/api/types';
+import { Home, MapPin, Tag } from 'lucide-react';
+import { Badge } from '@/components/ui/Badge/Badge';
 
 interface Props {
-  deal: Deal;
+  deal: CrmDeal;
   // image_7581c7'deki eksik prop hatalarını gideren tanımlar
   onClick?: () => void; 
   onWhatsApp?: (phone: string) => void;
 }
 
 export const CustomerCard = ({ deal, onClick }: Props) => {
-  const customer = deal.customer;
+  const customer = deal.customers; 
+  const portfolio = deal.portfolios;
 
   return (
     <div className={styles.card} onClick={onClick}>
+      {/* 1. Üst Kısım: Ad Soyad ve Müşteri Tipi */}
       <div className={styles.header}>
-        <div className={styles.avatar}>
-          {customer?.full_name?.charAt(0) || '?'}
-        </div>
         <div className={styles.mainInfo}>
           <h4 className={styles.name}>{customer?.full_name || 'İsimsiz Müşteri'}</h4>
-          <span className={styles.phone}>{customer?.phone}</span>
+          {customer?.type && (
+             <span className={styles.typeBadge}>
+               {customer.type === 'sale' ? 'Alıcı' : 'Kiracı'}
+             </span>
+          )}
+          <Badge variant={customer?.type === 'sale' ? 'success' : 'info'}>
+            {customer?.type === 'sale' ? 'Alıcı' : 'Kiracı'}
+          </Badge>
         </div>
-        {customer?.budget_max && (
-          <div className={styles.budget}>
-            ₺{customer.budget_max.toLocaleString()}
-          </div>
-        )}
       </div>
 
-      <div className={styles.tags}>
-        <span className={styles.tag}>{deal.stage.toUpperCase()}</span>
+      {/* 2. Orta Kısım: Bütçe ve Lokasyon Bilgileri */}
+      <div className={styles.details}>
+        <div className={styles.detailRow}>
+          <Tag size={14} />
+          <span className={styles.budget}>
+            {customer?.budget_min?.toLocaleString()} - {customer?.budget_max?.toLocaleString()} ₺
+          </span>
+        </div>
+        
+        <div className={styles.detailRow}>
+          <MapPin size={14} />
+          <span className={styles.location}>
+            {customer?.interested_cities?.join(', ')} / {customer?.interested_districts?.join(', ')}
+          </span>
+        </div>
       </div>
 
-      {deal.portfolio && (
+      {/* 3. Alt Kısım: Bağlı Portföy (Varsa) */}
+      {portfolio ? (
         <div className={styles.portfolioLink}>
           <Home size={14} />
-          <span>{deal.portfolio.title}</span>
+          <div className={styles.portfolioInfo}>
+            <span className={styles.portfolioTitle}>{portfolio.title}</span>
+            <span className={styles.portfolioPrice}>{portfolio.price.toLocaleString()} ₺</span>
+          </div>
         </div>
-      )}
-      
-      {!deal.portfolio && (
+      ) : (
         <div className={styles.noPortfolio}>
           <Home size={14} />
-          <span>Talep: 3+1 Kadıköy...</span>
+          <span>Henüz bir portföy bağlanmadı</span>
         </div>
       )}
     </div>

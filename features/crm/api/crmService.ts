@@ -110,15 +110,31 @@ export const crmService = {
     // Not: Müşteri ve Portföy bilgilerini "join" ile alır.
     const { data, error } = await supabase
       .from('crm_deals')
-      .select(`
-        *,
-        customers (id, full_name, phone, avatar_url),
-        portfolios (id, title, price, district, city)
-      `)
-      .order('created_at', { ascending: false });
-      
-    if (error) throw error;
-    return data;
+    .select(`
+      *,
+      customers (
+        id, 
+        full_name, 
+        type, 
+        interested_cities, 
+        interested_districts, 
+        budget_min, 
+        budget_max,
+        phone, 
+        avatar_url
+      ),
+      portfolios (
+        id, 
+        title, 
+        price, 
+        district, 
+        city
+      )
+    `)
+    .order('created_at', { ascending: false });
+    
+  if (error) throw error;
+  return data;
   },
 
   async createDeal(payload: CreateDealPayload) {
