@@ -35,6 +35,16 @@ const getActivityIcon = (type: ActivityType) => {
     default: return <FileText size={14} />;
   }
 };
+const getCustomerTypeConfig = (type?: string) => {
+  switch (type) {
+    case 'sale':
+      return { label: 'Alıcı (Satılık)', variant: 'success' as const }; // Yeşil
+    case 'rent':
+      return { label: 'Kiracı (Kiralık)', variant: 'purple' as const };  // Mor
+    default:
+      return { label: 'Belirtilmemiş', variant: 'default' as const };   // Gri
+  }
+};
 
 export default function SidebarDetail() {
   const { 
@@ -212,23 +222,60 @@ export default function SidebarDetail() {
       {/* İÇERİK */}
       <div className={styles.contentArea}>
         
-        {/* TAB 1: INFO */}
-        {activeDetailTab === 'info' && (
-          <div className={styles.infoTab}>
-             <div className={styles.infoGroup}>
-                <label>E-Posta</label>
-                <p>{customer.email || '-'}</p>
-             </div>
-             <div className={styles.infoGroup}>
-                <label>Bütçe</label>
-                <p>{customer.budget_min ? `${customer.budget_min} - ${customer.budget_max}` : '-'}</p>
-             </div>
-             <div className={styles.infoGroup}>
-                <label>Notlar</label>
-                <p className={styles.notes}>{customer.notes || 'Not yok.'}</p>
-             </div>
-          </div>
-        )}
+        {/* TAB 1: INFO - Geliştirilmiş Versiyon */}
+{activeDetailTab === 'info' && (
+  <div className={styles.infoTab}>
+    {/* Müşteri Tipi ve Kaynak */}
+    <div className={styles.infoRow}>
+      <div className={styles.infoGroup}>
+      <label>Müşteri Tipi</label>
+      <div style={{ marginTop: '4px' }}>
+        {(() => {
+          const config = getCustomerTypeConfig(customer.type);
+          return <Badge variant={config.variant}>{config.label}</Badge>;
+        })()}
+      </div>
+    </div>
+      <div className={styles.infoGroup}>
+        <label>Kaynak</label>
+        <p>{customer.source || '-'}</p>
+      </div>
+    </div>
+
+    <div className={styles.infoGroup}>
+      <label>E-Posta</label>
+      <p>{customer.email || '-'}</p>
+    </div>
+
+    <div className={styles.infoGroup}>
+      <label>Bütçe Aralığı</label>
+      <p>{customer.budget_min ? 
+        `${new Intl.NumberFormat('tr-TR').format(customer.budget_min)} - ${new Intl.NumberFormat('tr-TR').format(customer.budget_max || 0)} TL` 
+        : '-'}
+      </p>
+    </div>
+
+    {/* Lokasyon Tercihleri */}
+    <div className={styles.infoGroup}>
+      <label>İlgilendiği Bölgeler</label>
+      <div className={styles.tagCloud}>
+        {customer.interested_cities?.map(city => <Badge key={city} variant="purple">{city}</Badge>)}
+        {customer.interested_districts?.map(dist => <Badge key={dist} variant="warning">{dist}</Badge>)}
+      </div>
+    </div>
+
+    {/* Oda Tercihi */}
+    <div className={styles.infoGroup}>
+      <label>Oda Tercihi</label>
+      <p>{customer.preferred_room_counts?.join(', ') || '-'}</p>
+    </div>
+
+    <div className={styles.infoGroup}>
+      <label>Notlar</label>
+      <p className={styles.notes}>{customer.notes || 'Not yok.'}</p>
+    </div>
+  </div>
+)}
 
         {/* TAB 2: GEÇMİŞ (HISTORY) */}
         {activeDetailTab === 'history' && (
