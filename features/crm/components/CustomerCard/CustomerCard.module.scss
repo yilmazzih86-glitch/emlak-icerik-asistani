@@ -128,3 +128,129 @@
     opacity: 1;
   }
 }
+.card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(124, 58, 237, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    
+    &::before { opacity: 1; }
+  }
+
+  // Kartın solundaki ince renk vurgusu (Müşteri Tipine Göre)
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: #7c3aed; // Varsayılan Mor
+    opacity: 0.5;
+    transition: opacity 0.3s;
+  }
+
+  .header {
+    margin-bottom: 1rem;
+    
+    .mainInfo {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      .name {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #ffffff;
+        margin: 0;
+      }
+
+      .typeBadge {
+        display: none; // Badge bileşeni kullanıldığı için bunu gizleyebilir veya stil verebilirsiniz
+      }
+    }
+  }
+
+  .details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 1.25rem;
+
+    .detailRow {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.85rem;
+
+      svg {
+        color: #7c3aed;
+        flex-shrink: 0;
+      }
+
+      .budget {
+        font-weight: 600;
+        color: #f97316; // Turuncu bütçe vurgusu
+      }
+
+      .location {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+
+  .portfolioLink {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(124, 58, 237, 0.1);
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid rgba(124, 58, 237, 0.1);
+
+    svg { color: #a78bfa; }
+
+    .portfolioInfo {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+
+      .portfolioTitle {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #e2e8f0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .portfolioPrice {
+        font-size: 0.7rem;
+        color: #a78bfa;
+      }
+    }
+  }
+
+  .noPortfolio {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.3);
+    font-style: italic;
+    padding: 0.5rem;
+  }
+}
