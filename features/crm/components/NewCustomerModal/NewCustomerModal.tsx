@@ -29,8 +29,42 @@ export default function NewCustomerModal({ isOpen, onClose }: NewCustomerModalPr
     type: 'sale' as 'sale' | 'rent', // Varsayılan Alıcı
     interested_cities: [] as string[],
     interested_districts: [] as string[],
-    preferred_room_counts: [] as string[]
+    preferred_room_counts: [] as string[], // Artık tek bir string tutacak
+    source: ""
   });
+  const ROOM_OPTIONS = [
+  { id: '1+0', label: '1+0' },
+  { id: '1+1', label: '1+1' },
+  { id: '2+1', label: '2+1' },
+  { id: '3+1', label: '3+1' },
+  { id: '4+1', label: '4+1' },
+  { id: '5+1', label: '5+1' },
+  { id: null, label: 'Belirsiz' } // Seçimi sıfırlamak için
+];
+
+// Müşteri kaynağı seçenekleri
+const SOURCE_OPTIONS = [
+  { id: 'whatsapp', label: 'WhatsApp' },
+  { id: 'phone', label: 'Telefon' },
+  { id: 'instagram', label: 'Instagram' },
+  { id: 'sahibinden', label: 'Sahibinden' },
+  { id: 'hepsi_emlak', label: 'Hepsi Emlak' },
+  { id: 'office', label: 'Ofis' },
+  { id: 'other', label: 'Diğer' }
+];
+const handleRoomSelect = (roomId: string | null) => {
+  setFormData(prev => ({
+    ...prev,
+    preferred_room_counts: roomId ? [roomId] : ([] as string[]) 
+  }));
+};
+const handleSourceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const value = e.target.value;
+  setFormData(prev => ({
+    ...prev,
+    source: value
+  }));
+};
 
   const [cityList] = useState(getCities()); // Şehirler statik olduğu için direkt alabiliriz
   const [districtList, setDistrictList] = useState<any[]>([]);
@@ -150,7 +184,8 @@ useEffect(() => {
         type: 'sale',
         interested_cities: [],
         interested_districts: [],
-        preferred_room_counts: []
+        preferred_room_counts: [],
+        source: ""
       });
       
     } catch (error: any) {
@@ -324,27 +359,45 @@ useEffect(() => {
             </div>
           </div>
 
-          <div className={styles.section}>
-  <label>Oda Sayısı Tercihi</label>
-  <div className={styles.checkboxGroup}>
-    {['1+0', '1+1', '2+1', '3+1', '4+1', '4+2', 'Villa'].map(room => (
-      <label key={room} className={styles.checkboxLabel}>
-        <input 
-          type="checkbox"
-          checked={formData.preferred_room_counts.includes(room)}
-          onChange={(e) => {
-            const checked = e.target.checked;
-            setFormData(prev => ({
-              ...prev,
-              preferred_room_counts: checked 
-                ? [...prev.preferred_room_counts, room]
-                : prev.preferred_room_counts.filter(r => r !== room)
-            }));
-          }}
-        />
-        <span>{room}</span>
-      </label>
-    ))}
+          <div className="modal-form-row">
+  {/* Oda Sayısı Tercihi (Sekmeli/Tab Yapısı) */}
+  <div className="modal-form-column">
+    <label className="field-label">Oda Sayısı Tercihi</label>
+    <div className="room-tabs-wrapper">
+        <button
+  type="button"
+  className={`room-tab-item ${(formData.preferred_room_counts?.length === 0) ? 'active' : ''}`}
+  onClick={() => handleRoomSelect(null)}
+>
+  Belirsiz
+</button>
+{ROOM_OPTIONS.filter(opt => opt.id !== null).map((option) => (
+    <button
+      key={option.id}
+      type="button"
+      className={`room-tab-item ${formData.preferred_room_counts?.includes(option.id as string) ? 'active' : ''}`}
+      onClick={() => handleRoomSelect(option.id)}
+    >
+      {option.label}
+    </button>
+  ))}
+ 
+    </div>
+  </div>
+  <div className="modal-form-column">
+    <label className="field-label">Müşteri Kaynağı</label>
+    <select
+      className="source-select"
+      value={formData.source}
+      onChange={handleSourceChange}
+    >
+      <option value="">Kaynak Seçiniz</option>
+      {SOURCE_OPTIONS.map((source) => (
+        <option key={source.id} value={source.id}>
+          {source.label}
+        </option>
+      ))}
+    </select>
   </div>
 </div>
 

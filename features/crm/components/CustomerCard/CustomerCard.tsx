@@ -29,7 +29,7 @@ export const CustomerCard = ({ deal, onClick }: Props) => {
                {customer.type === 'sale' ? 'Alıcı' : 'Kiracı'}
              </span>
           )}
-          <Badge variant={customer?.type === 'sale' ? 'success' : 'info'}>
+          <Badge variant={customer?.type === 'sale' ? 'success' : 'purple'}>
             {customer?.type === 'sale' ? 'Alıcı' : 'Kiracı'}
           </Badge>
         </div>
