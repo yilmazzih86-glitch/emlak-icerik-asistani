@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useCrmStore } from '@/features/crm/hooks/useCrmStore';
 import { crmService } from '@/features/crm/api/crmService';
-import { X, Save, User, Phone, Mail, Banknote, FileText, Loader2, MapPin } from 'lucide-react';
+import { X, Save, User, Phone, Mail, Banknote, FileText, Loader2, MapPin, LayoutGrid } from 'lucide-react';
 import styles from './NewCustomerModal.module.scss';
 import { getCities, getDistrictsByCityCode } from 'turkey-neighbourhoods';
 
@@ -44,13 +44,13 @@ export default function NewCustomerModal({ isOpen, onClose }: NewCustomerModalPr
 
 // Müşteri kaynağı seçenekleri
 const SOURCE_OPTIONS = [
-  { id: 'whatsapp', label: 'WhatsApp' },
-  { id: 'phone', label: 'Telefon' },
-  { id: 'instagram', label: 'Instagram' },
-  { id: 'sahibinden', label: 'Sahibinden' },
-  { id: 'hepsi_emlak', label: 'Hepsi Emlak' },
-  { id: 'office', label: 'Ofis' },
-  { id: 'other', label: 'Diğer' }
+  { id: 'Whatsapp', label: 'WhatsApp' },
+  { id: 'Telefon', label: 'Telefon' },
+  { id: 'Instagram', label: 'Instagram' },
+  { id: 'Sahibinden', label: 'Sahibinden' },
+  { id: 'Hepsi_emlak', label: 'Hepsi Emlak' },
+  { id: 'Ofis', label: 'Ofis' },
+  { id: 'Diğer', label: 'Diğer' }
 ];
 const handleRoomSelect = (roomId: string | null) => {
   setFormData(prev => ({
@@ -165,8 +165,7 @@ useEffect(() => {
         budget_min: formData.budget_min ? Number(formData.budget_min) : undefined,
         budget_max: formData.budget_max ? Number(formData.budget_max) : undefined,
         notes: formData.notes || undefined,
-        
-        // Yeni Alanlar:
+        source: formData.source,
         type: formData.type,
         interested_cities: finalCityName ? [finalCityName] : [],
         interested_districts: formData.interested_districts,
@@ -359,45 +358,42 @@ useEffect(() => {
             </div>
           </div>
 
-          <div className="modal-form-row">
-  {/* Oda Sayısı Tercihi (Sekmeli/Tab Yapısı) */}
-  <div className="modal-form-column">
-    <label className="field-label">Oda Sayısı Tercihi</label>
-    <div className="room-tabs-wrapper">
-        <button
-  type="button"
-  className={`room-tab-item ${(formData.preferred_room_counts?.length === 0) ? 'active' : ''}`}
-  onClick={() => handleRoomSelect(null)}
->
-  Belirsiz
-</button>
-{ROOM_OPTIONS.filter(opt => opt.id !== null).map((option) => (
-    <button
-      key={option.id}
-      type="button"
-      className={`room-tab-item ${formData.preferred_room_counts?.includes(option.id as string) ? 'active' : ''}`}
-      onClick={() => handleRoomSelect(option.id)}
-    >
-      {option.label}
-    </button>
-  ))}
- 
+          <div className={styles.modalFormRow}>
+  <div className={styles.modalFormColumn}>
+    <label className={styles.fieldLabel}>Oda Sayısı Tercihi</label>
+    <div className={styles.inputWrapper}>
+      <LayoutGrid size={16} />
+      <select
+        className={styles.sourceSelect} // İl/İlçe ile aynı stil
+        value={formData.preferred_room_counts[0] || ''}
+        onChange={(e) => handleRoomSelect(e.target.value || null)}
+      >
+        <option value="">Belirsiz / Hepsi</option>
+        {ROOM_OPTIONS.filter(opt => opt.id !== null).map((option) => (
+          <option key={option.id} value={option.id as string}>
+            {option.label}
+          </option>
+        ))}
+      </select>
     </div>
   </div>
-  <div className="modal-form-column">
-    <label className="field-label">Müşteri Kaynağı</label>
-    <select
-      className="source-select"
-      value={formData.source}
-      onChange={handleSourceChange}
-    >
-      <option value="">Kaynak Seçiniz</option>
-      {SOURCE_OPTIONS.map((source) => (
-        <option key={source.id} value={source.id}>
-          {source.label}
-        </option>
-      ))}
-    </select>
+  <div className={styles.modalFormColumn}>
+    <label className={styles.fieldLabel}>Müşteri Kaynağı</label>
+    <div className={styles.inputWrapper}>
+      <FileText size={16} /> {/* Kaynak için uygun bir ikon */}
+      <select
+        className={styles.sourceSelect}
+        value={formData.source}
+        onChange={handleSourceChange}
+      >
+        <option value="">Kaynak Seçiniz</option>
+        {SOURCE_OPTIONS.map((source) => (
+          <option key={source.id} value={source.id}>
+            {source.label}
+          </option>
+        ))}
+      </select>
+    </div>
   </div>
 </div>
 
