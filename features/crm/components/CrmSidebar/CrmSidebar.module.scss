@@ -89,6 +89,24 @@
         
         svg { color: #7c3aed; } // İkon Marka Moru
       }
+      .closeBtn {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.4);
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        @include flex-center;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        
+        &:hover { 
+          background: rgba(239, 68, 68, 0.1); 
+          color: #ef4444; 
+          transform: rotate(90deg);
+          border-color: rgba(239, 68, 68, 0.2);
+        }
+      }
 
       .closeMobile {
         background: rgba(255, 255, 255, 0.03);
@@ -581,47 +599,56 @@
 
 // --- ÜST BAŞLIK & PROFİL ---
 .detailHeader {
+  padding: 1.5rem 1.25rem; 
   flex-shrink: 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   background-color: rgba(255, 255, 255, 0.01);
 
   .headerTop {
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-end; // Butonları sağa yaslar
     align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
+    gap: 10px;
+    margin-bottom: 1.25rem;
+    padding: 0 0.5rem;
 
     .backBtn {
-      background: none;
-      border: none;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       color: rgba(255, 255, 255, 0.4);
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      @include flex-center; // İkonu ortalar
       cursor: pointer;
-      padding: 0.5rem;
-      border-radius: 10px;
-      transition: all 0.3s ease;
-
-      &:hover {
-        background-color: rgba(255, 255, 255, 0.05);
-        color: #ffffff;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      
+      &:hover { 
+        background: rgba(255, 255, 255, 0.08); 
+        color: #ffffff; 
+        transform: rotate(90deg); // Global ile uyumlu dönüş efekti
+        border-color: rgba(255, 255, 255, 0.2);
       }
     }
-    .deleteCustomerBtn {
+   .deleteCustomerBtn {
       background: transparent;
       border: 1px solid transparent;
-      color: rgba(255, 255, 255, 0.4);
+      color: rgba(255, 255, 255, 0.3);
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      @include flex-center;
       cursor: pointer;
-      padding: 6px;
-      border-radius: 10px;
       transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
 
       &:hover {
-        color: #ef4444;
-        background-color: rgba(239, 68, 68, 0.1);
+        color: #ef4444; // Tehlike rengi
+        background: rgba(239, 68, 68, 0.1);
         border-color: rgba(239, 68, 68, 0.2);
+      }
+      
+      &:active {
+        transform: scale(0.9);
       }
     }
   }

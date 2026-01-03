@@ -229,7 +229,7 @@ export default function SidebarDetail() {
     <div className={styles.infoRow}>
       <div className={styles.infoGroup}>
       <label>Müşteri Tipi</label>
-      <div style={{ marginTop: '4px' }}>
+      <div style={{ marginTop: '2px', marginBottom: '8px' }}>
         {(() => {
           const config = getCustomerTypeConfig(customer.type);
           return <Badge variant={config.variant}>{config.label}</Badge>;

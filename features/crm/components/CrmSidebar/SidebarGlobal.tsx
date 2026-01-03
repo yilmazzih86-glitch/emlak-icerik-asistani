@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCrmStore } from '@/features/crm/hooks/useCrmStore';
 import { Customer } from '@/features/crm/api/types';
-import { Search, Plus, User, Phone, ChevronRight, Users } from 'lucide-react';
+import { Search, Plus, User, Phone, ChevronRight, Users, X } from 'lucide-react';
 import NewCustomerModal from '../NewCustomerModal/NewCustomerModal';
 import styles from './CrmSidebar.module.scss'; // Ortak stiller
 
@@ -35,8 +35,11 @@ export default function SidebarGlobal() {
       <header className={styles.header}>
         <div className={styles.titleRow}>
           <h3><Users size={18}/> Müşteri Havuzu</h3>
-          <button onClick={closeSidebar} className={styles.closeMobile}>Kapat</button>
-        </div>
+          <button onClick={closeSidebar} className={styles.closeBtn} title="Kapat">
+    <X size={20} />
+  </button>
+</div>
+        
         
         <div className={styles.actions}>
           <div className={styles.searchBox}>

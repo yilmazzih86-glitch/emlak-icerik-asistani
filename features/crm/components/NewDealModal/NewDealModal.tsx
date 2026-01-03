@@ -182,15 +182,7 @@ export default function NewDealModal({ isOpen, onClose }: NewDealModalProps) {
                 ))}
               </select>
             </div>
-            <div className={styles.formGroup}>
-              <label>Beklenen Tutar (₺)</label>
-              <input 
-                type="number" 
-                value={amount} 
-                onChange={e => setAmount(e.target.value)}
-                placeholder="Örn: 5000000"
-              />
-            </div>
+            
           </div>
 
         </div>

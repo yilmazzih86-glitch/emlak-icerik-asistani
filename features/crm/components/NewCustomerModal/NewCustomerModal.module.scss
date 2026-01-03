@@ -162,34 +162,42 @@
 
   /* Vazgeç butonu */
   .cancelBtn {
-    background-color: transparent;
-    color: #a1a1aa; // globals.scss --muted rengi
-    border: 1px solid #262626; // globals.scss --border
-    
-    &:hover {
-      background-color: rgba(255, 255, 255, 0.05);
-      color: #ffffff;
-      border-color: #a1a1aa; // Hover durumunda belirgin kenarlık
+      padding: 0.75rem 1.5rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.5);
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      &:hover { border-color: rgba(255, 255, 255, 0.2); color: #ffffff; background: rgba(255, 255, 255, 0.06); }
     }
-  }
 
   /* Kaydet butonu (Marka moru gradyanı) */
   .submitBtn {
-    /* globals.scss --primary (#7c3aed) ve --primary-hover (#6d28d9) tonları */
-    background: linear-gradient(135deg, #7c3aed, #6d28d9); 
-    color: white;
-    /* Marka kimliği mor gölge standardı */
-    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3); 
+      padding: 0.75rem 1.5rem;
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); // Marka Turuncusu
+      border: none;
+      color: white;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-    &:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5);
+      &:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.1);
+        box-shadow: 0 8px 25px rgba(249, 115, 22, 0.4);
+      }
+      
+      &:disabled { opacity: 0.5; cursor: not-allowed; transform: none; filter: grayscale(1); }
     }
-
-    &:active {
-      transform: translateY(0);
-    }
-  }
 }
 .section {
   display: flex;
