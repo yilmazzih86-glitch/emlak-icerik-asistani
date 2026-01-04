@@ -2,12 +2,13 @@
 
 import React, { useState } from 'react';
 import { useCrmStore } from '@/features/crm/hooks/useCrmStore';
-import { AiToolMode, SmartMatchSuggestion } from '@/features/crm/api/types'; // Tipi import etmeyi unutmayın
+import { AiToolMode, SmartMatchPortfolioCard, SmartMatchResponse } from '@/features/crm/api/types'; // Tipi import etmeyi unutmayın
 import { 
   MessageSquare, Sparkles, Activity, 
   Copy, RefreshCw, Check, Loader2, AlertCircle,
-  TrendingUp, Info, ExternalLink, MapPin
+  TrendingUp, Info, ExternalLink, MapPin, AlertTriangle, ListChecks
 } from 'lucide-react'; // Eksik ikonları import edin
+
 import styles from './AiToolsPanel.module.scss';
 
 // ... AI_TOOLS dizisi aynı kalacak ...
@@ -147,65 +148,95 @@ export default function AiToolsPanel({ currentMode = 'message_draft' }: { curren
             )}
 
             {/* --- MOD: AKILLI EŞLEŞME (YENİ KISIM) --- */}
-            {activeMode === 'smart_match' && result.suggestions && (
-               <div className={styles.matchList}>
-                  {result.suggestions.map((item: SmartMatchSuggestion) => (
-                    <div key={item.portfolio_id} className={styles.matchCard}>
-                      
-                      {/* Skor ve Etiket */}
-                      <div className={styles.cardHeader}>
-                         <div className={styles.scoreBadge} title="AI Uyum Skoru">
-                            <TrendingUp size={14} />
-                            <span>%{item.score} Uyum</span>
-                         </div>
-                         <span className={styles.labelBadge}>{item.label}</span>
-                      </div>
+            {activeMode === 'smart_match' && result.portfolio_cards && (
+  <div className={styles.smartMatchWrapper}>
+    {/* Üst Bilgi Paneli */}
+    {result.headline && <h3 className={styles.matchHeadline}>{result.headline}</h3>}
+    
+    {result.criteria_summary && (
+      <div className={styles.criteriaBox}>
+        <strong>Kullanılan Kriterler:</strong>
+        <ul>
+          {result.criteria_summary.map((c: string, i: number) => <li key={i}>{c}</li>)}
+        </ul>
+      </div>
+    )}
 
-                      {/* Portföy Detayları (Supabase'den) */}
-                      <div className={styles.portfolioInfo}>
-                          <h5>{item.portfolio_details?.title || 'İsimsiz Portföy'}</h5>
-                          <div className={styles.priceLoc}>
-                             <span className={styles.price}>
-                               {item.portfolio_details?.price 
-                                 ? new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(item.portfolio_details.price)
-                                 : '-'}
-                             </span>
-                             <span className={styles.loc}>
-                                <MapPin size={12}/> {item.portfolio_details?.district}/{item.portfolio_details?.city}
-                             </span>
-                          </div>
-                      </div>
+    <div className={styles.matchList}>
+      {result.portfolio_cards.map((item: SmartMatchPortfolioCard) => (
+        <div key={item.portfolio_id} className={styles.matchCard}>
+          
+          {/* Skor ve Sıralama */}
+          <div className={styles.cardHeader}>
+            <span className={styles.rankBadge}>#{item.rank}</span>
+            <div className={styles.scoreBadge}>
+              <TrendingUp size={14} />
+              <span>%{item.match_score} Uyum</span>
+            </div>
+          </div>
 
-                      {/* AI Analizi */}
-                      <div className={styles.aiAnalysis}>
-                          <p className={styles.oneLiner}>{item.one_liner}</p>
-                          
-                          <div className={styles.reasons}>
-                            <strong><Check size={12}/> Neden Uygun?</strong>
-                            <ul>
-                                {item.fit_reasons.map((r, i) => <li key={i}>{r}</li>)}
-                            </ul>
-                          </div>
+          {/* Portföy Özet Bilgileri */}
+          <div className={styles.portfolioInfo}>
+            <h5>{item.portfolio_details?.title || 'Portföy...'}</h5>
+            <div className={styles.priceLoc}>
+              <span className={styles.price}>
+                {item.portfolio_details?.price.toLocaleString('tr-TR')} {item.portfolio_details?.currency}
+              </span>
+              <span className={styles.loc}>
+                <MapPin size={12}/> {item.portfolio_details?.district}/{item.portfolio_details?.city}
+              </span>
+            </div>
+          </div>
 
-                          <div className={styles.tipBox}>
-                             <Info size={14} className={styles.tipIcon} />
-                             <p>{item.presentation_tip}</p>
-                          </div>
-                      </div>
+          {/* AI ANALİZ BÖLÜMLERİ */}
+          <div className={styles.analysisGrid}>
+            {/* 1. Neden Uygun? */}
+            <div className={styles.analysisSection}>
+              <label><Check size={14} color="#10b981"/> Neden Uygun?</label>
+              <ul>
+                {item.why_match.map((reason, i) => <li key={i}>{reason}</li>)}
+              </ul>
+            </div>
 
-                      {/* Aksiyon */}
-                      <a 
-                        href={`/dashboard/portfolios/${item.portfolio_id}`} 
-                        target="_blank" 
-                        rel="noreferrer"
-                        className={styles.viewBtn}
-                      >
-                        Portföyü İncele <ExternalLink size={14} />
-                      </a>
-                    </div>
+            {/* 2. Riskler ve İhlaller */}
+            {(item.risks.length > 0 || item.violations.length > 0) && (
+              <div className={styles.analysisSection}>
+                <label><AlertTriangle size={14} color="#f59e0b"/> Dikkat Edilmesi Gerekenler</label>
+                <ul>
+                  {item.risks.map((risk, i) => <li key={i} className={styles.riskItem}>{risk}</li>)}
+                  {item.violations.map((v, i) => (
+                    <li key={i} className={styles.violationItem}>
+                      <strong>{v.rule}:</strong> {v.note} ({v.delta > 0 ? '+' : ''}{v.delta})
+                    </li>
                   ))}
-               </div>
+                </ul>
+              </div>
             )}
+
+            {/* 3. Doğrulanması Gerekenler */}
+            <div className={styles.analysisSection}>
+              <label><ListChecks size={14} color="#3b82f6"/> Müşteriye Sorulacaklar</label>
+              <ul>
+                {item.what_to_confirm.map((q, i) => <li key={i}>{q}</li>)}
+              </ul>
+            </div>
+          </div>
+
+          <a href={`/dashboard/portfolios/${item.portfolio_id}`} target="_blank" className={styles.viewBtn}>
+            Portföyü İncele <ExternalLink size={14} />
+          </a>
+        </div>
+      ))}
+    </div>
+
+    {result.next_step && (
+      <div className={styles.nextStepBox}>
+        <Info size={16} />
+        <p><strong>Danışman Önerisi:</strong> {result.next_step}</p>
+      </div>
+    )}
+  </div>
+)}
 
             {/* ORTAK BUTONLAR */}
             <div className={styles.actionButtons}>

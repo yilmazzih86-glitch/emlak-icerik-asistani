@@ -178,29 +178,43 @@ export interface CreateCustomerPayload {
   interested_districts: string[];     // Zorunlu (En az 1 ilçe)
   preferred_room_counts?: string[];    // Opsiyonel
 }
-// features/crm/api/types.ts içine eklenebilir
 
-export interface SmartMatchSuggestion {
+
+export interface SmartMatchViolation {
+  rule: string;
+  delta: number;
+  note: string;
+}
+
+// 2. Her bir portföy önerisi için detaylı kart yapısı
+export interface SmartMatchPortfolioCard {
+  rank: number;
   portfolio_id: string;
-  score: number;
-  label: string; // Örn: "Alternatif", "Tam Eşleşme"
-  one_liner: string;
-  fit_reasons: string[];
-  risk_reasons: string[];
-  presentation_tip: string;
-  // API tarafında ekleyeceğimiz Supabase verisi:
+  match_score: number;
+  why_match: string[];
+  risks: string[];
+  violations: SmartMatchViolation[];
+  what_to_confirm: string[];
+  // API Route tarafında Supabase'den çekilip eklenen alanlar
   portfolio_details?: {
     title: string;
     price: number;
     currency: string;
     city: string;
     district: string;
-    image_url?: string;
+    image_url?: string | null;
+    room_count?: string;
+    net_m2?: number;
   };
 }
 
 export interface SmartMatchResponse {
   ok: boolean;
-  customer_id: string;
-  suggestions: SmartMatchSuggestion[];
+  headline?: string;
+  criteria_summary?: string[];
+  portfolio_cards?: SmartMatchPortfolioCard[];
+  // Hata durumları için alanlar
+  message?: string;
+  error_code?: string;
+  next_step?: string;
 }
