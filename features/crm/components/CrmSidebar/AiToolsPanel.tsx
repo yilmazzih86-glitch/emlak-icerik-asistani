@@ -25,12 +25,6 @@ const AI_TOOLS: { mode: AiToolMode; label: string; icon: any; desc: string }[] =
     icon: Sparkles, 
     desc: 'Müşteri kriterlerine uygun portföyleri önerir.' 
   },
-  { 
-    mode: 'tracking_perception', 
-    label: 'Takip Analizi', 
-    icon: Activity, 
-    desc: 'Müşteri nabzını ve risk durumunu ölçer.' 
-  },
 ];
 
 export default function AiToolsPanel({ currentMode = 'message_draft' }: { currentMode?: AiToolMode }) {
