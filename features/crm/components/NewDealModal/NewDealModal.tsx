@@ -182,7 +182,6 @@ export default function NewDealModal({ isOpen, onClose }: NewDealModalProps) {
                 ))}
               </select>
             </div>
-            
           </div>
 
         </div>
