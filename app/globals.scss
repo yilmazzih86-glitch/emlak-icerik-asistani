@@ -10324,3 +10324,155 @@ option {
   color: #60a5fa; // Blue-400
   font-weight: 600;
 }
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  
+  // Mobilde alt alta geçmesi için
+  @media (max-width: 768px) {
+    flex-direction: column;
+    
+    .header-right {
+      width: 100%;
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
+
+  .header-left {
+    flex: 1;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+}
+
+// 2. Kırmızı Silme Butonu (Global Stil)
+.btn-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  
+  // Varsayılan Stil (Dolu Kırmızı - Detay Sayfası İçin)
+  background-color: #dc2626; // red-600
+  color: white;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+  &:hover {
+    background-color: #b91c1c; // red-700
+    transform: translateY(-1px);
+  }
+
+  // İkonlu/Hayalet Stil (Liste Sayfası İçin)
+  &.ghost {
+    background-color: transparent;
+    color: #ef4444; // red-500
+    padding: 0.5rem;
+    border-radius: 50%; // Tam yuvarlak
+    box-shadow: none;
+
+    &:hover {
+      background-color: #fef2f2; // red-50
+      color: #dc2626;
+      transform: none;
+    }
+  }
+}
+
+// 3. Kart Footer Düzenlemesi (Liste Sayfası)
+// Silme butonu ile Detay linkinin yan yana durması için
+.card-footer {
+  // Kartın en altına yaslamak ve hizalamak için
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid #f3f4f6; // Hafif gri çizgi
+
+  .date {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.75rem;
+    color: #6b7280; // Gri metin
+    font-weight: 500;
+  }
+
+  // Sağ taraftaki silme butonu ve detay linkini kapsayan grup
+  .footer-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem; // Buton ve yazı arasındaki boşluk
+  }
+
+  // Detay Linki Stili
+  .detail-link {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #ea580c; // Turuncu
+    cursor: pointer;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: #c2410c; // Koyu Turuncu
+    }
+  }
+}
+
+/* --- SİLME BUTONU STİLLERİ (TAILWIND'SIZ) --- */
+
+.btn-delete {
+  // Ortak özellikler
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  
+  // Liste görünümü için 'Hayalet' stil (Sadece ikon)
+  &.ghost {
+    background-color: transparent;
+    color: #9ca3af; // Pasif gri renk
+    padding: 0.4rem;
+    border-radius: 50%; // Yuvarlak
+
+    &:hover {
+      color: #dc2626; // Kırmızı
+      background-color: #fef2f2; // Çok açık kırmızı arka plan
+      transform: scale(1.1); // Hafif büyüme efekti
+    }
+  }
+
+  // Detay sayfası için 'Dolu' stil (Buton)
+  &:not(.ghost) {
+    background-color: #dc2626;
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    gap: 0.5rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+
+    &:hover {
+      background-color: #b91c1c;
+    }
+  }
+}

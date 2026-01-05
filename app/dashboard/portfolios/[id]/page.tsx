@@ -4,12 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 import { 
   ArrowLeft, Copy, Check, Loader2, 
   Instagram, Linkedin, Globe, Clapperboard, 
   Save, MapPin, Home, Calendar, Edit3, Sparkles, 
   Languages, MessageSquare, Target, FileText, X, Maximize2,
-  Building, Layers, Info, Star, StickyNote // <-- StickyNote EKLENDİ
+  Building, Layers, Info, Star, StickyNote, Trash2 // <-- StickyNote EKLENDİ
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Portfolio, AiContent } from "@/types";
@@ -36,6 +37,7 @@ const TONES = ["Profesyonel", "Samimi", "Lüks", "Yatırım Odaklı", "Acil"];
 const TARGETS = ["Genel", "Aile", "Yatırımcı", "Öğrenci", "Yabancı"];
 
 export default function PortfolioDetailPage() {
+  const router = useRouter();
   const params = useParams();
   const supabase = createClient();
   
@@ -59,6 +61,21 @@ export default function PortfolioDetailPage() {
     highlights: "",
     notes: ""
   });
+  const handleDeletePortfolio = async () => {
+    if (!window.confirm("Bu portföyü ve tüm içeriklerini KALICI olarak silmek üzeresiniz. Onaylıyor musunuz?")) return;
+    
+    setLoading(true);
+    // Varsa bağlı görselleri storage'dan silme işlemi de buraya eklenebilir.
+    // Şimdilik sadece veritabanı kaydını siliyoruz:
+    const { error } = await supabase.from('portfolios').delete().eq('id', portfolio?.id);
+
+    if (error) {
+      alert("Silme hatası: " + error.message);
+      setLoading(false);
+    } else {
+      router.push('/dashboard/portfolios'); // Listeye geri yönlendir
+    }
+  };
 
   useEffect(() => {
     const fetchPortfolio = async () => {
@@ -212,6 +229,15 @@ export default function PortfolioDetailPage() {
             <span className={`status-badge ${portfolio.status}`}>{portfolio.status === 'active' ? 'AKTİF' : 'PASİF'}</span>
           </motion.h1>
           <p className="page-meta"><Calendar size={14}/> {format(new Date(portfolio.created_at), "d MMMM yyyy", { locale: tr })}</p>
+        </div>
+        <div className="header-right">
+          <button 
+  onClick={handleDeletePortfolio}
+  className="btn-delete"
+>
+  <Trash2 size={16} />
+  Portföyü Sil
+</button>
         </div>
       </div>
 

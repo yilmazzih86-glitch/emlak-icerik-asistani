@@ -5,7 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { 
   Plus, Search, MapPin, Calendar, ArrowRight, 
-  Home, LayoutGrid, List, Loader2, X 
+  Home, LayoutGrid, List, Loader2, X, Trash2
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Portfolio } from "@/types";
@@ -37,6 +37,22 @@ export default function PortfoliosPage() {
 
     fetchPortfolios();
   }, []);
+
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
+    e.preventDefault(); // Karta tıklanınca detay sayfasına gitmesini engelle
+    e.stopPropagation(); 
+    
+    if (!window.confirm("Bu portföyü silmek istediğinize emin misiniz?")) return;
+
+    const { error } = await supabase.from('portfolios').delete().eq('id', id);
+
+    if (error) {
+      alert("Hata: " + error.message);
+    } else {
+      // Listeden silineni kaldır
+      setPortfolios((prev) => prev.filter((p) => p.id !== id));
+    }
+  };
 
   // Gelişmiş Türkçe Arama Filtresi
   const filteredPortfolios = portfolios.filter((p) => {
@@ -192,14 +208,28 @@ export default function PortfoliosPage() {
                 </div>
 
                 <div className="card-footer">
-                   <div className="date">
-                      <Calendar size={12} />
-                      {format(new Date(portfolio.created_at), "d MMM yyyy", { locale: tr })}
-                   </div>
-                   <span className="detail-link">
-                      Detay <ArrowRight size={14} />
-                   </span>
-                </div>
+   {/* SOL: Tarih */}
+   <div className="date">
+      <Calendar size={13} />
+      {format(new Date(portfolio.created_at), "d MMM yyyy", { locale: tr })}
+   </div>
+
+   {/* SAĞ: Buton Grubu (Yeni class: footer-actions) */}
+   <div className="footer-actions">
+     <button 
+       onClick={(e) => handleDelete(e, portfolio.id)} 
+       className="btn-delete ghost" 
+       title="Portföyü Sil"
+       type="button"
+     >
+       <Trash2 size={16} />
+     </button>
+
+     <span className="detail-link">
+        Detay <ArrowRight size={14} />
+     </span>
+   </div>
+</div>
 
                 <div className="hover-glow"></div>
               </Link>
