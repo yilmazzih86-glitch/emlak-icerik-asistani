@@ -28,29 +28,21 @@ export default function Sidebar({ user, profile }: { user: any, profile: any }) 
   const mainNav = [
     { name: "Genel Bakış", href: "/dashboard", icon: LayoutDashboard },
     { name: "Yeni İçerik Üret", href: "/dashboard/generate", icon: PlusCircle },
+    { name: "Paketler", href: "/dashboard/pricing", icon: Crown },
     { name: "Ayarlar", href: "/dashboard/settings", icon: Settings },
   ];
 
-  // YENİ EKLENEN: Portföy Yönetimi
+  // YENİ EKLENEN: Müşteri İlişkileri Yönetimi
   const portfolioNav = [
+    { name: "Müşteri Listesi", href: "/dashboard/crm", icon: Contact, allowed: ['freelance', 'pro', 'office'] },
     { name: "Portföy Listesi", href: "/dashboard/portfolios", icon: FolderOpen },
     { name: "Yeni Portföy Ekle", href: "/dashboard/portfolios/new", icon: PlusCircle },
-  ];
-
-  const crmNav = [
-    { name: "Müşteri Listesi", href: "/dashboard/crm", icon: Contact, allowed: ['pro', 'office'] }
   ];
 
   const aiToolsNav = [
     { name: "Görsel İyileştirme", href: "/dashboard/tools/enhancer", icon: Wand2, allowed: ['freelance', 'pro', 'office'] },
     { name: "Sosyal Medya Görseli", href: "/dashboard/tools/image-gen", icon: ImageIcon, allowed: ['freelance', 'pro', 'office'] },
-    { name: "Sora Video Üretimi", href: "/dashboard/tools/video-gen", icon: Video, allowed: ['pro', 'office'] },
-    { name: "Sunum & PDF", href: "/dashboard/tools/pdf-builder", icon: FileText, allowed: ['free', 'freelance', 'pro', 'office'] },
-  ];
-
-  const officeNav = [
-    { name: "Ekip Yönetimi", href: "/dashboard/team", icon: Users, allowed: ['office'] },
-    { name: "Ofis Raporları", href: "/dashboard/reports", icon: FileBarChart, allowed: ['office'] },
+    { name: "UGC Video Üretimi", href: "/dashboard/tools/video-gen", icon: Video, allowed: ['office'] },
   ];
 
   // Link Render Fonksiyonu (DÜZELTİLMİŞ HALİ)
@@ -139,36 +131,21 @@ export default function Sidebar({ user, profile }: { user: any, profile: any }) 
 
         {/* YENİ EKLENEN: PORTFÖY YÖNETİMİ */}
         <div>
-          <p className="text-[10px] font-bold text-gray-500 uppercase px-3 mb-2 tracking-widest opacity-70">Portföy Yönetimi</p>
+          <p className="text-[10px] font-bold text-gray-500 uppercase px-3 mb-2 tracking-widest opacity-70">Müşteri İlişkileri Yönetimi</p>
           <div className="space-y-1">
             {portfolioNav.map((item) => renderNavLink(item))}
           </div>
         </div>
 
-        <div>
-          <p className="text-[10px] font-bold text-gray-500 uppercase px-3 mb-2 tracking-widest opacity-70">Müşteriler</p>
-          <div className="space-y-1">
-            {crmNav.map((item) => renderNavLink(item))}
-          </div>
-        </div>
+        
 
         <div>
-          <div className="flex items-center justify-between px-3 mb-2">
-            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest opacity-70">AI Stüdyosu</p>
+            <p className="text-[10px] font-bold text-gray-500 uppercase px-3 mb-2 tracking-widest opacity-70">AI Stüdyosu</p>
             {plan === 'free' && <Crown size={12} className="text-orange-400 animate-pulse" />}
-          </div>
           <div className="space-y-1">
             {aiToolsNav.map((item) => renderNavLink(item))}
           </div>
         </div>
-
-        <div>
-          <p className="text-[10px] font-bold text-gray-500 uppercase px-3 mb-2 tracking-widest opacity-70">Ofis</p>
-          <div className="space-y-1">
-            {officeNav.map((item) => renderNavLink(item))}
-          </div>
-        </div>
-
       </nav>
 
       {/* FOOTER (ÇIKIŞ) */}

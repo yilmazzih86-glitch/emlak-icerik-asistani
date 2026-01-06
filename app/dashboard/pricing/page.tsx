@@ -30,18 +30,12 @@ export default function PricingPage() {
       btnType: "outline",
       description: "Yeni başlayanlar için hızlı çözüm.",
       features: [
-        { text: "Aylık 15 Adet İçerik Üretimi", included: true },
-        { text: "Geçmiş: Son 10 Kayıt Tutulur", included: true },
-        { text: "Temel PDF Çıktısı (Görselsiz)", included: true },
-        // BURASI GÜNCELLENDİ: Tadımlık haklar veriyoruz
+        { text: "Aylık 15 Adet İçerik Metni Üretimi", included: true },
+        { text: "Geçmiş: Son 15 Kayıt Tutulur", included: true },
         { text: "AI Görsel İyileştirme (3 Adet/Ay)", included: true }, 
         { text: "AI Sosyal Medya Görseli (1 Adet/Ay)", included: true },
-        { text: "Sora 2 Video", included: false },
-        { text: "Profesyonel PDF (Görselli)", included: false },
-        { text: "CRM Lite (Müşteri Listesi)", included: false },
-        { text: "Ofis & Ekip Yönetim Paneli", included: false },
-        { text: "Ofis Raporları", included: false },
-        { text: "API Entegrasyonu", included: false },
+        { text: "AI Destekli Müşteri İlişkileri Yönetimi", included: true },
+        { text: "UGC Video Üretimi", included: false },
       ]
     },
     {
@@ -54,17 +48,12 @@ export default function PricingPage() {
       popular: true,
       description: "Aktif çalışan danışmanlar için.",
       features: [
-        { text: "Aylık 100 Adet İçerik Üretimi", included: true },
-        { text: "Geçmiş: Son 50 Kayıt Tutulur", included: true },
-        { text: "Profesyonel PDF (Görselli)", included: true },
+        { text: "Aylık 100 Adet İçerik Metni Üretimi", included: true },
+        { text: "Geçmiş: Son 100 Kayıt Tutulur", included: true },
         { text: "AI Görsel İyileştirme (30 Adet/Ay)", included: true },
         { text: "AI Sosyal Medya Görseli (15 Adet/Ay)", included: true },
-        { text: "Sora 2 Video (1 Video/Ay)", included: true },
-        { text: "CRM Lite (Müşteri Listesi)", included: true },
-        { text: "CRM Pro (Gelişmiş Yönetim)", included: false },
-        { text: "Ofis & Ekip Yönetim Paneli", included: false },
-        { text: "Ofis Raporları", included: false },
-        { text: "API Entegrasyonu", included: false },
+        { text: "AI Destekli Müşteri İlişkileri Yönetimi", included: true },
+        { text: "UGC Video Üretimi (1 Adet/Ay)", included: true },
       ]
     },
     {
@@ -76,17 +65,12 @@ export default function PricingPage() {
       btnType: "outline",
       description: "Ekipler ve ofisler için tam kapsam.",
       features: [
-        { text: "3 Kullanıcı Dahildir", included: true }, // Ofise özel madde
-        { text: "Aylık 150 Adet İçerik Üretimi", included: true },
+        { text: "Aylık 150 Adet İçerik Metni Üretimi", included: true },
         { text: "Geçmiş: Sınırsız Kayıt Tutulur", included: true },
-        { text: "Özel Markalı PDF Teması", included: true },
         { text: "AI Görsel İyileştirme (100 Adet/Ay)", included: true },
         { text: "AI Sosyal Medya Görseli (50 Adet/Ay)", included: true },
-        { text: "Sora 2 Video (2 Video/Ay)", included: true },
-        { text: "CRM Pro (Gelişmiş Yönetim)", included: true },
-        { text: "Ofis & Ekip Yönetim Paneli", included: true },
-        { text: "Ofis Raporları", included: true },
-        { text: "API Entegrasyonu", included: true },
+        { text: "AI Destekli Müşteri İlişkileri Yönetimi", included: true },
+        { text: "UGC Video Üretimi (2 Adet/Ay)", included: true },
       ]
     }
   ];
