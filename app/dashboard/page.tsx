@@ -146,7 +146,7 @@ export default function DashboardPage() {
           <div className="card-bg-glow orange"></div>
           <div className="card-header compact">
             <div>
-              <div className="label small">İlan Oluşturma</div>
+              <div className="label small">İlan Metni Oluşturma</div>
               <div className="value large">
                 {stats.limits.listing.used} <span className="limit-span">/ {stats.limits.listing.limit}</span>
               </div>
@@ -185,7 +185,7 @@ export default function DashboardPage() {
         <motion.div variants={itemAnim} className="premium-card hover-lift" style={{ '--card-color': '#6366f1' } as any}>
           <div className="card-header compact">
             <div>
-              <div className="label small">Sosyal Medya</div>
+              <div className="label small">Sosyal Medya Görsel Üretimi</div>
               <div className="value medium">
                 {stats.limits.social.used} <span className="limit-span">/ {stats.limits.social.limit}</span>
               </div>
@@ -200,7 +200,7 @@ export default function DashboardPage() {
         <motion.div variants={itemAnim} className="premium-card hover-lift" style={{ '--card-color': '#10b981' } as any}>
           <div className="card-header compact">
             <div>
-              <div className="label small">Sora Video</div>
+              <div className="label small">UGC Video Üretimi</div>
               <div className="value medium">
                 {stats.limits.video.used} <span className="limit-span">/ {stats.limits.video.limit}</span>
               </div>

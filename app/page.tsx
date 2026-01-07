@@ -211,42 +211,42 @@ export default function Home() {
           <div className="pricing-grid">
             {[
               {
-                name: "Freelance", key: "freelance", price: "249", icon: Briefcase, color: "blue",
+                name: "Freelance", key: "freelance", price: "499", icon: Briefcase, color: "blue",
                 features: [
-                  { text: "Aylık 15 Adet İçerik Üretimi", included: true },
-                  { text: "Geçmiş: Son 10 Kayıt Tutulur", included: true },
-                  { text: "Temel PDF Çıktısı (Görselsiz)", included: true },
-                  { text: "AI Görsel İyileştirme (3 Adet/Ay)", included: true },
-                  { text: "AI Sosyal Medya Görseli (1 Adet/Ay)", included: true },
-                  { text: "Sora 2 Video", included: false },
-                  { text: "CRM Lite (Müşteri Listesi)", included: false },
-                  { text: "Ofis & Ekip Yönetim Paneli", included: false },
+                  { text: "Aylık 15 Adet İçerik Metni Üretimi", included: true },
+        { text: "Geçmiş: Son 15 Kayıt Tutulur", included: true },
+        { text: "AI Görsel İyileştirme (3 Adet/Ay)", included: true }, 
+        { text: "AI Sosyal Medya Görseli (1 Adet/Ay)", included: true },
+        { text: "AI Destekli Müşteri İlişkileri Yönetimi", included: true },
+        { text: "UGC Video Üretimi", included: false },
+        { text: "Uzman AI Emlak Danışmanı [Yakında]", included: false },
+        { text: "9.600+ Verilik Bilgi Bankası Erişimi [Yakında]", included: false },
                 ]
               },
               {
-                name: "Profesyonel", key: "pro", price: "799", icon: Zap, color: "purple", popular: true,
+                name: "Profesyonel", key: "pro", price: "1.249", icon: Zap, color: "purple", popular: true,
                 features: [
-                  { text: "Aylık 100 Adet İçerik Üretimi", included: true },
-                  { text: "Geçmiş: Son 50 Kayıt Tutulur", included: true },
-                  { text: "Profesyonel PDF (Görselli)", included: true },
-                  { text: "AI Görsel İyileştirme (30 Adet/Ay)", included: true },
-                  { text: "AI Sosyal Medya Görseli (15 Adet/Ay)", included: true },
-                  { text: "Sora 2 Video (1 Video/Ay)", included: true },
-                  { text: "CRM Lite (Müşteri Listesi)", included: true },
-                  { text: "Ofis & Ekip Yönetim Paneli", included: false },
+                  { text: "Aylık 100 Adet İçerik Metni Üretimi", included: true },
+        { text: "Geçmiş: Son 100 Kayıt Tutulur", included: true },
+        { text: "AI Görsel İyileştirme (30 Adet/Ay)", included: true },
+        { text: "AI Sosyal Medya Görseli (15 Adet/Ay)", included: true },
+        { text: "AI Destekli Müşteri İlişkileri Yönetimi", included: true },
+        { text: "UGC Video Üretimi (1 Adet/Ay)", included: true },
+        { text: "Uzman AI Emlak Danışmanı [Yakında]", included: false },
+        { text: "9.600+ Verilik Bilgi Bankası Erişimi [Yakında]", included: false },
                 ]
               },
               {
-                name: "Ofis / Ekip", key: "office", price: "1.990", icon: Building2, color: "orange",
+                name: "Elite Broker", key: "office", price: "2.990", icon: Building2, color: "orange",
                 features: [
-                  { text: "3 Kullanıcı Dahildir", included: true },
-                  { text: "Aylık 150 Adet İçerik Üretimi", included: true },
-                  { text: "Geçmiş: Sınırsız Kayıt", included: true },
-                  { text: "Özel Markalı PDF Teması", included: true },
-                  { text: "AI Görsel İyileştirme (100 Adet)", included: true },
-                  { text: "AI Sosyal Medya (50 Adet)", included: true },
-                  { text: "Sora 2 Video (2 Video/Ay)", included: true },
-                  { text: "CRM Pro & Ekip Yönetimi", included: true },
+                  { text: "Aylık 150 Adet İçerik Metni Üretimi", included: true },
+        { text: "Geçmiş: Sınırsız Kayıt Tutulur", included: true },
+        { text: "AI Görsel İyileştirme (100 Adet/Ay)", included: true },
+        { text: "AI Sosyal Medya Görseli (50 Adet/Ay)", included: true },
+        { text: "AI Destekli Müşteri İlişkileri Yönetimi", included: true },
+        { text: "UGC Video Üretimi (2 Adet/Ay)", included: true },
+        { text: "Uzman AI Emlak Danışmanı [Yakında]", included: true },
+        { text: "9.600+ Verilik Bilgi Bankası Erişimi [Yakında]", included: true },
                 ]
               }
             ].map((plan, index) => (

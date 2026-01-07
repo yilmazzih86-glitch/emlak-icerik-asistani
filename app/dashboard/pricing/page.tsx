@@ -24,7 +24,7 @@ export default function PricingPage() {
     {
       name: "Freelance",
       key: "freelance",
-      price: "249",
+      price: "499",
       icon: Briefcase,
       iconColor: "blue",
       btnType: "outline",
@@ -36,12 +36,14 @@ export default function PricingPage() {
         { text: "AI Sosyal Medya Görseli (1 Adet/Ay)", included: true },
         { text: "AI Destekli Müşteri İlişkileri Yönetimi", included: true },
         { text: "UGC Video Üretimi", included: false },
+        { text: "Uzman AI Emlak Danışmanı [Yakında]", included: false },
+        { text: "9.600+ Verilik Bilgi Bankası Erişimi [Yakında]", included: false },
       ]
     },
     {
       name: "Profesyonel",
       key: "pro",
-      price: "799",
+      price: "1.249",
       icon: Zap,
       iconColor: "purple",
       btnType: "primary",
@@ -54,12 +56,14 @@ export default function PricingPage() {
         { text: "AI Sosyal Medya Görseli (15 Adet/Ay)", included: true },
         { text: "AI Destekli Müşteri İlişkileri Yönetimi", included: true },
         { text: "UGC Video Üretimi (1 Adet/Ay)", included: true },
+        { text: "Uzman AI Emlak Danışmanı [Yakında]", included: false },
+        { text: "9.600+ Verilik Bilgi Bankası Erişimi [Yakında]", included: false },
       ]
     },
     {
-      name: "Ofis / Ekip",
+      name: "Elite Broker",
       key: "office",
-      price: "1.990",
+      price: "2.990",
       icon: Building2,
       iconColor: "orange",
       btnType: "outline",
@@ -71,6 +75,8 @@ export default function PricingPage() {
         { text: "AI Sosyal Medya Görseli (50 Adet/Ay)", included: true },
         { text: "AI Destekli Müşteri İlişkileri Yönetimi", included: true },
         { text: "UGC Video Üretimi (2 Adet/Ay)", included: true },
+        { text: "Uzman AI Emlak Danışmanı [Yakında]", included: true },
+        { text: "9.600+ Verilik Bilgi Bankası Erişimi [Yakında]", included: true },
       ]
     }
   ];
