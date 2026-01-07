@@ -6,8 +6,8 @@ import "./globals.scss"; // Hazırladığımız SCSS dosyasını buraya çağır
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Emlak İçerik Asistanı",
-  description: "Emlak danışmanları için yapay zeka destekli içerik üretim platformu.",
+  title: "EstateOS | Emlak İşletim Sistemi",
+  description: "Portföy, müşteri, içerik ve satış süreçleri tek platformda.",
 };
 
 export default function RootLayout({

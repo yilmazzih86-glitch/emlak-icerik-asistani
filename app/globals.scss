@@ -1,4 +1,8 @@
 /* app/globals.scss */
+html {
+  /* Sayfa içi linklerde yumuşak kaydırma sağlar */
+  scroll-behavior: smooth;
+}
 :root {
   /* --- MARKA RENK PALETİ --- */
   --brand-purple: #7c3aed;

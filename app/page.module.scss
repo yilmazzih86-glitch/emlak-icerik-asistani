@@ -1,0 +1,727 @@
+// app/page.module.scss
+
+// --- DEĞİŞKENLER ---
+$bg-dark: #050505;
+$violet: #7c3aed;
+$indigo: #4f46e5;
+$orange: #f97316;
+$green: #22c55e;
+$blue: #3b82f6;
+$text-main: #ffffff;
+$text-muted: #94a3b8;
+$border-color: rgba(255, 255, 255, 0.1);
+
+// --- MIXINLER ---
+@mixin glass($opacity: 0.05, $blur: 12px) {
+  background: rgba(255, 255, 255, $opacity);
+  backdrop-filter: blur($blur);
+  -webkit-backdrop-filter: blur($blur);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin text-gradient {
+  background: linear-gradient(135deg, $violet 0%, $orange 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+// --- ANA YAPI ---
+.main {
+  background-color: $bg-dark;
+  color: $text-main;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+// --- NAVBAR ---
+.navbar {
+  @include glass(0.03, 10px);
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 50;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+
+  .navContent {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    .iconBox {
+      @include flex-center;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, $violet, $indigo);
+    }
+    
+    span {
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+  }
+
+  .navLinks {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+
+    .link {
+      color: $text-muted;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+      &:hover { color: $text-main; }
+    }
+
+    .btnCta {
+      @include glass(0.1, 0);
+      padding: 0.5rem 1.25rem;
+      border-radius: 99px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.3s;
+      
+      &:hover {
+        box-shadow: 0 0 15px rgba($violet, 0.3);
+        border-color: rgba($violet, 0.3);
+      }
+    }
+  }
+}
+
+// --- HERO SECTION ---
+.heroSection {
+  padding-top: 180px;
+  padding-bottom: 100px;
+  position: relative;
+  text-align: center;
+
+  // Glow Effects
+  .glowBg {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+    opacity: 0.3;
+    z-index: 0;
+    
+    &.purple { background: $violet; width: 500px; height: 500px; top: -100px; left: -100px; }
+    &.orange { background: $orange; width: 400px; height: 400px; top: 20%; right: -100px; opacity: 0.15; }
+  }
+
+  .heroContent {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .badgePill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 99px;
+    background: rgba($violet, 0.1);
+    border: 1px solid rgba($violet, 0.2);
+    color: lighten($violet, 20%);
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+  }
+
+  h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    
+    .highlight { @include text-gradient; }
+  }
+
+  .desc {
+    color: $text-muted;
+    font-size: 1.15rem;
+    max-width: 600px;
+    margin-bottom: 2.5rem;
+  }
+
+  .ctaGroup {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 4rem;
+
+    .btnPrimary {
+      background: $text-main;
+      color: #000;
+      padding: 0.8rem 2rem;
+      border-radius: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: transform 0.2s;
+      &:hover { transform: translateY(-2px); }
+    }
+
+    .btnOutline {
+      @include glass;
+      padding: 0.8rem 2rem;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: background 0.2s;
+      &:hover { background: rgba(255,255,255,0.1); }
+    }
+  }
+}
+
+// --- DASHBOARD MOCKUP (CSS ART) ---
+.heroVisual {
+  @include glass(0.02, 5px);
+  border-radius: 16px;
+  padding: 0.8rem; // Çerçeve inceltildi
+  box-shadow: 0 40px 80px -20px rgba(0,0,0,0.6); // Daha derin gölge
+  position: relative;
+  width: 100%;
+  max-width: 960px; // Biraz daha geniş
+  margin: 0 auto;
+
+  .mockupWindow {
+    background: #09090b; // Zinc-950 (Daha koyu, kontrastlı)
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    flex-direction: column;
+
+    .windowHeader {
+      height: 36px;
+      background: #121215;
+      display: flex;
+      align-items: center;
+      padding: 0 1rem;
+      gap: 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+
+      .dots {
+        display: flex; gap: 6px;
+        span { width: 10px; height: 10px; border-radius: 50%; background: #27272a; }
+        span:nth-child(1) { background: #ef4444; } // Mac stili
+        span:nth-child(2) { background: #eab308; }
+        span:nth-child(3) { background: #22c55e; }
+      }
+      .addressBar {
+        width: 200px; height: 20px; background: #000; border-radius: 4px;
+        margin: 0 auto; // Ortala
+        opacity: 0.5;
+      }
+    }
+
+    .windowBody {
+      height: 480px;
+      display: flex;
+
+      // Sidebar (Gerçek Sidebar.tsx yapısına uygun)
+      .sidebar {
+        width: 64px;
+        border-right: 1px solid rgba(255,255,255,0.05);
+        background: #0c0c0e;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1.5rem 0;
+        gap: 1.5rem;
+
+        .logo { 
+          width: 32px; height: 32px; background: linear-gradient(135deg, $violet, $orange); 
+          border-radius: 8px; margin-bottom: 1rem; opacity: 0.8;
+        }
+
+        .item { 
+          color: #52525b; transition: 0.3s;
+          &:hover, &.active { color: $text-main; }
+          &.active { position: relative; &::after { content:''; position: absolute; left: -18px; top: 50%; transform: translateY(-50%); height: 20px; width: 3px; background: $violet; border-radius: 0 4px 4px 0; } }
+          &.mtAuto { margin-top: auto; }
+        }
+      }
+
+      // Ana İçerik Alanı
+      .content {
+        flex: 1;
+        padding: 2rem;
+        background: radial-gradient(circle at top left, rgba($violet, 0.03), transparent 50%);
+
+        .dashHeader {
+          display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;
+          .welcome { 
+             h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 4px;} 
+             span { font-size: 0.8rem; color: $text-muted; }
+          }
+          .actionBtn { width: 32px; height: 32px; border-radius: 8px; background: $text-main; color: #000; @include flex-center; }
+        }
+
+        // İstatistik Grid (Gerçek Dashboard renkleri)
+        .statsGrid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 1rem;
+          margin-bottom: 2rem;
+
+          .statCard {
+            padding: 1.25rem; border-radius: 12px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);
+            display: flex; flex-direction: column; justify-content: space-between; height: 110px;
+            
+            .cardTop { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+            .label { font-size: 0.75rem; color: $text-muted; }
+            .value { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+            .iconBox { width: 28px; height: 28px; border-radius: 6px; @include flex-center; font-size: 14px;}
+            
+            // Renk Varyasyonları
+            &.blue { 
+              .iconBox { background: rgba($blue, 0.2); color: $blue; }
+              border-bottom: 2px solid rgba($blue, 0.3);
+            }
+            &.purple { 
+              .iconBox { background: rgba($violet, 0.2); color: $violet; }
+              border-bottom: 2px solid rgba($violet, 0.3);
+            }
+            &.orange { 
+              .iconBox { background: rgba($orange, 0.2); color: $orange; }
+              border-bottom: 2px solid rgba($orange, 0.3);
+              .progressBar { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: auto; overflow: hidden; }
+              .progressFill { height: 100%; background: $orange; width: 65%; }
+            }
+          }
+        }
+
+        // Tablo Görünümü
+        .tablePreview {
+           background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1rem;
+           .tableHeader { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; color: $text-muted; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
+           .tableRow { 
+              display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; 
+              font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.02);
+              &:last-child { border-bottom: none; }
+              
+              .rowInfo { display: flex; gap: 0.8rem; align-items: center; }
+              .rowIcon { width: 24px; height: 24px; border-radius: 6px; background: rgba(255,255,255,0.05); @include flex-center; color: $text-muted; }
+              .statusBadge { padding: 2px 8px; border-radius: 99px; font-size: 0.7rem; background: rgba($green, 0.15); color: $green; }
+           }
+        }
+      }
+    }
+  }
+
+  // Floating Badges (Gelişmiş)
+  .floatingBadge {
+    position: absolute;
+    @include glass(0.8, 12px); // Daha opak ve buzlu
+    background: rgba(15, 15, 20, 0.75); // Koyu zemin
+    backdrop-filter: blur(16px);        // Arkası buzlu görünsün
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1); // İnce parlak çerçeve
+    color: #ffffff; // Yazı rengi net beyaz
+
+    padding: 0.6rem 1.1rem;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.85rem;
+    font-weight: 500; // Yazı ağırlığını biraz düşürdük, daha zarif olsun
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6); // Gölgeyi derinleştirdik
+    z-index: 20;
+    white-space: nowrap;
+    transition: transform 0.3s ease, background 0.3s;
+
+    &:hover {
+      background: rgba(20, 20, 25, 0.9); // Mouse gelince biraz daha belirginleşsin
+      transform: translateY(-2px);
+    }
+
+    // Konumlandırmalar (Aynı kalıyor)
+    &.pos1 { top: 12%; left: -6%; }
+    &.pos2 { top: 25%; right: -8%; }
+    &.pos3 { bottom: 20%; left: -8%; }
+    &.pos4 { bottom: 10%; right: -4%; }
+
+    // İkon Renkleri (Koyu zeminde parlaması için şeffaflığı ayarladık)
+    .icon {
+      width: 28px; height: 28px; border-radius: 8px; 
+      @include flex-center;
+      
+      // Renklerin arka plan opaklığını (0.2 -> 0.15) biraz kıstık ki koyu tema ile bütünleşsin
+      // İkon renklerini (color) daha parlak tonlara çektik
+      &.green { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+      &.purple { background: rgba(124, 58, 237, 0.15); color: #a78bfa; }
+      &.blue { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+      &.orange { background: rgba(249, 115, 22, 0.15); color: #fb923c; }
+    }
+  }
+}
+
+// --- BENTO GRID & FEATURES ---
+.sectionPadding {
+  padding: 6rem 0;
+  &.pricingBg { background: linear-gradient(to bottom, $bg-dark, #0a0a0a); }
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 4rem;
+  h2 { font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem; }
+  p { color: $text-muted; max-width: 600px; margin: 0 auto; }
+}
+
+.bentoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  
+  // Responsive
+  @media (max-width: 1024px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 768px) { grid-template-columns: 1fr; }
+}
+
+.bentoCard {
+  @include glass(0.03);
+  border-radius: 24px;
+  overflow: hidden;
+  position: relative;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+
+  &.large { grid-row: span 2; }
+  &.wide { grid-column: span 2; @media (max-width: 768px) { grid-column: span 1; } }
+
+  .cardContent {
+    padding: 2rem;
+    z-index: 2;
+    position: relative;
+    
+    .iconBox {
+      width: 48px; height: 48px; border-radius: 12px; @include flex-center; margin-bottom: 1rem;
+      &.purple { background: rgba($violet, 0.2); color: lighten($violet, 10%); }
+      &.blue { background: rgba($blue, 0.2); color: $blue; }
+      &.orange { background: rgba($orange, 0.2); color: $orange; }
+      &.green { background: rgba($green, 0.2); color: $green; }
+    }
+    
+    h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; }
+    p { font-size: 0.9rem; color: $text-muted; line-height: 1.5; }
+  }
+}
+
+// --- INTERACTIVE VISUALS (Component Specifics) ---
+.interactiveVisual {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, black 40%, transparent 100%); // Fade out effect at bottom
+
+  // 1. Slider
+  &.sliderContainer {
+    mask-image: none; // Reset mask
+    .imgAfter, .imgBefore {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    }
+    .badgeLabel {
+      position: absolute; top: 1rem; right: 1rem; 
+      background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold;
+      &.left { right: auto; left: 1rem; }
+    }
+    .sliderHandle {
+      position: absolute; top: 0; bottom: 0; width: 2px; background: #fff; cursor: ew-resize; z-index: 10;
+      .handleCircle {
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        width: 32px; height: 32px; background: #fff; border-radius: 50%; @include flex-center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      }
+    }
+  }
+
+  // 2. Wizard
+  &.wizardAnim {
+    .fakeForm {
+      width: 80%; background: #18181b; border-radius: 12px; padding: 1rem; border: 1px solid rgba(255,255,255,0.1);
+      .inputGroup { margin-bottom: 10px; label { font-size: 10px; color: $text-muted; display: block; margin-bottom: 4px; } .inputBox { height: 32px; background: #27272a; border-radius: 6px; display: flex; align-items: center; padding: 0 10px; font-size: 12px; } }
+      .actionBtn {
+        width: 100%; height: 36px; background: $violet; border-radius: 6px; color: white; font-size: 12px; font-weight: 600; @include flex-center; margin-top: 1rem;
+        &.loading { opacity: 0.7; }
+        .spin { animation: spin 1s linear infinite; margin-right: 6px; }
+      }
+      .successCard {
+        background: rgba($green, 0.1); border: 1px solid rgba($green, 0.2); border-radius: 8px; margin-top: 10px; overflow: hidden; padding: 10px;
+        .successHeader { display: flex; align-items: center; gap: 6px; font-size: 12px; color: $green; margin-bottom: 8px; }
+        .skeletonLines { .line { height: 4px; background: rgba($green, 0.2); border-radius: 2px; margin-bottom: 4px; } }
+      }
+    }
+  }
+
+  // 3. Social
+  &.socialAnim {
+    .phoneMockup {
+      width: 180px; height: 260px; background: #000; border-radius: 20px; border: 4px solid #333; position: relative; overflow: hidden; z-index: 2;
+      &.backCard { position: absolute; transform: rotate(10deg) translate(20px, 10px); z-index: 1; opacity: 0.5; }
+      .phoneHeader { padding: 10px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #222; .avatar { width: 20px; height: 20px; background: #333; border-radius: 50%; } .username { height: 6px; width: 60px; background: #333; border-radius: 3px; } }
+      .phoneContent { height: 120px; background: linear-gradient(135deg, $violet, $orange); }
+      .phoneFooter { padding: 10px; .btnPh { height: 24px; background: $blue; border-radius: 4px; margin-bottom: 6px; &.secondary { background: #333; width: 60%; } } }
+    }
+  }
+
+  // 4. CRM
+  &.crmAnim {
+    .chartContainer {
+      width: 100%; padding: 0 2rem;
+      .chartHeader { font-size: 12px; color: $text-muted; margin-bottom: 1rem; }
+      .chartValue { font-size: 24px; font-weight: 700; color: $green; span { font-size: 12px; color: $text-muted; font-weight: 400; } }
+    }
+  }
+}
+
+// --- PRICING ---
+.pricingGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.pricingCard {
+  @include glass(0.02);
+  border-radius: 24px;
+  padding: 2rem;
+  position: relative;
+  transition: transform 0.3s;
+  
+  &:hover { transform: translateY(-5px); }
+  &.popular { border-color: rgba($violet, 0.5); background: rgba($violet, 0.03); }
+
+  .popularTag {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    background: $violet; color: white; padding: 4px 12px; border-radius: 99px; font-size: 10px; font-weight: 700;
+  }
+
+  .cardTop {
+    display: flex; gap: 1rem; margin-bottom: 1.5rem;
+    .iconBox {
+      width: 48px; height: 48px; border-radius: 12px; @include flex-center;
+      &.blue { background: rgba($blue, 0.2); color: $blue; }
+      &.purple { background: rgba($violet, 0.2); color: $violet; }
+      &.orange { background: rgba($orange, 0.2); color: $orange; }
+    }
+    h3 { font-size: 1.25rem; font-weight: 600; }
+    .planType { font-size: 0.8rem; color: $text-muted; }
+  }
+
+  .priceArea {
+    margin-bottom: 2rem;
+    .amount { font-size: 2.5rem; font-weight: 700; }
+    .period { color: $text-muted; }
+  }
+
+  .features {
+    margin-bottom: 2rem;
+    li {
+      display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; font-size: 0.9rem;
+      &.disabled { opacity: 0.5; text-decoration: line-through; }
+    }
+  }
+
+  .btn {
+    display: block; width: 100%; padding: 0.8rem; text-align: center; border-radius: 12px; font-weight: 600;
+    &.btnPrimaryFull { background: $violet; color: white; &:hover { background: lighten($violet, 5%); } }
+    &.btnOutlineFull { border: 1px solid rgba(255,255,255,0.2); &:hover { background: rgba(255,255,255,0.05); } }
+  }
+}
+// --- HERO SECTION ---
+.heroSection {
+  padding-top: 160px;
+  padding-bottom: 80px;
+  position: relative;
+  text-align: center;
+  overflow: visible; // Glow efektlerinin kesilmemesi için
+
+  // Glow Effects (Aynen kalıyor)
+  .glowBg {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px); // Blur artırıldı
+    opacity: 0.35;
+    z-index: 0;
+    pointer-events: none;
+    
+    &.purple { background: $violet; width: 600px; height: 600px; top: -150px; left: 50%; transform: translateX(-50%); }
+    &.orange { background: $orange; width: 500px; height: 500px; top: 10%; right: -100px; opacity: 0.15; }
+  }
+
+  .heroContent {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 900px; // Okunabilirlik için daraltıldı
+    margin: 0 auto;
+  }
+
+  // Yeni Badge Stili
+  .badgePill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: 99px;
+    background: rgba($violet, 0.08);
+    border: 1px solid rgba($violet, 0.25);
+    color: lighten($violet, 15%);
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 2rem;
+    box-shadow: 0 0 20px rgba($violet, 0.15); // Hafif parlama
+    backdrop-filter: blur(4px);
+  }
+
+  // Devasa Başlık
+  h1 {
+    font-size: 5rem; // Çok daha büyük ve iddialı
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    margin-bottom: 1rem;
+    
+    .highlight { 
+      @include text-gradient; 
+      position: relative;
+      display: inline-block;
+    }
+  }
+
+  // Alt Başlık (Sub-headline)
+  .subHeadline {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: $text-main;
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.01em;
+  }
+
+  // Açıklama Metni
+  .desc {
+    color: $text-muted;
+    font-size: 1.15rem;
+    line-height: 1.6;
+    max-width: 650px;
+    margin-bottom: 2.5rem;
+  }
+
+  // Buton Grubu
+  .ctaGroup {
+    display: flex;
+    gap: 1.2rem;
+    margin-bottom: 3rem;
+    justify-content: center;
+
+    .btnPrimary {
+      background: $text-main;
+      color: #000;
+      padding: 1rem 2.5rem; // Daha büyük butonlar
+      border-radius: 14px;
+      font-weight: 700;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      box-shadow: 0 10px 25px -5px rgba(255, 255, 255, 0.2); // Buton gölgesi
+      transition: transform 0.2s, box-shadow 0.2s;
+      
+      &:hover { 
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px -5px rgba(255, 255, 255, 0.3);
+      }
+    }
+
+    .btnOutline {
+      @include glass(0.05, 10px);
+      padding: 1rem 2.5rem;
+      border-radius: 14px;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.2s;
+      
+      &:hover { 
+        background: rgba(255,255,255,0.1); 
+        border-color: rgba(255,255,255,0.2);
+      }
+    }
+  }
+
+  // YENİ: Trust Bar (Güven İfadeleri)
+  .trustBar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 5rem;
+    flex-wrap: wrap;
+
+    .trustItem {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      color: $text-muted;
+      font-size: 0.9rem;
+      font-weight: 500;
+      opacity: 0.8;
+      
+      svg { color: $green; } // Check ikonu yeşil
+    }
+
+    // Mobilde alt alta
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: 1rem;
+    }
+  }
+}
+#pricing {
+  // Tıklandığında Navbar'ın yüksekliği kadar (örn: 100px) yukarıda durur.
+  // Başlığın menü altında kalmasını engeller.
+  scroll-margin-top: 100px; 
+}
+
+// --- FOOTER ---
+.footer {
+  border-top: 1px solid rgba(255,255,255,0.05);
+  padding: 2rem 0;
+  margin-top: 4rem;
+  .container { display: flex; justify-content: space-between; color: $text-muted; font-size: 0.9rem; }
+  .footerLinks { display: flex; gap: 1.5rem; a:hover { color: $text-main; } }
+}
+
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
