@@ -1,17 +1,17 @@
 // app/page.module.scss
 
 // --- DEĞİŞKENLER ---
-$bg-dark: #050505;
-$violet: #7c3aed;
-$indigo: #4f46e5;
-$orange: #f97316;
-$green: #22c55e;
-$blue: #3b82f6;
-$text-main: #ffffff;
-$text-muted: #94a3b8;
-$border-color: rgba(255, 255, 255, 0.1);
+$bg-dark: #050505;      // Proje genelindeki --brand-dark rengi
+$violet: #7c3aed;       // Ana marka moru (Primary)
+$orange: #f97316;       // Vurgu turuncusu (Accent/Secondary)
+$indigo: #4f46e5;       // Gradyan geçişleri için kullanılan yardımcı ton
+$green: #10b981;        // Proje genelindeki başarı/onay yeşili
+$blue: #3b82f6;         // Standart bilgi/link mavisi
+$text-main: #f9fafb;    // Ana metin beyazı (Neredeyse beyaz)
+$text-muted: #9ca3af;   // İkincil/silik metin grisi
+$border-color: rgba(255, 255, 255, 0.08); // İnce cam sınırı
 
-// --- MIXINLER ---
+// --- YEREL MIXINLER (Kod yapısını korumak için içeride tutuldu) ---
 @mixin glass($opacity: 0.05, $blur: 12px) {
   background: rgba(255, 255, 255, $opacity);
   backdrop-filter: blur($blur);
@@ -53,7 +53,7 @@ $border-color: rgba(255, 255, 255, 0.1);
   top: 0;
   width: 100%;
   z-index: 50;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 
   .navContent {
     height: 80px;
@@ -78,6 +78,7 @@ $border-color: rgba(255, 255, 255, 0.1);
     span {
       font-weight: 700;
       font-size: 1.1rem;
+      color: #ffffff;
     }
   }
 
@@ -100,99 +101,18 @@ $border-color: rgba(255, 255, 255, 0.1);
       font-size: 0.9rem;
       font-weight: 600;
       transition: all 0.3s;
+      color: #ffffff;
       
       &:hover {
         box-shadow: 0 0 15px rgba($violet, 0.3);
         border-color: rgba($violet, 0.3);
+        background: rgba(255, 255, 255, 0.15);
       }
     }
   }
 }
 
-// --- HERO SECTION ---
-.heroSection {
-  padding-top: 180px;
-  padding-bottom: 100px;
-  position: relative;
-  text-align: center;
 
-  // Glow Effects
-  .glowBg {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(90px);
-    opacity: 0.3;
-    z-index: 0;
-    
-    &.purple { background: $violet; width: 500px; height: 500px; top: -100px; left: -100px; }
-    &.orange { background: $orange; width: 400px; height: 400px; top: 20%; right: -100px; opacity: 0.15; }
-  }
-
-  .heroContent {
-    position: relative;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .badgePill {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 99px;
-    background: rgba($violet, 0.1);
-    border: 1px solid rgba($violet, 0.2);
-    color: lighten($violet, 20%);
-    font-size: 0.85rem;
-    margin-bottom: 1.5rem;
-  }
-
-  h1 {
-    font-size: 3.5rem;
-    font-weight: 800;
-    line-height: 1.1;
-    margin-bottom: 1.5rem;
-    
-    .highlight { @include text-gradient; }
-  }
-
-  .desc {
-    color: $text-muted;
-    font-size: 1.15rem;
-    max-width: 600px;
-    margin-bottom: 2.5rem;
-  }
-
-  .ctaGroup {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 4rem;
-
-    .btnPrimary {
-      background: $text-main;
-      color: #000;
-      padding: 0.8rem 2rem;
-      border-radius: 12px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      transition: transform 0.2s;
-      &:hover { transform: translateY(-2px); }
-    }
-
-    .btnOutline {
-      @include glass;
-      padding: 0.8rem 2rem;
-      border-radius: 12px;
-      font-weight: 600;
-      transition: background 0.2s;
-      &:hover { background: rgba(255,255,255,0.1); }
-    }
-  }
-}
 
 // --- DASHBOARD MOCKUP (CSS ART) ---
 .heroVisual {
@@ -561,8 +481,8 @@ $border-color: rgba(255, 255, 255, 0.1);
 }
 // --- HERO SECTION ---
 .heroSection {
-  padding-top: 160px;
-  padding-bottom: 80px;
+  padding-top: 180px;
+  padding-bottom: 100px;
   position: relative;
   text-align: center;
   overflow: visible; // Glow efektlerinin kesilmemesi için
@@ -577,7 +497,7 @@ $border-color: rgba(255, 255, 255, 0.1);
     pointer-events: none;
     
     &.purple { background: $violet; width: 600px; height: 600px; top: -150px; left: 50%; transform: translateX(-50%); }
-    &.orange { background: $orange; width: 500px; height: 500px; top: 10%; right: -100px; opacity: 0.15; }
+    &.orange { background: $orange; width: 450px; height: 450px; top: 15%; right: -100px; opacity: 0.15; }
   }
 
   .heroContent {
@@ -594,17 +514,16 @@ $border-color: rgba(255, 255, 255, 0.1);
   .badgePill {
     display: inline-flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.5rem;
     padding: 0.6rem 1.2rem;
     border-radius: 99px;
-    background: rgba($violet, 0.08);
+    background: rgba($violet, 0.12);
     border: 1px solid rgba($violet, 0.25);
     color: lighten($violet, 15%);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 500;
     margin-bottom: 2rem;
-    box-shadow: 0 0 20px rgba($violet, 0.15); // Hafif parlama
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(8px);
   }
 
   // Devasa Başlık
@@ -637,7 +556,7 @@ $border-color: rgba(255, 255, 255, 0.1);
     font-size: 1.15rem;
     line-height: 1.6;
     max-width: 650px;
-    margin-bottom: 2.5rem;
+    margin-bottom: 3rem;
   }
 
   // Buton Grubu
@@ -650,33 +569,34 @@ $border-color: rgba(255, 255, 255, 0.1);
     .btnPrimary {
       background: $text-main;
       color: #000;
-      padding: 1rem 2.5rem; // Daha büyük butonlar
+      padding: 1rem 2.5rem;
       border-radius: 14px;
       font-weight: 700;
       font-size: 1rem;
       display: flex;
       align-items: center;
       gap: 0.6rem;
-      box-shadow: 0 10px 25px -5px rgba(255, 255, 255, 0.2); // Buton gölgesi
-      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 10px 25px -5px rgba(255, 255, 255, 0.15);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       
       &:hover { 
-        transform: translateY(-3px);
-        box-shadow: 0 15px 30px -5px rgba(255, 255, 255, 0.3);
+        transform: translateY(-3px); 
+        box-shadow: 0 15px 30px -5px rgba(255, 255, 255, 0.25);
       }
     }
 
     .btnOutline {
-      @include glass(0.05, 10px);
+      @include glass(0.05, 12px);
       padding: 1rem 2.5rem;
       border-radius: 14px;
+      color: #ffffff;
       font-weight: 600;
       font-size: 1rem;
       transition: all 0.2s;
       
       &:hover { 
-        background: rgba(255,255,255,0.1); 
-        border-color: rgba(255,255,255,0.2);
+        background: rgba(255, 255, 255, 0.1); 
+        border-color: rgba(255, 255, 255, 0.2);
       }
     }
   }
