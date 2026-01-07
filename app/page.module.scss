@@ -842,170 +842,153 @@ $border-color: rgba(255, 255, 255, 0.1);
   40% {transform: translateY(-5px);}
   60% {transform: translateY(-3px);}
 }
-// --- SIMULATOR SECTION ---
-.simulatorSection {
-  padding: 6rem 0;
-  background: linear-gradient(to bottom, $bg-dark, #0c0c0e);
+// --- SOLUTION SECTION (BENTO GRID) ---
+.solutionSection {
+  padding: 4rem 0 8rem 0;
+  position: relative;
   
-  .header {
-    text-align: center; margin-bottom: 3rem;
-    .badge { display: inline-block; font-size: 10px; font-weight: 700; color: #a1a1aa; background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 20px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.1); }
-    h2 { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; .highlight { @include text-gradient; } }
-    p { color: $text-muted; }
+  .solutionHeader {
+    text-align: center;
+    margin-bottom: 3rem;
+    
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: $violet;
+      background: rgba($violet, 0.1);
+      padding: 0.4rem 0.8rem;
+      border-radius: 99px;
+      margin-bottom: 1rem;
+      border: 1px solid rgba($violet, 0.2);
+    }
+    
+    h2 { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+    p { color: $text-muted; font-size: 1.1rem; }
   }
 
-  .dashboardWindow {
-    max-width: 1100px;
-    margin: 0 auto;
-    background: #09090b; // Zinc-950
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 50px 100px -20px rgba(0,0,0,0.5); // Deep shadow
+  .bentoGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    
+    @media (max-width: 768px) { grid-template-columns: 1fr; }
+  }
+
+  .bentoCard {
+    @include glass(0.02, 12px);
+    border-radius: 20px;
+    padding: 2rem;
+    position: relative;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    height: 600px; // Sabit yükseklik
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+    min-height: 320px;
 
-    // Window Top Bar
-    .winHeader {
-      height: 44px;
-      background: #18181b;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-      display: flex;
-      align-items: center;
-      padding: 0 1rem;
-      gap: 1rem;
-
-      .dots { display: flex; gap: 6px; span { width: 10px; height: 10px; border-radius: 50%; background: #3f3f46; } span:first-child { background:#ef4444; } span:nth-child(2) { background:#eab308; } span:nth-child(3) { background:#22c55e; }}
-      .addressBar { flex: 1; max-width: 400px; background: #09090b; height: 26px; border-radius: 6px; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #52525b; border: 1px solid rgba(255,255,255,0.05); }
-      .winActions { display: flex; gap: 10px; align-items: center; color: #71717a; .avatar { width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, $violet, $blue); } }
+    &:hover {
+      border-color: rgba(255, 255, 255, 0.1);
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px -10px rgba(0,0,0,0.3);
+      background: rgba(255, 255, 255, 0.03);
     }
 
-    .winBody {
-      flex: 1;
-      display: flex;
-      overflow: hidden;
-    }
-
-    // Sidebar
-    .simulatorSidebar {
-      width: 240px;
-      background: #0f0f11; // Biraz daha açık siyah
-      border-right: 1px solid rgba(255,255,255,0.05);
-      padding: 1.5rem 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-
-      .navItem {
-        display: flex; align-items: center; gap: 10px;
-        width: 100%;
-        padding: 10px 12px;
-        border-radius: 8px;
-        background: transparent;
-        border: none;
-        color: #71717a;
-        font-size: 0.9rem;
-        cursor: pointer;
-        position: relative;
-        transition: all 0.2s;
-        text-align: left;
-
-        &:hover { color: #e4e4e7; background: rgba(255,255,255,0.03); }
-        &.active { 
-          color: white; 
-          svg { color: var(--active-color); }
-        }
-
-        .activeBg {
-          position: absolute; inset: 0; background: rgba(255,255,255,0.06); border-radius: 8px; z-index: -1;
-        }
+    .cardContent {
+      z-index: 2;
+      margin-bottom: 2rem;
+      
+      .iconBox {
+        width: 44px; height: 44px; border-radius: 10px; margin-bottom: 1rem; @include flex-center;
+        &.blue { background: rgba($blue, 0.15); color: $blue; }
+        &.green { background: rgba($green, 0.15); color: $green; }
+        &.violet { background: rgba($violet, 0.15); color: $violet; }
+        &.orange { background: rgba($orange, 0.15); color: $orange; }
       }
       
-      @media (max-width: 768px) { width: 60px; .navItem span { display: none; } .navItem { justify-content: center; } }
-    }
-
-    // Content Area
-    .simulatorContent {
-      flex: 1;
-      background: #09090b;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .pageView {
-      padding: 2rem;
-      height: 100%;
-      overflow-y: auto;
-    }
-  }
-}
-
-// --- MOCK COMPONENTS STYLES ---
-
-// Common
-.mockPage { height: 100%; display: flex; flex-direction: column; }
-.mockHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; h3 { font-size: 1.25rem; font-weight: 600; } }
-.btnPrimary { background: $text-main; color: black; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer; }
-
-// Portfolio Mock
-.mockTable {
-  border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; overflow: hidden;
-  .tHead { display: grid; grid-template-columns: 2fr 1.5fr 1fr 1fr; padding: 10px 16px; background: rgba(255,255,255,0.02); font-size: 0.75rem; color: #71717a; border-bottom: 1px solid rgba(255,255,255,0.05); }
-  .tRow {
-    display: grid; grid-template-columns: 2fr 1.5fr 1fr 1fr; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); align-items: center; font-size: 0.85rem;
-    &:last-child { border-bottom: none; }
-    .cellMain { display: flex; gap: 10px; align-items: center; .thumb { width: 32px; height: 32px; background: #27272a; border-radius: 4px; } .pTitle { font-weight: 500; } .pType { font-size: 10px; color: #71717a; } }
-    .cell { color: #a1a1aa; }
-    .cellBold { font-weight: 600; }
-    .statusBadge { font-size: 10px; padding: 2px 6px; border-radius: 4px; border: 1px solid; &.success { border-color: rgba($green, 0.3); color: $green; background: rgba($green, 0.1); } &.warning { border-color: rgba($orange, 0.3); color: $orange; background: rgba($orange, 0.1); } }
-  }
-}
-
-// CRM Mock
-.kanbanBoard {
-  display: flex; gap: 1rem; height: 100%; overflow-x: auto;
-  .column {
-    flex: 1; min-width: 200px; background: #121214; border-radius: 8px; padding: 10px; border: 1px solid rgba(255,255,255,0.05);
-    .colHeader { font-size: 0.8rem; font-weight: 600; color: #a1a1aa; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; .dot { width: 6px; height: 6px; border-radius: 50%; } }
-    .kanbanCard {
-      background: #1f1f22; padding: 10px; border-radius: 6px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.05); cursor: grab;
-      &.success { border-left: 3px solid $green; }
-      .kTag { font-size: 9px; background: rgba(255,255,255,0.05); display: inline-block; padding: 2px 4px; border-radius: 3px; color: #a1a1aa; margin-bottom: 6px; &.high { background: rgba($orange, 0.15); color: $orange; } }
-      .kName { font-size: 0.9rem; font-weight: 500; margin-bottom: 2px; }
-      .kInfo { font-size: 0.75rem; color: #71717a; }
-    }
-  }
-}
-
-// AI Mock
-.aiLayout {
-    display: flex; height: 100%; gap: 1rem;
-    .aiSidebar { width: 160px; border-right: 1px solid rgba(255,255,255,0.05); padding-right: 1rem; .aiItem { padding: 8px; font-size: 0.85rem; color: #71717a; cursor: pointer; border-radius: 6px; &:hover { background: rgba(255,255,255,0.03); } } .aiItemActive { @extend .aiItem; background: rgba($violet, 0.1); color: $violet; } }
-    .aiContent { flex: 1; display: flex; flex-direction: column; gap: 1rem; }
-    .inputArea { label { display: block; font-size: 0.8rem; color: #a1a1aa; margin-bottom: 6px; } .fakeInput { background: #18181b; padding: 10px; border-radius: 6px; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.1); color: #e4e4e7; } }
-    .generateBtn { background: linear-gradient(135deg, $violet, $indigo); color: white; padding: 10px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; .spinIcon { animation: spin 2s linear infinite; } }
-    .resultCard { background: #121214; border: 1px solid rgba($violet, 0.2); border-radius: 8px; padding: 1rem; h4 { font-size: 0.85rem; color: $violet; margin-bottom: 6px; } p { font-size: 0.85rem; color: #d4d4d8; line-height: 1.5; } }
-}
-
-// Social Mock
-.instaLayout {
-    display: flex; gap: 2rem; width: 100%; max-width: 700px;
-    .postCard {
-        width: 280px; background: #fff; border-radius: 12px; overflow: hidden; color: #000; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        .postHeader { display: flex; align-items: center; gap: 8px; padding: 10px; font-size: 12px; font-weight: 600; .pAvatar { width: 24px; height: 24px; background: #eee; border-radius: 50%; } }
-        .postImage { height: 280px; background: #333; position: relative; .badgeOver { position: absolute; bottom: 10px; right: 10px; background: #ef4444; color: white; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 4px; } }
-        .postActions { padding: 10px; display: flex; gap: 8px; .actionBtn { width: 20px; height: 20px; background: #eee; border-radius: 50%; } }
-        .postCaption { padding: 0 10px 15px 10px; font-size: 11px; line-height: 1.4; .bold { font-weight: 700; } }
-    }
-    .toolsPanel {
-        flex: 1; background: #18181b; border-radius: 12px; padding: 1.5rem; border: 1px solid rgba(255,255,255,0.1);
-        h4 { margin-bottom: 1rem; font-size: 1rem; }
-        .toolRow { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.9rem; color: #a1a1aa; 
-           .toggle { width: 32px; height: 18px; background: #3f3f46; border-radius: 99px; position: relative; &::after { content:''; position: absolute; left: 2px; top: 2px; width: 14px; height: 14px; background: white; border-radius: 50%; } &.on { background: $green; &::after { left: 16px; } } }
-           .colorDot { width: 18px; height: 18px; background: $orange; border-radius: 50%; border: 2px solid white; }
+      h3 { font-size: 1.25rem; margin-bottom: 1rem; font-weight: 600; }
+      ul {
+        list-style: none; padding: 0;
+        li {
+          position: relative; padding-left: 1.2rem; margin-bottom: 0.5rem; font-size: 0.9rem; color: $text-muted;
+          &::before { content: '•'; position: absolute; left: 0; color: rgba(255,255,255,0.3); }
         }
+      }
     }
+
+    // --- VISUAL AREA (CSS ART) ---
+    .cardVisual {
+      flex: 1;
+      position: relative;
+      border-radius: 12px 12px 0 0;
+      overflow: hidden;
+      margin: 0 -1rem -2rem -1rem; // Kartın altına yapışsın
+      background: rgba(0,0,0,0.2);
+      border-top: 1px solid rgba(255,255,255,0.05);
+      
+      // 1. Portfolio Table Mockup
+      &.visualPortfolio {
+        padding: 1rem;
+        .mockTable {
+          width: 100%;
+          .tHead { display: flex; justify-content: space-between; font-size: 0.7rem; color: rgba(255,255,255,0.3); margin-bottom: 8px; padding: 0 4px; }
+          .tRow {
+            display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 8px; border-radius: 6px; margin-bottom: 6px; border: 1px solid rgba(255,255,255,0.02);
+            .cellMain { display: flex; gap: 8px; align-items: center; width: 50%; }
+            .thumb { width: 24px; height: 24px; background: rgba(255,255,255,0.1); border-radius: 4px; }
+            .textLines { display: flex; flex-direction: column; gap: 4px; .lineL { width: 60px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; } .lineS { width: 30px; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; } }
+            .cell { font-size: 0.7rem; color: rgba(255,255,255,0.5); }
+            .statusBadge { font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; &.success { background: rgba($green, 0.2); color: $green; } &.warning { background: rgba($orange, 0.2); color: $orange; } }
+          }
+        }
+      }
+
+      // 2. CRM Kanban Mockup
+      &.visualCrm {
+        padding: 1rem;
+        .kanbanBoard {
+          display: flex; gap: 10px; height: 100%;
+          .column {
+             flex: 1; background: rgba(255,255,255,0.02); border-radius: 8px; padding: 8px; border: 1px solid rgba(255,255,255,0.02);
+             .colHead { font-size: 0.7rem; color: rgba(255,255,255,0.4); margin-bottom: 8px; display: flex; align-items: center; gap: 4px; .dot { width: 4px; height: 4px; background: $green; border-radius: 50%; } .dot.blue { background: $blue; } }
+             .kanbanCard {
+                background: rgba(255,255,255,0.05); padding: 8px; border-radius: 6px; margin-bottom: 6px; border: 1px solid rgba(255,255,255,0.02);
+                .line { width: 70%; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin-bottom: 6px; }
+                .tag { width: 30px; height: 3px; background: rgba($green, 0.3); border-radius: 2px; &.blue { background: rgba($blue, 0.3); } }
+                &.active { border-color: rgba($blue, 0.3); background: rgba($blue, 0.05); }
+             }
+          }
+        }
+      }
+
+      // 3. AI Interface Mockup
+      &.visualAi {
+         padding: 0; display: flex;
+         .aiLayout { width: 100%; height: 100%; display: flex; }
+         .aiSidebar { width: 50px; border-right: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); padding: 10px; display: flex; flex-direction: column; gap: 8px; .line { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; } }
+         .aiMain { flex: 1; padding: 10px; display: flex; flex-direction: column; justify-content: space-between; }
+         .aiResult {
+            background: rgba($violet, 0.05); border: 1px solid rgba($violet, 0.1); border-radius: 8px; padding: 10px; display: flex; gap: 8px;
+            .sparkleIcon { color: $violet; }
+            .lines { flex: 1; display: flex; flex-direction: column; gap: 6px; .l1 { width: 90%; height: 4px; background: rgba(255,255,255,0.2); } .l2 { width: 70%; height: 4px; background: rgba(255,255,255,0.15); } .l3 { width: 40%; height: 4px; background: rgba(255,255,255,0.1); } }
+         }
+         .aiInput { height: 30px; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; padding: 0 8px; justify-content: space-between; .placeholder { width: 40%; height: 4px; background: rgba(255,255,255,0.1); } .btn { width: 16px; height: 16px; background: $violet; border-radius: 4px; } }
+      }
+
+      // 4. Social Media Mockup
+      &.visualSocial {
+         padding: 1rem; display: flex; justify-content: center;
+         .instaLayout { width: 100%; max-width: 180px; }
+         .postCard {
+            background: #000; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; overflow: hidden;
+            .pHeader { height: 24px; display: flex; align-items: center; padding: 0 8px; gap: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); .avatar { width: 14px; height: 14px; background: $orange; border-radius: 50%; } .name { width: 40px; height: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; } }
+            .pImage { height: 100px; background: linear-gradient(135deg, $orange, $violet); display: flex; align-items: center; justify-content: center; .playBtn { width: 24px; height: 24px; background: rgba(0,0,0,0.3); border-radius: 50%; border: 1px solid rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px); } }
+            .pFooter { padding: 8px; .actions { display: flex; gap: 6px; margin-bottom: 6px; .act { width: 12px; height: 12px; background: rgba(255,255,255,0.2); border-radius: 50%; } } .caption { .line { width: 90%; height: 3px; background: rgba(255,255,255,0.2); margin-bottom: 3px; } .lineS { width: 60%; height: 3px; background: rgba(255,255,255,0.1); } } }
+         }
+      }
+    }
+  }
 }
 
 #pricing {

@@ -188,7 +188,7 @@ export default function Home() {
                           <span className={styles.label}>Kazanılan Zaman</span>
                           <div className={styles.iconBox}><Zap size={14} /></div>
                         </div>
-                        <div className={styles.value}>48.5 Saat</div>
+                        <div className={styles.value}>48 Saat</div>
                       </div>
 
                       {/* CARD 3: Turuncu - Limit & Progress */}
@@ -350,14 +350,232 @@ export default function Home() {
         </div>
       </section>
 
-      
+      {/* ÇÖZÜM / SOLUTION SECTION - BENTO GRID (ANIMATED) */}
+      <section className={styles.solutionSection}>
+        <div className={styles.container}>
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className={styles.solutionHeader}
+          >
+            <div className={styles.badge}>ÇÖZÜM</div>
+            <h2>EstateOS Ne Yapar?</h2>
+            <p>Tüm emlak süreciniz tek platformda.</p>
+          </motion.div>
+
+          {/* Grid Container - Stagger Effect */}
+          <motion.div 
+            className={styles.bentoGrid}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={{
+              hidden: { opacity: 0 },
+              show: {
+                opacity: 1,
+                transition: { staggerChildren: 0.15 }
+              }
+            }}
+          >
+            
+            {/* 1. PORTFÖY YÖNETİMİ */}
+            <motion.div 
+              variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
+              className={styles.bentoCard}
+              whileHover="hover" // Hover tetikleyicisi
+            >
+              <div className={styles.cardContent}>
+                <div className={`${styles.iconBox} ${styles.blue}`}><LayoutDashboard size={20}/></div>
+                <h3>Portföy Yönetimi</h3>
+                <ul>
+                  <li>Portföy ekleme ve düzenleme</li>
+                  <li>Otomatik ilan metni üretimi</li>
+                  <li>Görsel & video destekli sunumlar</li>
+                </ul>
+              </div>
+              
+              {/* CSS ART: LIST ANIMATION */}
+              <div className={`${styles.cardVisual} ${styles.visualPortfolio}`}>
+                <div className={styles.mockTable}>
+                  <div className={styles.tHead}>
+                    <span>Başlık</span><span>Fiyat</span><span>Durum</span>
+                  </div>
+                  {/* Satır 1 */}
+                  <div className={styles.tRow}>
+                    <div className={styles.cellMain}>
+                      <div className={styles.thumb}></div>
+                      <div className={styles.textLines}><span className={styles.lineL}></span><span className={styles.lineS}></span></div>
+                    </div>
+                    <div className={styles.cell}>₺₺₺</div>
+                    {/* Badge Pulse Effect */}
+                    <motion.div 
+                      animate={{ scale: [1, 1.1, 1], opacity: [1, 0.8, 1] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      className={`${styles.statusBadge} ${styles.success}`}
+                    >
+                      Aktif
+                    </motion.div>
+                  </div>
+                  {/* Satır 2 - Hover'da X ekseninde hafif kayar */}
+                  <motion.div 
+                    variants={{ hover: { x: 5 } }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                    className={styles.tRow}
+                  >
+                    <div className={styles.cellMain}>
+                      <div className={styles.thumb}></div>
+                      <div className={styles.textLines}><span className={styles.lineL}></span><span className={styles.lineS}></span></div>
+                    </div>
+                    <div className={styles.cell}>₺₺₺</div>
+                    <div className={`${styles.statusBadge} ${styles.warning}`}>Opsiyon</div>
+                  </motion.div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* 2. MÜŞTERİ & CRM */}
+            <motion.div 
+              variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
+              className={styles.bentoCard}
+              whileHover="hover"
+            >
+              <div className={styles.cardContent}>
+                <div className={`${styles.iconBox} ${styles.green}`}><Users size={20}/></div>
+                <h3>Müşteri & CRM</h3>
+                <ul>
+                  <li>Kanban pipeline yönetimi</li>
+                  <li>Müşteri notları ve aktiviteler</li>
+                  <li>Sessizlik ve takip analizi</li>
+                </ul>
+              </div>
+
+              {/* CSS ART: KANBAN DRAG ANIMATION */}
+              <div className={`${styles.cardVisual} ${styles.visualCrm}`}>
+                <div className={styles.kanbanBoard}>
+                  <div className={styles.column}>
+                    <div className={styles.colHead}><span className={styles.dot}></span>Yeni</div>
+                    <div className={styles.kanbanCard}><div className={styles.line}></div><div className={styles.tag}></div></div>
+                    <div className={styles.kanbanCard}><div className={styles.line}></div></div>
+                  </div>
+                  <div className={styles.column}>
+                    <div className={styles.colHead}><span className={`${styles.dot} ${styles.blue}`}></span>Sunum</div>
+                    {/* Bu kart sürekli "yüzer" (floating) efekti yapar */}
+                    <motion.div 
+                      className={`${styles.kanbanCard} ${styles.active}`}
+                      animate={{ y: [0, -6, 0] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      <div className={styles.line}></div>
+                      <div className={`${styles.tag} ${styles.blue}`}></div>
+                    </motion.div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* 3. AKILLI DESTEK (AI) */}
+            <motion.div 
+              variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
+              className={styles.bentoCard}
+              whileHover="hover"
+            >
+              <div className={styles.cardContent}>
+                <div className={`${styles.iconBox} ${styles.violet}`}><Sparkles size={20}/></div>
+                <h3>Akıllı Destek (AI)</h3>
+                <ul>
+                  <li>AI destekli içerik üretimi</li>
+                  <li>Hazır mesaj taslakları</li>
+                  <li>Portföy–müşteri uyum sistemi</li>
+                </ul>
+              </div>
+
+              {/* CSS ART: AI TYPING ANIMATION */}
+              <div className={`${styles.cardVisual} ${styles.visualAi}`}>
+                <div className={styles.aiLayout}>
+                  <div className={styles.aiSidebar}>
+                     <div className={styles.line}></div><div className={styles.line}></div><div className={styles.line}></div>
+                  </div>
+                  <div className={styles.aiMain}>
+                    <div className={styles.aiResult}>
+                       <motion.div 
+                         animate={{ rotate: [0, 15, -15, 0] }}
+                         transition={{ duration: 4, repeat: Infinity }}
+                         className={styles.sparkleIcon}
+                       >
+                         <Sparkles size={12}/>
+                       </motion.div>
+                       <div className={styles.lines}>
+                         {/* Satırların genişliği sürekli değişerek "yazıyor/düşünüyor" hissi verir */}
+                         <motion.div animate={{ width: ["90%", "70%", "90%"] }} transition={{duration:3, repeat:Infinity}} className={styles.l1}></motion.div>
+                         <motion.div animate={{ width: ["70%", "40%", "70%"] }} transition={{duration:4, repeat:Infinity}} className={styles.l2}></motion.div>
+                         <motion.div animate={{ width: ["40%", "60%", "40%"] }} transition={{duration:2.5, repeat:Infinity}} className={styles.l3}></motion.div>
+                       </div>
+                    </div>
+                    <div className={styles.aiInput}>
+                       <div className={styles.placeholder}></div>
+                       <motion.div variants={{ hover: { scale: 1.2 } }} className={styles.btn}></motion.div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* 4. İÇERİK & SATIŞ */}
+            <motion.div 
+              variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
+              className={styles.bentoCard}
+              whileHover="hover"
+            >
+              <div className={styles.cardContent}>
+                <div className={`${styles.iconBox} ${styles.orange}`}><Instagram size={20}/></div>
+                <h3>İçerik & Satış</h3>
+                <ul>
+                  <li>Sosyal medya metinleri</li>
+                  <li>Görsel iyileştirme</li>
+                  <li>UGC video üretimi</li>
+                </ul>
+              </div>
+
+              {/* CSS ART: PLAY BUTTON PULSE */}
+              <div className={`${styles.cardVisual} ${styles.visualSocial}`}>
+                 <div className={styles.instaLayout}>
+                    <div className={styles.postCard}>
+                       <div className={styles.pHeader}><div className={styles.avatar}></div><div className={styles.name}></div></div>
+                       <div className={styles.pImage}>
+                          <motion.div 
+                            className={styles.playBtn}
+                            whileHover={{ scale: 1.2, backgroundColor: "rgba(255,255,255,0.2)" }}
+                            animate={{ boxShadow: ["0 0 0px rgba(255,255,255,0)", "0 0 10px rgba(255,255,255,0.5)", "0 0 0px rgba(255,255,255,0)"] }}
+                            transition={{ boxShadow: { duration: 2, repeat: Infinity } }}
+                          >
+                            <Play size={12} fill="white"/>
+                          </motion.div>
+                       </div>
+                       <div className={styles.pFooter}>
+                          <div className={styles.actions}>
+                            <motion.div variants={{ hover: { scale: 1.3, backgroundColor: "#ef4444" } }} className={styles.act}></motion.div>
+                            <div className={styles.act}></div>
+                          </div>
+                          <div className={styles.caption}><div className={styles.line}></div><div className={styles.lineS}></div></div>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+            </motion.div>
+
+          </motion.div>
+        </div>
+      </section>
 
       {/* PRICING SECTION */}
       <section id="pricing" className={`${styles.sectionPadding} ${styles.pricingBg}`}>
   <div className={styles.container}>
           <div className={styles.sectionHeader}>
-            <h2>Paket Seçenekleri</h2>
-            <p>İster tek başına çalış, ister büyük bir ofis yönet. İhtiyacına uygun gücü seç.</p>
+            <h2>Size uygun EstateOS paketini seçin</h2>
+            <p>Tüm paketler aylık aboneliklidir. İhtiyacınıza göre dilediğiniz zaman yükseltebilirsiniz.</p>
           </div>
           <div className={styles.pricingGrid}>
             {[
@@ -434,7 +652,7 @@ export default function Home() {
       {/* FOOTER */}
       <footer className={styles.footer}>
         <div className={styles.container}>
-          <p>© 2025 EstateOS. Tüm hakları saklıdır.</p>
+          <p>© 2025 EstateOS | Emlak İşletim Sistemi | Tüm hakları saklıdır. </p>
           <div className={styles.footerLinks}>
             <Link href="#">Gizlilik</Link><Link href="#">Kullanım Şartları</Link><Link href="#">İletişim</Link>
           </div>
