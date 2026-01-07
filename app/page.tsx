@@ -8,10 +8,14 @@ import {
   CheckCircle2, FileText, Play, Check, X,
   LayoutDashboard, PlusCircle, Image as ImageIcon,
   Settings, Share2, Type, ImagePlus, Share, TrendingUp, ChevronRight,
-  ChevronLeft, Briefcase, Zap, Video, Search, Bell, LayoutGrid, Home as HomeIcon
+  ChevronLeft, Briefcase, Zap, Video, Search, Bell, LayoutGrid, Home as HomeIcon,
+  FileQuestion, Clock, Users2, ShieldAlert, ArrowDown,
+  MoreHorizontal, Plus, Filter, Calendar
 } from "lucide-react";
-import { motion, useScroll, useTransform, useMotionValue } from "framer-motion";
+import { motion, useScroll, useTransform, useMotionValue, AnimatePresence } from "framer-motion";
 import styles from "./page.module.scss";
+
+
 
 // --- 1. FOTOĞRAF SLIDER ---
 function CompareSlider() {
@@ -121,6 +125,229 @@ function CrmAnim() {
                     </svg>
                 </div>
                 <div className={styles.chartValue}>+24 <span>İşlem</span></div>
+            </div>
+        </div>
+    )
+}
+// --- DASHBOARD SIMULATOR COMPONENT ---
+function DashboardSimulator() {
+  const [activeTab, setActiveTab] = useState<'portfolio' | 'crm' | 'ai' | 'social'>('portfolio');
+
+  const tabs = [
+    { id: 'portfolio', label: 'Portföy Yönetimi', icon: LayoutDashboard, color: '#3b82f6' },
+    { id: 'crm', label: 'CRM & Müşteri', icon: Users, color: '#22c55e' },
+    { id: 'ai', label: 'AI İçerik Üretimi', icon: Wand2, color: '#a855f7' },
+    { id: 'social', label: 'Sosyal Medya', icon: ImageIcon, color: '#f97316' },
+  ] as const;
+
+  return (
+    <section className={styles.simulatorSection}>
+      <div className={styles.container}>
+        <div className={styles.header}>
+            <div className={styles.badge}>ÖNİZLEME</div>
+            <h2>EstateOS: <span className={styles.highlight}>Kontrol Merkezi</span></h2>
+            <p>Sistemin içine şimdiden göz atın. Gerçek bir işletim sistemi deneyimi.</p>
+        </div>
+
+        <div className={styles.dashboardWindow}>
+          {/* WINDOW HEADER (Mac Style) */}
+          <div className={styles.winHeader}>
+            <div className={styles.dots}><span></span><span></span><span></span></div>
+            <div className={styles.addressBar}>estateos.app/dashboard/{activeTab}</div>
+            <div className={styles.winActions}><Bell size={14}/><div className={styles.avatar}></div></div>
+          </div>
+
+          <div className={styles.winBody}>
+            {/* SIDEBAR (Navigation) */}
+            <div className={styles.simulatorSidebar}>
+               {tabs.map((tab) => (
+                 <button 
+                    key={tab.id} 
+                    onClick={() => setActiveTab(tab.id as any)}
+                    className={`${styles.navItem} ${activeTab === tab.id ? styles.active : ''}`}
+                    style={{ '--active-color': tab.color } as any}
+                 >
+                    <tab.icon size={18} />
+                    <span>{tab.label}</span>
+                    {activeTab === tab.id && <motion.div layoutId="activeGlow" className={styles.activeBg} />}
+                 </button>
+               ))}
+            </div>
+
+            {/* MAIN CONTENT AREA */}
+            <div className={styles.simulatorContent}>
+               <AnimatePresence mode="wait">
+                 <motion.div 
+                    key={activeTab}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className={styles.pageView}
+                 >
+                    {activeTab === 'portfolio' && <PortfolioMock />}
+                    {activeTab === 'crm' && <CrmMock />}
+                    {activeTab === 'ai' && <AiMock />}
+                    {activeTab === 'social' && <SocialMock />}
+                 </motion.div>
+               </AnimatePresence>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// --- 1. PORTFOLIO MOCK ---
+function PortfolioMock() {
+  const portfolios = [
+    { title: "Bağdat Caddesi Lüks Daire", loc: "Kadıköy, Suadiye", price: "24.500.000 ₺", status: "Yayında", type: "Satılık" },
+    { title: "Boğaz Manzaralı Villa", loc: "Sarıyer, Tarabya", price: "115.000.000 ₺", status: "Yayında", type: "Satılık" },
+    { title: "Merkezi 2+1 Ofis", loc: "Şişli, Merkez", price: "45.000 ₺", status: "Taslak", type: "Kiralık" },
+  ];
+
+  return (
+    <div className={styles.mockPage}>
+        <div className={styles.mockHeader}>
+            <h3>Portföylerim</h3>
+            <button className={styles.btnPrimary}><Plus size={14}/> Yeni Ekle</button>
+        </div>
+        <div className={styles.mockTable}>
+            <div className={styles.tHead}>
+                <span>İlan Başlığı</span><span>Konum</span><span>Fiyat</span><span>Durum</span>
+            </div>
+            {portfolios.map((p, i) => (
+                <motion.div 
+                   key={i} className={styles.tRow}
+                   initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }}
+                >
+                    <div className={styles.cellMain}>
+                        <div className={styles.thumb} />
+                        <div><div className={styles.pTitle}>{p.title}</div><div className={styles.pType}>{p.type}</div></div>
+                    </div>
+                    <div className={styles.cell}>{p.loc}</div>
+                    <div className={styles.cellBold}>{p.price}</div>
+                    <div className={styles.cell}>
+                        <span className={`${styles.statusBadge} ${p.status === 'Yayında' ? styles.success : styles.warning}`}>
+                           {p.status}
+                        </span>
+                    </div>
+                </motion.div>
+            ))}
+        </div>
+    </div>
+  )
+}
+
+// --- 2. CRM MOCK (Kanban) ---
+function CrmMock() {
+  return (
+    <div className={styles.mockPage}>
+        <div className={styles.mockHeader}>
+            <h3>Müşteri Takibi (Pipeline)</h3>
+            <div className={styles.filters}><Filter size={14}/> Filtrele</div>
+        </div>
+        <div className={styles.kanbanBoard}>
+            {/* Column 1 */}
+            <div className={styles.column}>
+                <div className={styles.colHeader}><span className={styles.dot} style={{background:'#3b82f6'}}/> Yeni Müşteri (2)</div>
+                <motion.div className={styles.kanbanCard} whileHover={{y:-3}}>
+                    <div className={styles.kTag}>Potansiyel Alıcı</div>
+                    <div className={styles.kName}>Ahmet Yılmaz</div>
+                    <div className={styles.kInfo}>Kadıköy 3+1 ile ilgileniyor</div>
+                </motion.div>
+                <motion.div className={styles.kanbanCard} whileHover={{y:-3}}>
+                    <div className={styles.kTag}>Kiracı Adayı</div>
+                    <div className={styles.kName}>Selin Demir</div>
+                </motion.div>
+            </div>
+            {/* Column 2 */}
+            <div className={styles.column}>
+                <div className={styles.colHeader}><span className={styles.dot} style={{background:'#f59e0b'}}/> Görüşülüyor (1)</div>
+                <motion.div 
+                   className={styles.kanbanCard} 
+                   initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}
+                >
+                    <div className={`${styles.kTag} ${styles.high}`}>Yüksek Öncelik</div>
+                    <div className={styles.kName}>Mehmet Öz</div>
+                    <div className={styles.kInfo}>Randevu: Yarın 14:00</div>
+                </motion.div>
+            </div>
+             {/* Column 3 */}
+             <div className={styles.column}>
+                <div className={styles.colHeader}><span className={styles.dot} style={{background:'#22c55e'}}/> Tapu / İşlem (1)</div>
+                <motion.div className={`${styles.kanbanCard} ${styles.success}`} initial={{ scale: 0.9 }} animate={{ scale: 1 }}>
+                    <div className={styles.kName}>Canan Y.</div>
+                    <div className={styles.kInfo}>Kredi onayı bekleniyor</div>
+                </motion.div>
+            </div>
+        </div>
+    </div>
+  )
+}
+
+// --- 3. AI MOCK ---
+function AiMock() {
+    return (
+        <div className={styles.mockPage}>
+            <div className={styles.aiLayout}>
+                <div className={styles.aiSidebar}>
+                   <div className={styles.aiItemActive}>📝 İlan Açıklaması</div>
+                   <div className={styles.aiItem}>📱 Instagram Post</div>
+                   <div className={styles.aiItem}>📧 Müşteri Maili</div>
+                </div>
+                <div className={styles.aiContent}>
+                    <div className={styles.inputArea}>
+                        <label>Konut Özellikleri</label>
+                        <div className={styles.fakeInput}>3+1, Kadıköy Moda, Deniz manzaralı, full tadilatlı...</div>
+                    </div>
+                    <div className={styles.generateBtn}>
+                        <Wand2 size={14} className={styles.spinIcon}/> İçerik Oluşturuluyor...
+                    </div>
+                    <motion.div 
+                        className={styles.resultCard}
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        transition={{ delay: 0.5, duration: 0.5 }}
+                    >
+                        <h4>✨ Oluşturulan Metin:</h4>
+                        <p>Kadıköy Moda'nın kalbinde, eşsiz deniz manzarasıyla güne uyanmaya hazır mısınız? Bu özel tasarımlı 3+1 daire, modern yaşamın tüm gerekliliklerini...</p>
+                    </motion.div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+// --- 4. SOCIAL MOCK ---
+function SocialMock() {
+    return (
+        <div className={styles.mockPage} style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100%' }}>
+            <div className={styles.instaLayout}>
+                <motion.div 
+                   className={styles.postCard}
+                   initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+                >
+                    <div className={styles.postHeader}><div className={styles.pAvatar}/> <span>estate.agency</span></div>
+                    <div className={styles.postImage}>
+                        <div className={styles.badgeOver}>SATILDI</div>
+                    </div>
+                    <div className={styles.postActions}>
+                        <div className={styles.actionBtn}/> <div className={styles.actionBtn}/>
+                    </div>
+                    <div className={styles.postCaption}>
+                        <span className={styles.bold}>estate.agency</span> 2 gün içinde satışı gerçekleştirilen portföyümüz... #realestate
+                    </div>
+                </motion.div>
+                
+                <div className={styles.toolsPanel}>
+                    <h4>Görsel Düzenleyici</h4>
+                    <div className={styles.toolRow}><span>Şablon</span> <div className={styles.toggle}/></div>
+                    <div className={styles.toolRow}><span>Logo Ekle</span> <div className={`${styles.toggle} ${styles.on}`}/></div>
+                    <div className={styles.toolRow}><span>Renkler</span> <div className={styles.colorDot}/></div>
+                    <button className={styles.btnPrimary} style={{marginTop:'1rem', width:'100%'}}>Paylaş</button>
+                </div>
             </div>
         </div>
     )
@@ -388,53 +615,79 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* BENTO GRID FEATURES */}
-      <section className={styles.sectionPadding}>
+      <section className={styles.problemSection}>
         <div className={styles.container}>
-          <div className={styles.sectionHeader}>
-            <h2>İş Akışınızı Hızlandırın</h2>
-            <p>Emlak danışmanlarının en çok zaman kaybettiği işleri yapay zekaya devredin.</p>
+          
+          {/* Başlık Alanı */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className={styles.sectionHeader}
+          >
+            <div className={styles.miniLabel}>MEVCUT DURUM</div>
+            <h2 className={styles.title}>Emlak işiniz neden <span className={styles.textWarning}>zor ilerliyor?</span></h2>
+            <p className={styles.subtitle}>Geleneksel yöntemler artık hızınıza yetişemiyor.</p>
+          </motion.div>
+
+          {/* Problem Grid */}
+          <div className={styles.problemGrid}>
+            {[
+              {
+                icon: FileQuestion,
+                title: "Dağınık Portföyler",
+                desc: "Portföyler farklı yerlerde (Excel, defter, telefon), takibi ve güncellemesi imkansız hale geliyor."
+              },
+              {
+                icon: Users2,
+                title: "İletişim Kopukluğu",
+                desc: "Müşteri süreci dağınık, geri dönüşler gecikiyor ve potansiyel alıcılar kaybediliyor."
+              },
+              {
+                icon: Clock,
+                title: "Zaman Kaybı",
+                desc: "Her bir ilan ve sosyal medya içeriği için tasarım ve metin yazmak saatlerinizi alıyor."
+              },
+              {
+                icon: ShieldAlert,
+                title: "Geç Eşleşme",
+                desc: "Doğru müşteriye doğru portföy ulaştığında iş işten geçmiş oluyor, satış kaçıyor."
+              }
+            ].map((item, index) => (
+              <motion.div 
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ y: -5, backgroundColor: "rgba(255,255,255,0.03)" }}
+                className={styles.problemCard}
+              >
+                <div className={styles.iconWrapper}>
+                  <item.icon size={24} />
+                </div>
+                <h3>{item.title}</h3>
+                <p>{item.desc}</p>
+              </motion.div>
+            ))}
           </div>
-          <div className={styles.bentoGrid}>
-            <motion.div whileHover={{ y: -5 }} className={`${styles.bentoCard} ${styles.large}`}>
-                <div className={styles.cardContent}>
-                    <div className={`${styles.iconBox} ${styles.purple}`}><Type size={24} /></div>
-                    <h3>İçerik Sihirbazı</h3>
-                    <p>Bilgileri girin, AI saniyeler içinde tüm platformlar için pazarlama metinlerini yazsın.</p>
-                </div>
-                <ContentWizardAnim />
-            </motion.div>
-            
-            <motion.div whileHover={{ y: -5 }} className={styles.bentoCard}>
-                <div className={styles.cardContent}>
-                    <div className={`${styles.iconBox} ${styles.blue}`}><ImagePlus size={24} /></div>
-                    <h3>Fotoğraf İyileştirme</h3>
-                    <p>Karanlık ve cansız fotoğrafları AI ile 4K HDR kalitesine getirin.</p>
-                </div>
-                <CompareSlider />
-            </motion.div>
-            
-            <motion.div whileHover={{ y: -5 }} className={styles.bentoCard}>
-                <div className={styles.cardContent}>
-                    <div className={`${styles.iconBox} ${styles.orange}`}><Share size={24} /></div>
-                    <h3>Sosyal Medya Tasarımı</h3>
-                    <p>Kurumsal kimliğinize uygun hazır "Satılık/Kiralık" gönderileri.</p>
-                </div>
-                <SocialAnim />
-            </motion.div>
-            
-            <motion.div whileHover={{ y: -5 }} className={`${styles.bentoCard} ${styles.wide}`}>
-                <div className={styles.cardContent}>
-                    <div className={`${styles.iconBox} ${styles.green}`}><TrendingUp size={24} /></div>
-                    <h3>CRM & Ekip Yönetimi</h3>
-                    <p>Performansı takip edin, ekibinizi yönetin.</p>
-                </div>
-                <CrmAnim />
-            </motion.div>
-          </div>
+
+          {/* Çözüm Köprüsü (Transition) */}
+          <motion.div 
+             initial={{ opacity: 0, scale: 0.9 }}
+             whileInView={{ opacity: 1, scale: 1 }}
+             viewport={{ once: true }}
+             transition={{ delay: 0.4 }}
+             className={styles.solutionBridge}
+          >
+             <p>EstateOS, bu karmaşayı <strong>tek bir sistemde</strong> toplar.</p>
+             <ArrowDown className={styles.bridgeIcon} size={20} />
+          </motion.div>
+
         </div>
       </section>
+
+      
 
       {/* PRICING SECTION */}
       <section id="pricing" className={`${styles.sectionPadding} ${styles.pricingBg}`}>
