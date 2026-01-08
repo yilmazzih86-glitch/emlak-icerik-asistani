@@ -17,17 +17,74 @@ import styles from "./page.module.scss";
 
 
 export default function Home() {
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
   const textY = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
   const floatAnimation = (delay: number, yOffset: number) => ({ y: [0, yOffset, 0], transition: { repeat: Infinity, duration: 4 + delay, ease: "easeInOut" as const, delay: delay } });
 
+useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const delta = currentScrollY - lastScrollY;
+      if (Math.abs(delta) < 10) return;
+      if (delta > 0 && currentScrollY > 250) {
+      setIsVisible(false);
+    } 
+    // 3. Yukarı kaydırırken: Anında göster
+    else if (delta < -10) {
+      setIsVisible(true);
+    }
+
+      // Aşağı kaydırırken ve 100px'den fazla inilmişse gizle
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setIsVisible(false);
+      } 
+      // Yukarı kaydırırken göster
+      else {
+        setIsVisible(true);
+      }
+      setLastScrollY(currentScrollY);
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      // Fare ekranın üst 50 pikseline gelirse navbar'ı göster
+      if (e.clientY < 50) {
+        setIsVisible(true);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("mousemove", handleMouseMove);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, [lastScrollY]);
+
   return (
     <main className={styles.main} ref={ref}>
       
       {/* NAVBAR */}
-      <motion.header initial={{ y: -100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, ease: "easeOut" }} className={styles.navbar}>
+      <motion.header
+        className={styles.navbar}
+        initial={{ y: 0, opacity: 1 }}
+        animate={{ 
+          y: isVisible ? 0 : -100, 
+          opacity: isVisible ? 1 : 0 
+        }}
+        transition={{ 
+  type: "spring", 
+  stiffness: 260, 
+  damping: 20, // 'Damping' değerini artırarak sallantıyı (bounce) azaltıp yumuşatıyoruz
+  mass: 0.5,
+  duration: isVisible ? 0.4 : 1.2, // Açılırken 0.4s (hızlı), kapanırken 1.2s (çok yavaş)
+  ease: [0.23, 1, 0.32, 1]
+}}   
+>
         <div className={styles.container}>
             <div className={styles.navContent}>
                 <div className={styles.logo}>
@@ -41,6 +98,7 @@ export default function Home() {
             </div>
         </div>
       </motion.header>
+      
 
       {/* HERO SECTION */}
       <section className={styles.heroSection}>
