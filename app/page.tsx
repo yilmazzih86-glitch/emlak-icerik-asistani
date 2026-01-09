@@ -10,15 +10,177 @@ import {
   Settings, Share2, Type, ImagePlus, Share, TrendingUp, ChevronRight,
   ChevronLeft, Briefcase, Zap, Video, Search, Bell, LayoutGrid, Home as HomeIcon,
   FileQuestion, Clock, Users2, ShieldAlert, ArrowDown,
-  MoreHorizontal, Plus, Filter, Calendar
+  MoreHorizontal, Plus, Filter, Calendar, MessageSquare, GripVertical, Phone, FileSignature
 } from "lucide-react";
 import { motion, useScroll, useTransform, useMotionValue, AnimatePresence } from "framer-motion";
 import styles from "./page.module.scss";
 
 
+
+const DashboardView = () => (
+  <motion.div 
+    initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }}
+    className={styles.viewContainer}
+  >
+     {/* KPI GRID */}
+     <div className={styles.statsGrid}>
+        <motion.div whileHover={{ scale: 1.05 }} className={`${styles.statCard} ${styles.blue}`}>
+          <div className={styles.cardTop}>
+            <span className={styles.label}>Aktif Portföy</span>
+            <div className={styles.iconBox}><LayoutDashboard size={14} /></div>
+          </div>
+          <div className={styles.value}>142</div>
+        </motion.div>
+
+        <motion.div whileHover={{ scale: 1.05 }} className={`${styles.statCard} ${styles.purple}`}>
+          <div className={styles.cardTop}>
+            <span className={styles.label}>Kazanılan Zaman</span>
+            <div className={styles.iconBox}><Zap size={14} /></div>
+          </div>
+          <div className={styles.value}>48 Saat</div>
+        </motion.div>
+
+        <motion.div whileHover={{ scale: 1.05 }} className={`${styles.statCard} ${styles.orange}`}>
+          <div className={styles.cardTop}>
+            <span className={styles.label}>İçerik Kotası</span>
+            <div className={styles.iconBox}><FileText size={14} /></div>
+          </div>
+          <div className={styles.value}>85/150</div>
+          <div className={styles.progressBar}>
+            <div className={styles.progressFill} style={{ width: '65%' }}></div>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* RECENT TABLE */}
+      <div className={styles.tablePreview}>
+          <div className={styles.tableHeader}>
+            <span>Son İşlemler</span>
+            <span style={{opacity:0.5}}>Tümü</span>
+          </div>
+          <div className={styles.tableRow}>
+            <div className={styles.rowInfo}>
+                <div className={styles.rowIcon}><Sparkles size={14}/></div>
+                <div>
+                  <div style={{fontWeight:600}}>Kadıköy 3+1 Daire</div>
+                  <div style={{fontSize: '10px', opacity: 0.6}}>İçerik Oluşturuldu • 2dk önce</div>
+                </div>
+            </div>
+            <div className={styles.statusBadge}>Hazır</div>
+          </div>
+          <div className={styles.tableRow}>
+            <div className={styles.rowInfo}>
+                <div className={styles.rowIcon}><Users size={14}/></div>
+                <div>
+                  <div style={{fontWeight:600}}>Ahmet Yılmaz</div>
+                  <div style={{fontSize: '10px', opacity: 0.6}}>Portföy Eşleşti • 15dk önce</div>
+                </div>
+            </div>
+            <div className={styles.statusBadge} style={{background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6'}}>Potansiyel</div>
+          </div>
+      </div>
+  </motion.div>
+);
+
+// 2. CRM Görünümü (Yeni - MessageSquare burada kullanılıyor)
+const CrmView = () => (
+  <motion.div 
+    initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }}
+    className={styles.viewContainer}
+  >
+    <div className={styles.crmList}>
+      <h4 className={styles.viewTitle}>Bekleyen Talepler</h4>
+      {[1, 2, 3].map((i) => (
+        <div key={i} className={styles.crmItem}>
+           <div className={styles.avatar}>{i === 1 ? 'AY' : i === 2 ? 'BK' : 'ME'}</div>
+           <div className={styles.info}>
+              <div className={styles.name}>Müşteri #{i}024</div>
+              <div className={styles.detail}>2+1 Kiralık • İstanbul / Beşiktaş</div>
+           </div>
+           <div className={styles.actionBtn}>
+              <MessageSquare size={14} />
+           </div>
+        </div>
+      ))}
+      <div className={styles.aiSuggestion}>
+         <Sparkles size={12} className={styles.sparkle}/>
+         <span>AI Önerisi: Bu müşteriler için 3 yeni portföy eşleşmesi bulundu.</span>
+      </div>
+    </div>
+  </motion.div>
+);
+
+// 3. AI Tools Görünümü (Yeni)
+const AiView = () => (
+  <motion.div 
+    initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }}
+    className={styles.viewContainer}
+  >
+    <div className={styles.aiGenerator}>
+       <div className={styles.promptBox}>
+          <span className={styles.badge}>AI YAZAR</span>
+          <p>"Bağdat caddesine yakın, deniz manzaralı, geniş teraslı 3+1 daire için lüks segment ilan metni yaz..."</p>
+       </div>
+       <div className={styles.generatingVisual}>
+          <motion.div 
+            className={styles.loadingBar}
+            animate={{ width: ["0%", "100%"] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+          <span>İçerik üretiliyor...</span>
+       </div>
+       <div className={styles.resultPreview}>
+          <div className={styles.line} style={{width:'90%'}}></div>
+          <div className={styles.line} style={{width:'80%'}}></div>
+          <div className={styles.line} style={{width:'95%'}}></div>
+       </div>
+    </div>
+  </motion.div>
+);
+
+// --- YENİ BİLEŞEN: Dönen Aktivite Bildirimleri ---
+const ActivityTicker = () => {
+  const [index, setIndex] = useState(0);
+  
+  // Döngüye girecek mesajlar listesi
+  const tasks = [
+    { text: "Görev: Tapu randevusu al", icon: FileSignature, color: "#10b981" }, // Yeşil - İmza ikonu
+    { text: "Arama: Ahmet Bey'i bilgilendir", icon: Phone, color: "#3b82f6" },   // Mavi - Telefon ikonu
+    { text: "Uyarı: Sözleşme süresi doluyor", icon: Clock, color: "#f59e0b" },   // Turuncu - Saat ikonu
+    { text: "Fırsat: Yeni portföy eşleşmesi", icon: Sparkles, color: "#7c3aed" } // Mor - Işıltı ikonu
+  ];
+
+  // 4 saniyede bir değiştir
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev + 1) % tasks.length);
+    }, 4000); 
+    return () => clearInterval(timer);
+  }, []);
+
+  const CurrentIcon = tasks[index].icon;
+
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={index} // Key değiştiğinde animasyon yeniden başlar
+        className={styles.activityPop}
+        initial={{ opacity: 0, y: 20, scale: 0.9 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: -20, scale: 0.9 }}
+        transition={{ duration: 0.5 }}
+      >
+         <CurrentIcon size={14} style={{ color: tasks[index].color }} />
+         <span>{tasks[index].text}</span>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
 export default function Home() {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'crm' | 'ai'>('dashboard');
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
@@ -187,151 +349,103 @@ useEffect(() => {
 
             {/* DASHBOARD VISUAL (ESTATE OS REALISTIC MOCKUP) */}
             <motion.div 
-               initial={{ opacity: 0, y: 100, rotateX: 10, scale: 0.9 }} 
-               animate={{ opacity: 1, y: 0, rotateX: 0, scale: 1 }} 
-               transition={{ delay: 0.8, duration: 1.2, type: "spring", bounce: 0.2 }} 
-               className={styles.heroVisual}
-            >
-              <div className={styles.mockupWindow}>
-                {/* Window Controls */}
-                <div className={styles.windowHeader}>
-                   <div className={styles.dots}><span></span><span></span><span></span></div>
-                   <div className={styles.addressBar}></div> {/* URL bar hidden/dimmed style */}
-                </div>
+   initial={{ opacity: 0, y: 100, rotateX: 10, scale: 0.9 }} 
+   animate={{ opacity: 1, y: 0, rotateX: 0, scale: 1 }} 
+   transition={{ delay: 0.8, duration: 1.2, type: "spring", bounce: 0.2 }} 
+   className={styles.heroVisual}
+>
+  {/* Tıkla Dene İpucu */}
 
-                <div className={styles.windowBody}>
-                  {/* SIDEBAR: components/dashboard/Sidebar.tsx'in mini hali */}
-                  <div className={styles.sidebar}>
-                    <div className={styles.logo}></div> {/* EstateOS Renkli Logo */}
-                    
-                    {/* Menü İkonları */}
-                    <div className={`${styles.item} ${styles.active}`}><HomeIcon size={18}/></div>
-                    <div className={styles.item}><LayoutDashboard size={18}/></div>
-                    <div className={styles.item}><Users size={18}/></div>
-                    <div className={styles.item}><ImageIcon size={18}/></div>
-                    <div className={styles.item}><Share2 size={18}/></div>
-                    
-                    <div className={`${styles.item} ${styles.mtAuto}`}><Settings size={18}/></div>
-                  </div>
+  <div className={styles.mockupWindow}>
+    <div className={styles.windowHeader}>
+       <div className={styles.dots}><span></span><span></span><span></span></div>
+       <div className={styles.addressBar}>estateos.app/dashboard</div>
+    </div>
 
-                  {/* CONTENT AREA: app/dashboard/page.tsx'in mini hali */}
-                  <div className={styles.content}>
-                    
-                    {/* Header */}
-                    <div className={styles.dashHeader}>
-                      <div className={styles.welcome}>
-                        <h3>Hoş geldin, Burak 👋</h3>
-                        <span>Elite Broker Paketi</span>
-                      </div>
-                      <div className={styles.actionBtn}>
-                         <PlusCircle size={18} />
-                      </div>
-                    </div>
+    <div className={styles.windowBody}>
+      {/* Tıklanabilir Sidebar */}
+      <div className={styles.sidebar}>
+        <div className={styles.logo}></div>
 
-                    {/* KPI GRID (Gerçek renklerle) */}
-                    <div className={styles.statsGrid}>
-                      
-                      {/* CARD 1: Mavi - Toplam Portföy */}
-                      <div className={`${styles.statCard} ${styles.blue}`}>
-                        <div className={styles.cardTop}>
-                          <span className={styles.label}>Aktif Portföy</span>
-                          <div className={styles.iconBox}><LayoutDashboard size={14} /></div>
-                        </div>
-                        <div className={styles.value}>142</div>
-                      </div>
+        <div 
+          className={`${styles.item} ${activeTab === 'dashboard' ? styles.active : ''}`}
+          onClick={() => setActiveTab('dashboard')}
+        >
+          <HomeIcon size={18}/>
+        </div>
 
-                      {/* CARD 2: Mor - Kazanılan Zaman */}
-                      <div className={`${styles.statCard} ${styles.purple}`}>
-                        <div className={styles.cardTop}>
-                          <span className={styles.label}>Kazanılan Zaman</span>
-                          <div className={styles.iconBox}><Zap size={14} /></div>
-                        </div>
-                        <div className={styles.value}>48 Saat</div>
-                      </div>
+        <div 
+          className={`${styles.item} ${activeTab === 'crm' ? styles.active : ''}`}
+          onClick={() => setActiveTab('crm')}
+        >
+          <Users size={18}/>
+        </div>
 
-                      {/* CARD 3: Turuncu - Limit & Progress */}
-                      <div className={`${styles.statCard} ${styles.orange}`}>
-                        <div className={styles.cardTop}>
-                          <span className={styles.label}>İçerik Kotası</span>
-                          <div className={styles.iconBox}><FileText size={14} /></div>
-                        </div>
-                        <div className={styles.value}>85/150</div>
-                        <div className={styles.progressBar}>
-                          <motion.div 
-                            className={styles.progressFill} 
-                            initial={{ width: 0 }} 
-                            animate={{ width: '85%' }} 
-                            transition={{ delay: 1.5, duration: 1 }} 
-                          />
-                        </div>
-                      </div>
+        <div 
+          className={`${styles.item} ${activeTab === 'ai' ? styles.active : ''}`}
+          onClick={() => setActiveTab('ai')}
+        >
+          <Sparkles size={18}/>
+        </div>
 
-                    </div>
+        <div className={styles.item}><ImageIcon size={18}/></div>
+        <div className={styles.item}><Share2 size={18}/></div>
+        <div className={`${styles.item} ${styles.mtAuto}`}><Settings size={18}/></div>
+      </div>
 
-                    {/* RECENT TABLE (Mini) */}
-                    <div className={styles.tablePreview}>
-                       <div className={styles.tableHeader}>
-                          <span>Son İşlemler</span>
-                          <span style={{opacity:0.5}}>Tümü</span>
-                       </div>
-                       
-                       {/* Row 1: İçerik Üretimi */}
-                       <div className={styles.tableRow}>
-                          <div className={styles.rowInfo}>
-                             <div className={styles.rowIcon}><Sparkles size={14}/></div>
-                             <div>
-                               <div style={{fontWeight:600}}>Kadıköy 3+1 Daire</div>
-                               <div style={{fontSize: '10px', opacity: 0.6}}>İçerik Oluşturuldu • 2dk önce</div>
-                             </div>
-                          </div>
-                          <div className={styles.statusBadge}>Hazır</div>
-                       </div>
+      {/* Değişen İçerik Alanı */}
+      <div className={styles.content}>
+        <div className={styles.dashHeader}>
+          <div className={styles.welcome}>
+            <motion.h3 key={activeTab} initial={{opacity:0}} animate={{opacity:1}}>
+              {activeTab === 'dashboard' ? 'Hoş geldin, Burak 👋' : 
+               activeTab === 'crm' ? 'Müşteri Yönetimi' : 'AI İçerik Sihirbazı'}
+            </motion.h3>
+            <span>Elite Broker Paketi</span>
+          </div>
+          <div className={styles.actionBtn}>
+             <PlusCircle size={18} />
+          </div>
+        </div>
 
-                       {/* Row 2: Müşteri Eşleşmesi */}
-                       <div className={styles.tableRow}>
-                          <div className={styles.rowInfo}>
-                             <div className={styles.rowIcon}><Users size={14}/></div>
-                             <div>
-                               <div style={{fontWeight:600}}>Ahmet Yılmaz</div>
-                               <div style={{fontSize: '10px', opacity: 0.6}}>Portföy Eşleşti • 15dk önce</div>
-                             </div>
-                          </div>
-                          <div className={styles.statusBadge} style={{background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6'}}>Potansiyel</div>
-                       </div>
-                       
-                    </div>
+        <AnimatePresence mode="wait">
+          {activeTab === 'dashboard' && <DashboardView key="dash" />}
+          {activeTab === 'crm' && <CrmView key="crm" />}
+          {activeTab === 'ai' && <AiView key="ai" />}
+        </AnimatePresence>
+      </div>
+    </div>
+  </div>
 
-                  </div>
-                </div>
-              </div>
-              
-              {/* ESTATE OS KONSEPT BADGELERİ */}
-              
-              {/* Sol Üst: CRM / Eşleşme */}
-              <motion.div animate={floatAnimation(0, -15)} className={`${styles.floatingBadge} ${styles.pos1}`}>
-                <div className={`${styles.icon} ${styles.blue}`}><Users size={14}/></div>
-                <span>Müşteri Eşleşti!</span>
-              </motion.div>
+  {/* Sürüklenebilir (Draggable) Badge'lar - GripVertical burada kullanılıyor */}
+  <motion.div drag dragConstraints={{ left: -50, right: 50, top: -50, bottom: 50 }} 
+    animate={floatAnimation(0, -15)} className={`${styles.floatingBadge} ${styles.pos1}`}
+    style={{ cursor: 'grab' }} whileDrag={{ cursor: 'grabbing', scale: 1.1 }}
+  >
+    <div className={`${styles.icon} ${styles.blue}`}><Users size={14}/></div>
+    <span>Müşteri Eşleşti!</span>
+    <GripVertical size={12} style={{opacity:0.3, marginLeft:4}}/>
+  </motion.div>
 
-              {/* Sağ Üst: AI / İçerik */}
-              <motion.div animate={floatAnimation(1, -20)} className={`${styles.floatingBadge} ${styles.pos2}`}>
-                <div className={`${styles.icon} ${styles.purple}`}><Sparkles size={14}/></div>
-                <span>İlan Metni Hazır</span>
-              </motion.div>
+  <motion.div drag dragConstraints={{ left: -50, right: 50, top: -50, bottom: 50 }} 
+    animate={floatAnimation(1, -20)} className={`${styles.floatingBadge} ${styles.pos2}`}
+    style={{ cursor: 'grab' }} whileDrag={{ cursor: 'grabbing', scale: 1.1 }}
+  >
+    <div className={`${styles.icon} ${styles.purple}`}><Sparkles size={14}/></div>
+    <span>İlan Metni Hazır</span>
+    <GripVertical size={12} style={{opacity:0.3, marginLeft:4}}/>
+  </motion.div>
 
-              {/* Sol Alt: Görsel / Medya */}
-              <motion.div animate={floatAnimation(0.5, 15)} className={`${styles.floatingBadge} ${styles.pos3}`}>
-                <div className={`${styles.icon} ${styles.orange}`}><Instagram size={14}/></div>
-                <span>Story Tasarlandı</span>
-              </motion.div>
+  <motion.div drag dragConstraints={{ left: -50, right: 50, top: -50, bottom: 50 }} 
+    animate={floatAnimation(0.5, 15)} className={`${styles.floatingBadge} ${styles.pos3}`}
+    style={{ cursor: 'grab' }} whileDrag={{ cursor: 'grabbing', scale: 1.1 }}
+  >
+    <div className={`${styles.icon} ${styles.orange}`}><Instagram size={14}/></div>
+    <span>Story Tasarlandı</span>
+    <GripVertical size={12} style={{opacity:0.3, marginLeft:4}}/>
+  </motion.div>
 
-              {/* Sağ Alt: Video / UGC */}
-              <motion.div animate={floatAnimation(1.5, 20)} className={`${styles.floatingBadge} ${styles.pos4}`}>
-                <div className={`${styles.icon} ${styles.green}`}><Video size={14}/></div>
-                <span>Reels Videosu Hazır</span>
-              </motion.div>
-
-            </motion.div>
+</motion.div>
 
           </div>
         </div>
@@ -408,7 +522,7 @@ useEffect(() => {
         </div>
       </section>
 
-      {/* ÇÖZÜM / SOLUTION SECTION - BENTO GRID (UPDATED V2) */}
+      {/* --- ÇÖZÜM / DEĞER ÖNERİSİ SECTION (GÜNCELLENMİŞ V3) --- */}
       <section className={styles.solutionSection}>
         <div className={styles.container}>
           
@@ -416,15 +530,13 @@ useEffect(() => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
             className={styles.solutionHeader}
           >
-            <div className={styles.badge}>DEĞER ÖNERİSİ</div>
-            <h2>Emlak Ofisiniz İçin <span className={styles.highlight}>7/24 Çalışan Ortak</span></h2>
-            <p>Operasyonel yükü EstateOS'a bırakın, siz sadece satışa odaklanın.</p>
+            <div className={styles.badge}>YETENEKLER</div>
+            <h2>Emlak İşiniz İçin <span className={styles.highlight}>Tam Donanımlı İşletim Sistemi</span></h2>
+            <p>Portföy yönetiminden satış kapatmaya kadar tüm süreç tek ekranda.</p>
           </motion.div>
 
-          {/* Grid Container */}
           <motion.div 
             className={styles.bentoGrid}
             initial="hidden"
@@ -432,188 +544,168 @@ useEffect(() => {
             viewport={{ once: true, margin: "-50px" }}
             variants={{
               hidden: { opacity: 0 },
-              show: {
-                opacity: 1,
-                transition: { staggerChildren: 0.15 }
-              }
+              show: { opacity: 1, transition: { staggerChildren: 0.15 } }
             }}
           >
             
-            {/* 1. PORTFÖY: Saniyeler İçinde Satışa Hazır */}
-            <motion.div 
-              variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
-              className={styles.bentoCard}
-              whileHover="hover"
-            >
+            {/* 1. PORTFÖY YÖNETİMİ: Tek Girdi, Çoklu Çıktı */}
+            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }} className={styles.bentoCard} whileHover="hover">
               <div className={styles.cardContent}>
                 <div className={`${styles.iconBox} ${styles.blue}`}><LayoutDashboard size={20}/></div>
-                <h3>Saniyeler İçinde Satışa Hazır</h3>
-                <ul>
-                  <li>Pazarlama diliyle <strong>otomatik ilan metni</strong></li>
-                  <li>Yapay zeka destekli görsel iyileştirme</li>
-                  <li>Tek tıkla sunum dosyası hazırlama</li>
-                </ul>
+                <h3>Tek Tuşla Çoklu İçerik Üretimi</h3>
+                <p className={styles.subText}>Portföy detaylarını girin; İlan metni, Instagram/LinkedIn post açıklaması ve Reels senaryo metni aynı anda üretilsin.</p>
               </div>
               
-              {/* CSS ART: LIST ANIMATION */}
-              <div className={`${styles.cardVisual} ${styles.visualPortfolio}`}>
-                <div className={styles.mockTable}>
-                  <div className={styles.tHead}>
-                    <span>Başlık</span><span>Fiyat</span><span>Durum</span>
-                  </div>
-                  <div className={styles.tRow}>
-                    <div className={styles.cellMain}>
-                      <div className={styles.thumb}></div>
-                      <div className={styles.textLines}><span className={styles.lineL}></span><span className={styles.lineS}></span></div>
+              <div className={`${styles.cardVisual} ${styles.visualContentGen}`}>
+                 <div className={styles.genProcess}>
+                    {/* Input Tarafı */}
+                    <div className={styles.genInput}>
+                       <div className={styles.miniFile}><Building2 size={12}/><span>Portföy Verisi</span></div>
+                       <motion.div 
+                         className={styles.genArrow}
+                         animate={{ width: ["0%", "100%", "0%"], opacity: [0, 1, 0] }}
+                         transition={{ duration: 3, repeat: Infinity }}
+                       />
                     </div>
-                    <div className={styles.cell}>₺₺₺</div>
-                    <motion.div 
-                      animate={{ scale: [1, 1.1, 1], opacity: [1, 0.8, 1] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                      className={`${styles.statusBadge} ${styles.success}`}
-                    >
-                      Hazır
-                    </motion.div>
-                  </div>
-                  <motion.div 
-                    variants={{ hover: { x: 5 } }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                    className={styles.tRow}
-                  >
-                    <div className={styles.cellMain}>
-                      <div className={styles.thumb}></div>
-                      <div className={styles.textLines}><span className={styles.lineL}></span><span className={styles.lineS}></span></div>
+                    {/* Output Listesi */}
+                    <div className={styles.genOutput}>
+                       {[
+                         { icon: <FileText size={10}/>, text: "Sahibinden İlan Metni", color: "blue" },
+                         { icon: <Instagram size={10}/>, text: "Instagram Post Açıklaması", color: "pink" },
+                         { icon: <Briefcase size={10}/>, text: "LinkedIn Yazısı", color: "blue" },
+                         { icon: <Clapperboard size={10}/>, text: "Reels Senaryo Metni", color: "orange" }
+                       ].map((item, i) => (
+                         <motion.div 
+                           key={i} 
+                           className={styles.genItem}
+                           initial={{ opacity: 0, x: 10 }}
+                           whileInView={{ opacity: 1, x: 0 }}
+                           transition={{ delay: i * 0.5, duration: 0.5, repeat: Infinity, repeatDelay: 3 }}
+                         >
+                            <div className={`${styles.itemIcon} ${styles[item.color]}`}>{item.icon}</div>
+                            <span>{item.text}</span>
+                            <CheckCircle2 size={10} className={styles.check}/>
+                         </motion.div>
+                       ))}
                     </div>
-                    <div className={styles.cell}>₺₺₺</div>
-                    <div className={`${styles.statusBadge} ${styles.warning}`}>Taslak</div>
-                  </motion.div>
-                </div>
+                 </div>
               </div>
             </motion.div>
 
-            {/* 2. CRM: Fırsat Kaçırmayan Hafıza (GÜNCELLENDİ) */}
-            <motion.div 
-              variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
-              className={styles.bentoCard}
-              whileHover="hover"
-            >
-              <div className={styles.cardContent}>
-                <div className={`${styles.iconBox} ${styles.green}`}><Users size={20}/></div>
-                <h3>Fırsat Kaçırmayan Hafıza</h3>
-                <ul>
-                  {/* İsteğinize göre burayı güncelledik: Hem AI araçları hem de standart CRM özellikleri */}
-                  <li>Tek tıkla <strong>Mesaj Taslağı</strong> ve <strong>Portföy Eşleştirme</strong></li>
-                  <li>Müşteriye özel <strong>Not ve Görev</strong> ekleme</li>
-                  <li>Sessizlik analizi ile "Unutulan Müşteri" uyarısı</li>
-                </ul>
-              </div>
+            {/* 2. CRM: Kanban Pipeline & Aktivite */}
+            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }} className={styles.bentoCard} whileHover="hover">
+  <div className={styles.cardContent}>
+    <div className={`${styles.iconBox} ${styles.green}`}><Users size={20}/></div>
+    <h3>Uçtan Uca Müşteri Takibi</h3>
+    <p className={styles.subText}>Yeni müşteriden satışa giden Kanban yolculuğu. Sürükle-bırak yönetimi, aktivite ve görev takibi.</p>
+  </div>
 
-              {/* CSS ART: KANBAN DRAG ANIMATION */}
-              <div className={`${styles.cardVisual} ${styles.visualCrm}`}>
+              <div className={`${styles.cardVisual} ${styles.visualKanban}`}>
                 <div className={styles.kanbanBoard}>
-                  <div className={styles.column}>
-                    <div className={styles.colHead}><span className={styles.dot}></span>Takip</div>
-                    <div className={styles.kanbanCard}><div className={styles.line}></div><div className={styles.tag}></div></div>
-                    <div className={styles.kanbanCard}><div className={styles.line}></div></div>
-                  </div>
-                  <div className={styles.column}>
-                    <div className={styles.colHead}><span className={`${styles.dot} ${styles.blue}`}></span>İşlem</div>
-                    <motion.div 
-                      className={`${styles.kanbanCard} ${styles.active}`}
-                      animate={{ y: [0, -6, 0] }}
-                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                    >
-                      <div className={styles.line}></div>
-                      <div className={`${styles.tag} ${styles.blue}`}></div>
-                    </motion.div>
-                  </div>
+                   {/* Column 1: Görüşüldü */}
+                   <div className={styles.kCol}>
+                      <div className={styles.kHeader}><span className={styles.dot}></span>Görüşüldü</div>
+                      <div className={styles.kCard}>
+                         <div className={styles.kAvatar}></div>
+                         <div className={styles.kLines}><div className={styles.kLine}></div></div>
+                      </div>
+                   </div>
+                   {/* Column 2: Teklif (Animasyonlu Geçiş) */}
+                   <div className={styles.kCol}>
+                      <div className={styles.kHeader}><span className={`${styles.dot} ${styles.orange}`}></span>Teklif / Pazarlık</div>
+                      <motion.div 
+                        className={`${styles.kCard} ${styles.active}`}
+                        animate={{ y: [0, -40, 0], x: [0, 50, 0], scale: [1, 1.1, 1] }} // Kartın sütun değiştirmesi simülasyonu
+                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                      >
+                         <div className={styles.kAvatar} style={{background: '#10b981'}}></div>
+                         <div className={styles.kTag}>Satışa Yakın</div>
+                      </motion.div>
+                   </div>
+                   {/* Column 3: Satış */}
+                   <div className={styles.kCol}>
+                      <div className={styles.kHeader}><span className={`${styles.dot} ${styles.green}`}></span>Satış Başarılı</div>
+                   </div>
                 </div>
+                {/* Floating Activity Notification */}
+                <ActivityTicker />
               </div>
             </motion.div>
 
-            {/* 3. AI: Satışı Kapatan Stratejik Zeka */}
-            <motion.div 
-              variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
-              className={styles.bentoCard}
-              whileHover="hover"
-            >
+            {/* 3. AI STRATEJİ: Mesaj Hazırlama & Eşleşme */}
+            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }} className={styles.bentoCard} whileHover="hover">
               <div className={styles.cardContent}>
                 <div className={`${styles.iconBox} ${styles.violet}`}><Sparkles size={20}/></div>
                 <h3>Satışı Kapatan Stratejik Zeka</h3>
-                <ul>
-                  <li><strong>%85+ Uyum skoru</strong> ile nokta atışı</li>
-                  <li>"Neden satılır?" gerekçeli öneriler</li>
-                  <li>Mevzuat ve rakip analizi desteği</li>
-                </ul>
+                <p className={styles.subText}>Müşteri verisine göre kişiselleştirilmiş mesaj taslağı hazırlayın ve en uygun portföyleri eşleştirin.</p>
               </div>
 
-              {/* CSS ART: AI TYPING ANIMATION */}
-              <div className={`${styles.cardVisual} ${styles.visualAi}`}>
-                <div className={styles.aiLayout}>
-                  <div className={styles.aiSidebar}>
-                     <div className={styles.line}></div><div className={styles.line}></div><div className={styles.line}></div>
-                  </div>
-                  <div className={styles.aiMain}>
-                    <div className={styles.aiResult}>
-                       <motion.div 
-                         animate={{ rotate: [0, 15, -15, 0] }}
-                         transition={{ duration: 4, repeat: Infinity }}
-                         className={styles.sparkleIcon}
-                       >
-                         <Sparkles size={12}/>
-                       </motion.div>
-                       <div className={styles.lines}>
-                         <motion.div animate={{ width: ["90%", "70%", "90%"] }} transition={{duration:3, repeat:Infinity}} className={styles.l1}></motion.div>
-                         <motion.div animate={{ width: ["70%", "40%", "70%"] }} transition={{duration:4, repeat:Infinity}} className={styles.l2}></motion.div>
-                         <motion.div animate={{ width: ["40%", "60%", "40%"] }} transition={{duration:2.5, repeat:Infinity}} className={styles.l3}></motion.div>
+              <div className={`${styles.cardVisual} ${styles.visualAiStrategy}`}>
+                 <div className={styles.aiInterface}>
+                    {/* Üst: Müşteri Profili */}
+                    <div className={styles.clientProfile}>
+                       <div className={styles.cpIcon}><Users size={12}/></div>
+                       <div className={styles.cpInfo}>
+                          <span className={styles.cpName}>Ahmet Yılmaz</span>
+                          <span className={styles.cpTag}>Yatırımcı</span>
                        </div>
                     </div>
-                    <div className={styles.aiInput}>
-                       <div className={styles.placeholder}></div>
-                       <motion.div variants={{ hover: { scale: 1.2 } }} className={styles.btn}></motion.div>
+                    {/* Alt: AI Yazıyor */}
+                    <div className={styles.aiMessageBlock}>
+                       <div className={styles.aiHeader}>
+                          <Sparkles size={10} color="#7c3aed"/>
+                          <span>AI Mesaj Taslağı Hazırlıyor...</span>
+                       </div>
+                       <div className={styles.typewriterArea}>
+                          <motion.p
+                            initial={{ width: 0 }}
+                            whileInView={{ width: "100%" }}
+                            transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
+                            className={styles.typingText}
+                          >
+                             "Ahmet Bey, ilgilendiğiniz Kadıköy bölgesinde, ROI oranı %15 olan yeni bir fırsat portföyümüz var..."
+                          </motion.p>
+                       </div>
                     </div>
-                  </div>
-                </div>
+                 </div>
               </div>
             </motion.div>
 
-            {/* 4. MEDYA: Cebinizdeki Dijital Ajans */}
-            <motion.div 
-              variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
-              className={styles.bentoCard}
-              whileHover="hover"
-            >
+            {/* 4. DİJİTAL AJANS: Görsel & Video Üretimi */}
+            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }} className={styles.bentoCard} whileHover="hover">
               <div className={styles.cardContent}>
-                <div className={`${styles.iconBox} ${styles.orange}`}><Instagram size={20}/></div>
-                <h3>Cebinizdeki Dijital Ajans</h3>
-                <ul>
-                  <li>Instagram Post & Story tasarımları</li>
-                  <li>Otomatik <strong>Reels videosu</strong> kurgulama</li>
-                  <li>Dikkat çekici sosyal medya metinleri</li>
-                </ul>
+                <div className={`${styles.iconBox} ${styles.orange}`}><ImageIcon size={20}/></div>
+                <h3>Cebinizdeki Dijital Medya Ajansı</h3>
+                <p className={styles.subText}>Profesyonel tasarımcıya ihtiyaç duymadan sosyal medya görselleri ve UGC emlak videoları üretin.</p>
               </div>
 
-              {/* CSS ART: PLAY BUTTON PULSE */}
-              <div className={`${styles.cardVisual} ${styles.visualSocial}`}>
-                 <div className={styles.instaLayout}>
-                    <div className={styles.postCard}>
-                       <div className={styles.pHeader}><div className={styles.avatar}></div><div className={styles.name}></div></div>
-                       <div className={styles.pImage}>
+              <div className={`${styles.cardVisual} ${styles.visualAgency}`}>
+                 <div className={styles.mediaStudio}>
+                    {/* Sol: Görsel Üretimi */}
+                    <div className={styles.postGenerator}>
+                       <div className={styles.pgHeader}>Post</div>
+                       <motion.div 
+                          className={styles.pgImage}
+                          animate={{ filter: ["blur(5px)", "blur(0px)"] }}
+                          transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
+                       >
+                          <div className={styles.badgeOverlay}>FIRSAT</div>
+                       </motion.div>
+                    </div>
+                    {/* Sağ: Video/Reels */}
+                    <div className={styles.videoGenerator}>
+                       <div className={styles.pgHeader}>UGC Video</div>
+                       <div className={styles.videoFrame}>
                           <motion.div 
-                            className={styles.playBtn}
-                            whileHover={{ scale: 1.2, backgroundColor: "rgba(255,255,255,0.2)" }}
-                            animate={{ boxShadow: ["0 0 0px rgba(255,255,255,0)", "0 0 10px rgba(255,255,255,0.5)", "0 0 0px rgba(255,255,255,0)"] }}
-                            transition={{ boxShadow: { duration: 2, repeat: Infinity } }}
+                             className={styles.playIcon}
+                             animate={{ scale: [1, 1.2, 1] }}
+                             transition={{ duration: 2, repeat: Infinity }}
                           >
-                            <Play size={12} fill="white"/>
+                             <Play size={10} fill="white"/>
                           </motion.div>
-                       </div>
-                       <div className={styles.pFooter}>
-                          <div className={styles.actions}>
-                            <motion.div variants={{ hover: { scale: 1.3, backgroundColor: "#ef4444" } }} className={styles.act}></motion.div>
-                            <div className={styles.act}></div>
+                          <div className={styles.timelineBar}>
+                             <motion.div className={styles.progress} animate={{ width: "100%" }} transition={{ duration: 3, repeat: Infinity, ease: "linear" }}/>
                           </div>
-                          <div className={styles.caption}><div className={styles.line}></div><div className={styles.lineS}></div></div>
                        </div>
                     </div>
                  </div>

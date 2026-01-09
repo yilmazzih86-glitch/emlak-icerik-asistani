@@ -182,7 +182,7 @@ $border-color: rgba(255, 255, 255, 0.08); // İnce cam sınırı
       align-items: center;
       padding: 0 1rem;
       gap: 1rem;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 
       .dots {
         display: flex; gap: 6px;
@@ -192,7 +192,6 @@ $border-color: rgba(255, 255, 255, 0.08); // İnce cam sınırı
         span:nth-child(3) { background: #22c55e; }
       }
       .addressBar {
-        width: 200px; height: 20px; background: #000; border-radius: 4px;
         margin: 0 auto; // Ortala
         opacity: 0.5;
       }
@@ -966,6 +965,221 @@ $border-color: rgba(255, 255, 255, 0.08); // İnce cam sınırı
   // Tıklandığında Navbar'ın yüksekliği kadar (örn: 100px) yukarıda durur.
   // Başlığın menü altında kalmasını engeller.
   scroll-margin-top: 100px; 
+}
+.tryMeHint {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba($violet, 0.2);
+  border: 1px solid rgba($violet, 0.4);
+  color: lighten($violet, 20%);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  pointer-events: none;
+  animation: bounce 2s infinite;
+}
+
+// 2. Sidebar Tıklanabilir Yapı
+.heroVisual .mockupWindow .windowBody .sidebar .item {
+  cursor: pointer;
+  position: relative;
+  
+  &:hover {
+    color: white;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+  }
+  
+  &.active {
+    color: $text-main;
+    background: rgba($violet, 0.1);
+    border-radius: 8px;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 15%;
+      height: 70%;
+      width: 3px;
+      background: $violet;
+      border-radius: 0 4px 4px 0;
+    }
+  }
+}
+
+// 3. İçerik Alanı Düzenlemesi
+.viewContainer {
+  width: 100%;
+  height: 100%;
+}
+
+// 4. CRM Görünümü Stilleri
+.crmList {
+   .viewTitle { font-size: 0.9rem; color: $text-muted; margin-bottom: 1rem; }
+   
+   .crmItem {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px; margin-bottom: 8px;
+      background: rgba(255,255,255,0.03); border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.02);
+      cursor: default;
+      transition: 0.2s;
+      &:hover { background: rgba(255,255,255,0.05); transform: translateX(4px); }
+
+      .avatar { width: 32px; height: 32px; background: linear-gradient(135deg, #333, #555); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; }
+      .info { flex: 1; .name { font-size: 0.85rem; font-weight: 600; } .detail { font-size: 0.7rem; color: $text-muted; } }
+      .actionBtn { width: 28px; height: 28px; border-radius: 6px; background: rgba($blue, 0.1); color: $blue; display: flex; align-items: center; justify-content: center; &:hover { background: $blue; color: white; } }
+   }
+
+   .aiSuggestion {
+      margin-top: 1rem; padding: 10px;
+      background: linear-gradient(90deg, rgba($violet, 0.1), transparent);
+      border-left: 3px solid $violet; border-radius: 4px;
+      font-size: 0.75rem; color: lighten($violet, 10%);
+      display: flex; align-items: center; gap: 8px;
+   }
+}
+
+// 5. AI Araçları Görünümü Stilleri
+.aiGenerator {
+   .promptBox {
+      background: #18181b; border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; margin-bottom: 1rem;
+      .badge { font-size: 0.6rem; background: $violet; color: white; padding: 2px 6px; border-radius: 4px; margin-bottom: 6px; display: inline-block; }
+      p { font-size: 0.8rem; color: $text-muted; font-style: italic; }
+   }
+   .generatingVisual {
+      display: flex; flex-direction: column; gap: 4px; margin-bottom: 1rem;
+      span { font-size: 0.7rem; color: $green; }
+      .loadingBar { height: 4px; background: $green; border-radius: 2px; }
+   }
+   .resultPreview {
+      .line { height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 6px; }
+   }
+}
+
+/* --- GÜNCELLENMİŞ BENTO GRID GÖRSELLERİ (V3) --- */
+
+.subText {
+  font-size: 0.85rem;
+  color: $text-muted;
+  margin-top: 0.5rem;
+  line-height: 1.5;
+}
+
+// 1. CONTENT GENERATOR (Listeli Yapı)
+.visualContentGen {
+  padding: 0 !important;
+  background: rgba(0,0,0,0.2) !important;
+  display: flex; align-items: center; justify-content: center;
+
+  .genProcess {
+    width: 100%; height: 100%; display: flex; align-items: center; padding: 1.5rem; gap: 1rem;
+
+    .genInput {
+       display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+       .miniFile { 
+          width: 60px; height: 70px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; 
+          display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: $text-muted; font-size: 8px; text-align: center;
+       }
+       .genArrow { height: 2px; background: $violet; }
+    }
+
+    .genOutput {
+       flex: 1; display: flex; flex-direction: column; gap: 0.5rem;
+       .genItem {
+          display: flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.05); padding: 0.4rem 0.6rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.02);
+          .itemIcon { width: 16px; height: 16px; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+          .itemIcon.blue { background: rgba($blue, 0.2); color: $blue; }
+          .itemIcon.pink { background: rgba(236, 72, 153, 0.2); color: #ec4899; }
+          .itemIcon.orange { background: rgba($orange, 0.2); color: $orange; }
+          span { font-size: 0.7rem; color: #fff; flex: 1; }
+          .check { color: $green; }
+       }
+    }
+  }
+}
+
+// 2. KANBAN PIPELINE
+.visualKanban {
+  padding: 1rem !important;
+  background: rgba(0,0,0,0.2) !important;
+  position: relative; overflow: hidden;
+
+  .kanbanBoard {
+    display: flex; gap: 0.5rem; height: 100%;
+    .kCol {
+       flex: 1; background: rgba(255,255,255,0.02); border-radius: 6px; padding: 0.5rem; border: 1px solid rgba(255,255,255,0.02);
+       display: flex; flex-direction: column; gap: 0.5rem;
+       .kHeader { font-size: 0.6rem; color: $text-muted; display: flex; align-items: center; gap: 4px; margin-bottom: 2px; .dot { width: 4px; height: 4px; background: $blue; border-radius: 50%; } .dot.green { background: $green; } .dot.orange { background: $orange; } }
+       .kCard {
+          background: rgba(255,255,255,0.05); padding: 0.5rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.02);
+          .kAvatar { width: 16px; height: 16px; background: $violet; border-radius: 50%; margin-bottom: 4px; }
+          .kLines { display: flex; flex-direction: column; gap: 2px; .kLine { width: 80%; height: 2px; background: rgba(255,255,255,0.1); } }
+          .kTag { font-size: 6px; background: rgba($green, 0.2); color: $green; padding: 1px 3px; border-radius: 2px; display: inline-block; margin-top: 4px; }
+          &.active { border-color: $violet; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2); z-index: 10; }
+       }
+    }
+  }
+  .activityPop {
+    position: absolute; bottom: 10px; right: 10px;
+    background: #18181b; border: 1px solid rgba($green, 0.3); padding: 6px 10px; border-radius: 6px;
+    font-size: 0.7rem; display: flex; align-items: center; gap: 6px; color: $green;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  }
+}
+
+// 3. AI STRATEGY
+.visualAiStrategy {
+  padding: 1.5rem !important;
+  display: flex; align-items: center; justify-content: center;
+
+  .aiInterface {
+    width: 100%; background: #18181b; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; overflow: hidden;
+    
+    .clientProfile {
+       padding: 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 0.6rem;
+       .cpIcon { width: 24px; height: 24px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: $text-muted; }
+       .cpInfo { display: flex; flex-direction: column; .cpName { font-size: 0.75rem; font-weight: 600; } .cpTag { font-size: 0.6rem; color: $violet; } }
+    }
+
+    .aiMessageBlock {
+       padding: 0.8rem;
+       .aiHeader { font-size: 0.6rem; color: $violet; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 4px; }
+       .typewriterArea {
+          font-size: 0.7rem; color: $text-muted; line-height: 1.4; white-space: nowrap; overflow: hidden; font-style: italic; border-left: 2px solid rgba(255,255,255,0.1); padding-left: 6px;
+       }
+    }
+  }
+}
+
+// 4. DIGITAL AGENCY (Visual & Video)
+.visualAgency {
+  padding: 1.5rem !important;
+  
+  .mediaStudio {
+     display: flex; gap: 1rem; width: 100%; height: 100%; align-items: center; justify-content: center;
+     
+     .postGenerator, .videoGenerator {
+        width: 45%; height: 100px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 6px;
+        display: flex; flex-direction: column;
+        .pgHeader { font-size: 0.6rem; color: $text-muted; margin-bottom: 4px; }
+     }
+     
+     .postGenerator .pgImage {
+        flex: 1; background: linear-gradient(135deg, #333, #555); border-radius: 4px; position: relative; overflow: hidden;
+        .badgeOverlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-10deg); background: $orange; color: white; font-size: 0.6rem; font-weight: bold; padding: 2px 6px; }
+     }
+
+     .videoGenerator .videoFrame {
+        flex: 1; background: #000; border-radius: 4px; position: relative; display: flex; align-items: center; justify-content: center;
+        .playIcon { width: 20px; height: 20px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+        .timelineBar { position: absolute; bottom: 4px; left: 4px; right: 4px; height: 2px; background: rgba(255,255,255,0.2); .progress { height: 100%; background: $violet; } }
+     }
+  }
 }
 
 // --- FOOTER ---
