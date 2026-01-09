@@ -408,7 +408,7 @@ useEffect(() => {
         </div>
       </section>
 
-      {/* ÇÖZÜM / SOLUTION SECTION - BENTO GRID (ANIMATED) */}
+      {/* ÇÖZÜM / SOLUTION SECTION - BENTO GRID (UPDATED V2) */}
       <section className={styles.solutionSection}>
         <div className={styles.container}>
           
@@ -419,12 +419,12 @@ useEffect(() => {
             transition={{ duration: 0.6 }}
             className={styles.solutionHeader}
           >
-            <div className={styles.badge}>ÇÖZÜM</div>
-            <h2>EstateOS Ne Yapar?</h2>
-            <p>Tüm emlak süreciniz tek platformda.</p>
+            <div className={styles.badge}>DEĞER ÖNERİSİ</div>
+            <h2>Emlak Ofisiniz İçin <span className={styles.highlight}>7/24 Çalışan Ortak</span></h2>
+            <p>Operasyonel yükü EstateOS'a bırakın, siz sadece satışa odaklanın.</p>
           </motion.div>
 
-          {/* Grid Container - Stagger Effect */}
+          {/* Grid Container */}
           <motion.div 
             className={styles.bentoGrid}
             initial="hidden"
@@ -439,19 +439,19 @@ useEffect(() => {
             }}
           >
             
-            {/* 1. PORTFÖY YÖNETİMİ */}
+            {/* 1. PORTFÖY: Saniyeler İçinde Satışa Hazır */}
             <motion.div 
               variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
               className={styles.bentoCard}
-              whileHover="hover" // Hover tetikleyicisi
+              whileHover="hover"
             >
               <div className={styles.cardContent}>
                 <div className={`${styles.iconBox} ${styles.blue}`}><LayoutDashboard size={20}/></div>
-                <h3>Portföy Yönetimi</h3>
+                <h3>Saniyeler İçinde Satışa Hazır</h3>
                 <ul>
-                  <li>Portföy ekleme ve düzenleme</li>
-                  <li>Otomatik ilan metni üretimi</li>
-                  <li>Görsel & video destekli sunumlar</li>
+                  <li>Pazarlama diliyle <strong>otomatik ilan metni</strong></li>
+                  <li>Yapay zeka destekli görsel iyileştirme</li>
+                  <li>Tek tıkla sunum dosyası hazırlama</li>
                 </ul>
               </div>
               
@@ -461,23 +461,20 @@ useEffect(() => {
                   <div className={styles.tHead}>
                     <span>Başlık</span><span>Fiyat</span><span>Durum</span>
                   </div>
-                  {/* Satır 1 */}
                   <div className={styles.tRow}>
                     <div className={styles.cellMain}>
                       <div className={styles.thumb}></div>
                       <div className={styles.textLines}><span className={styles.lineL}></span><span className={styles.lineS}></span></div>
                     </div>
                     <div className={styles.cell}>₺₺₺</div>
-                    {/* Badge Pulse Effect */}
                     <motion.div 
                       animate={{ scale: [1, 1.1, 1], opacity: [1, 0.8, 1] }}
                       transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                       className={`${styles.statusBadge} ${styles.success}`}
                     >
-                      Aktif
+                      Hazır
                     </motion.div>
                   </div>
-                  {/* Satır 2 - Hover'da X ekseninde hafif kayar */}
                   <motion.div 
                     variants={{ hover: { x: 5 } }}
                     transition={{ type: "spring", stiffness: 300 }}
@@ -488,13 +485,13 @@ useEffect(() => {
                       <div className={styles.textLines}><span className={styles.lineL}></span><span className={styles.lineS}></span></div>
                     </div>
                     <div className={styles.cell}>₺₺₺</div>
-                    <div className={`${styles.statusBadge} ${styles.warning}`}>Opsiyon</div>
+                    <div className={`${styles.statusBadge} ${styles.warning}`}>Taslak</div>
                   </motion.div>
                 </div>
               </div>
             </motion.div>
 
-            {/* 2. MÜŞTERİ & CRM */}
+            {/* 2. CRM: Fırsat Kaçırmayan Hafıza (GÜNCELLENDİ) */}
             <motion.div 
               variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
               className={styles.bentoCard}
@@ -502,11 +499,12 @@ useEffect(() => {
             >
               <div className={styles.cardContent}>
                 <div className={`${styles.iconBox} ${styles.green}`}><Users size={20}/></div>
-                <h3>Müşteri & CRM</h3>
+                <h3>Fırsat Kaçırmayan Hafıza</h3>
                 <ul>
-                  <li>Kanban pipeline yönetimi</li>
-                  <li>Müşteri notları ve aktiviteler</li>
-                  <li>Sessizlik ve takip analizi</li>
+                  {/* İsteğinize göre burayı güncelledik: Hem AI araçları hem de standart CRM özellikleri */}
+                  <li>Tek tıkla <strong>Mesaj Taslağı</strong> ve <strong>Portföy Eşleştirme</strong></li>
+                  <li>Müşteriye özel <strong>Not ve Görev</strong> ekleme</li>
+                  <li>Sessizlik analizi ile "Unutulan Müşteri" uyarısı</li>
                 </ul>
               </div>
 
@@ -514,13 +512,12 @@ useEffect(() => {
               <div className={`${styles.cardVisual} ${styles.visualCrm}`}>
                 <div className={styles.kanbanBoard}>
                   <div className={styles.column}>
-                    <div className={styles.colHead}><span className={styles.dot}></span>Yeni</div>
+                    <div className={styles.colHead}><span className={styles.dot}></span>Takip</div>
                     <div className={styles.kanbanCard}><div className={styles.line}></div><div className={styles.tag}></div></div>
                     <div className={styles.kanbanCard}><div className={styles.line}></div></div>
                   </div>
                   <div className={styles.column}>
-                    <div className={styles.colHead}><span className={`${styles.dot} ${styles.blue}`}></span>Sunum</div>
-                    {/* Bu kart sürekli "yüzer" (floating) efekti yapar */}
+                    <div className={styles.colHead}><span className={`${styles.dot} ${styles.blue}`}></span>İşlem</div>
                     <motion.div 
                       className={`${styles.kanbanCard} ${styles.active}`}
                       animate={{ y: [0, -6, 0] }}
@@ -534,7 +531,7 @@ useEffect(() => {
               </div>
             </motion.div>
 
-            {/* 3. AKILLI DESTEK (AI) */}
+            {/* 3. AI: Satışı Kapatan Stratejik Zeka */}
             <motion.div 
               variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
               className={styles.bentoCard}
@@ -542,11 +539,11 @@ useEffect(() => {
             >
               <div className={styles.cardContent}>
                 <div className={`${styles.iconBox} ${styles.violet}`}><Sparkles size={20}/></div>
-                <h3>Akıllı Destek (AI)</h3>
+                <h3>Satışı Kapatan Stratejik Zeka</h3>
                 <ul>
-                  <li>AI destekli içerik üretimi</li>
-                  <li>Hazır mesaj taslakları</li>
-                  <li>Portföy–müşteri uyum sistemi</li>
+                  <li><strong>%85+ Uyum skoru</strong> ile nokta atışı</li>
+                  <li>"Neden satılır?" gerekçeli öneriler</li>
+                  <li>Mevzuat ve rakip analizi desteği</li>
                 </ul>
               </div>
 
@@ -566,7 +563,6 @@ useEffect(() => {
                          <Sparkles size={12}/>
                        </motion.div>
                        <div className={styles.lines}>
-                         {/* Satırların genişliği sürekli değişerek "yazıyor/düşünüyor" hissi verir */}
                          <motion.div animate={{ width: ["90%", "70%", "90%"] }} transition={{duration:3, repeat:Infinity}} className={styles.l1}></motion.div>
                          <motion.div animate={{ width: ["70%", "40%", "70%"] }} transition={{duration:4, repeat:Infinity}} className={styles.l2}></motion.div>
                          <motion.div animate={{ width: ["40%", "60%", "40%"] }} transition={{duration:2.5, repeat:Infinity}} className={styles.l3}></motion.div>
@@ -581,7 +577,7 @@ useEffect(() => {
               </div>
             </motion.div>
 
-            {/* 4. İÇERİK & SATIŞ */}
+            {/* 4. MEDYA: Cebinizdeki Dijital Ajans */}
             <motion.div 
               variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
               className={styles.bentoCard}
@@ -589,11 +585,11 @@ useEffect(() => {
             >
               <div className={styles.cardContent}>
                 <div className={`${styles.iconBox} ${styles.orange}`}><Instagram size={20}/></div>
-                <h3>İçerik & Satış</h3>
+                <h3>Cebinizdeki Dijital Ajans</h3>
                 <ul>
-                  <li>Sosyal medya metinleri</li>
-                  <li>Görsel iyileştirme</li>
-                  <li>UGC video üretimi</li>
+                  <li>Instagram Post & Story tasarımları</li>
+                  <li>Otomatik <strong>Reels videosu</strong> kurgulama</li>
+                  <li>Dikkat çekici sosyal medya metinleri</li>
                 </ul>
               </div>
 
