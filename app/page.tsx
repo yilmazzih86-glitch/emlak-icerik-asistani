@@ -628,13 +628,13 @@ useEffect(() => {
       <section id="pricing" className={`${styles.sectionPadding} ${styles.pricingBg}`}>
   <div className={styles.container}>
           <div className={styles.sectionHeader}>
-            <h2>Size uygun EstateOS paketini seçin</h2>
+            <h2>Size uygun <span className={styles.highlight}>EstateOS</span> paketini seçin</h2>
             <p>Tüm paketler aylık aboneliklidir. İhtiyacınıza göre dilediğiniz zaman yükseltebilirsiniz.</p>
           </div>
           <div className={styles.pricingGrid}>
             {[
               {
-                name: "Freelance", key: "freelance", price: "499", icon: Briefcase, color: "blue",
+                name: "Freelance", key: "freelance", price: "499", icon: Briefcase, color: "orange",
                 features: [
                   { text: "Aylık 15 Adet İçerik Metni Üretimi", included: true },
                   { text: "Geçmiş: Son 15 Kayıt Tutulur", included: true },
@@ -687,7 +687,7 @@ useEffect(() => {
                     {plan.features.map((feature, i) => (
                         <li key={i} className={!feature.included ? styles.disabled : ""}>
                             {feature.included ? 
-                                (<Check size={16} color={plan.popular ? "#a78bfa" : "#4ade80"} />) : 
+                                (<Check size={16} color={plan.popular ? "#a78bfa" : "#f97316"} />) : 
                                 (<X size={16} color="#52525b" />)
                             }
                             <span>{feature.text}</span>
