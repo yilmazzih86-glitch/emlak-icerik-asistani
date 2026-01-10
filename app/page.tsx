@@ -10,7 +10,8 @@ import {
   Settings, Share2, Type, ImagePlus, Share, TrendingUp, ChevronRight,
   ChevronLeft, Briefcase, Zap, Video, Search, Bell, LayoutGrid, Home as HomeIcon,
   FileQuestion, Clock, Users2, ShieldAlert, ArrowDown,
-  MoreHorizontal, Plus, Filter, Calendar, MessageSquare, GripVertical, Phone, FileSignature
+  MoreHorizontal, Plus, Filter, Calendar, MessageSquare, GripVertical, Phone, FileSignature,
+  Star, HelpCircle, Minus
 } from "lucide-react";
 import { motion, useScroll, useTransform, useMotionValue, AnimatePresence } from "framer-motion";
 import styles from "./page.module.scss";
@@ -177,6 +178,87 @@ const ActivityTicker = () => {
   );
 };
 
+const testimonials = [
+  {
+    name: "Merve Kaya",
+    role: "Lüks Konut Uzmanı",
+    company: "Remax Pro",
+    image: "MK", // Avatar yerine harf kullanıyoruz, resim varsa url konabilir
+    content: "Eskiden bir portföyün sosyal medya görselleri için 2 saat harcardım. EstateOS ile bu süre 5 dakikaya indi. Satışa odaklanmak için harika.",
+    rating: 5
+  },
+  {
+    name: "Caner Yılmaz",
+    role: "Broker / Owner",
+    company: "Keller Williams",
+    image: "CY",
+    content: "Ofisimdeki 15 danışmanın performansını tek ekrandan izleyebiliyorum. AI önerileri sayesinde geçen ay 'ölü' dediğimiz 3 satışı kapattık.",
+    rating: 5
+  },
+  {
+    name: "Selin Demir",
+    role: "Freelance Danışman",
+    company: "Bağımsız",
+    image: "SD",
+    content: "Tek başıma çalışıyorum ama arkamda dev bir ajans var gibi. Müşteri mesajlarına AI ile dönmek profesyonelliğimi ikiye katladı.",
+    rating: 5
+  }
+];
+
+// --- FAQ (Sıkça Sorulan Sorular) ---
+const faqs = [
+  {
+    q: "Ücretsiz deneme süresinde kredi kartı gerekiyor mu?",
+    a: "Hayır, EstateOS'u 14 gün boyunca kredi kartı bilgilerinizi girmeden, tüm özellikleriyle ücretsiz deneyebilirsiniz."
+  },
+  {
+    q: "Mevcut portföylerimi Excel'den aktarabilir miyim?",
+    a: "Evet, 'Toplu İçe Aktar' özelliği sayesinde Excel veya CSV formatındaki müşteri ve portföy listenizi saniyeler içinde sisteme yükleyebilirsiniz."
+  },
+  {
+    q: "Aboneliğimi istediğim zaman iptal edebilir miyim?",
+    a: "Kesinlikle. Hiçbir taahhüt yoktur. Paneliniz üzerinden tek tıkla aboneliğinizi dondurabilir veya iptal edebilirsiniz."
+  },
+  {
+    q: "Yapay zeka içerikleri SEO uyumlu mu?",
+    a: "Evet, oluşturulan ilan metinleri emlak platformlarının algoritmalarına ve Google SEO kriterlerine uygun anahtar kelimelerle optimize edilir."
+  }
+];
+
+const AccordionItem = ({ question, answer, isOpen, onClick }: any) => {
+  return (
+    <motion.div 
+      initial={false}
+      className={`${styles.faqItem} ${isOpen ? styles.open : ''}`}
+      onClick={onClick}
+    >
+      <div className={styles.faqHeader}>
+        <span className={styles.question}>{question}</span>
+        <div className={styles.iconWrapper}>
+           {isOpen ? <Minus size={18} /> : <Plus size={18} />}
+        </div>
+      </div>
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            key="content"
+            initial="collapsed"
+            animate="open"
+            exit="collapsed"
+            variants={{
+              open: { opacity: 1, height: "auto", marginTop: 16 },
+              collapsed: { opacity: 0, height: 0, marginTop: 0 }
+            }}
+            transition={{ duration: 0.3, ease: [0.04, 0.62, 0.23, 0.98] }}
+          >
+            <div className={styles.answer}>{answer}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+};
+
 export default function Home() {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -186,6 +268,7 @@ export default function Home() {
   const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
   const textY = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
   const floatAnimation = (delay: number, yOffset: number) => ({ y: [0, yOffset, 0], transition: { repeat: Infinity, duration: 4 + delay, ease: "easeInOut" as const, delay: delay } });
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
 useEffect(() => {
     const handleScroll = () => {
@@ -793,6 +876,83 @@ useEffect(() => {
             ))}
           </div>
         </div>
+      </section>
+
+      {/* --- TESTIMONIALS SECTION --- */}
+      <section className={styles.sectionPadding}>
+        <div className={styles.container}>
+           <motion.div 
+              className={styles.sectionHeader}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+           >
+              <h2 className={styles.title}>Danışmanlar <span className={styles.highlight}>Neler Söylüyor?</span></h2>
+              <p className={styles.subtitle}>Türkiye genelinde 500+ profesyonel EstateOS kullanıyor.</p>
+           </motion.div>
+
+           <div className={styles.testimonialsGrid}>
+              {testimonials.map((item, i) => (
+                <motion.div 
+                  key={i}
+                  className={styles.testimonialCard}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  whileHover={{ y: -5 }}
+                >
+                   <div className={styles.stars}>
+                      {[...Array(item.rating)].map((_, starI) => (
+                        <Star key={starI} size={14} fill="#f59e0b" color="#f59e0b" />
+                      ))}
+                   </div>
+                   <p className={styles.comment}>"{item.content}"</p>
+                   <div className={styles.profile}>
+                      <div className={styles.avatar}>{item.image}</div>
+                      <div className={styles.info}>
+                         <div className={styles.name}>{item.name}</div>
+                         <div className={styles.role}>{item.role}, {item.company}</div>
+                      </div>
+                   </div>
+                </motion.div>
+              ))}
+           </div>
+        </div>
+      </section>
+
+      {/* ... Pricing Section Buraya Gelecek (Mevcut kodunuzda var) ... */}
+      
+      {/* Pricing Section bittikten hemen sonra, Footer'dan önce: */}
+      
+      {/* --- FAQ SECTION --- */}
+      <section className={styles.sectionPadding}>
+         <div className={styles.container}>
+            <div className={styles.faqLayout}>
+               {/* Sol Taraf: Başlık */}
+               <div className={styles.faqInfo}>
+                  <div className={styles.miniLabel} style={{color:'#a78bfa', borderColor:'rgba(124, 58, 237, 0.3)', background:'rgba(124, 58, 237, 0.1)'}}>DESTEK</div>
+                  <h2>Aklınıza takılanlar mı var?</h2>
+                  <p>Sıkça sorulan soruları derledik. Başka bir sorunuz varsa canlı destekten bize yazabilirsiniz.</p>
+                  <Link href="/contact" className={styles.btnOutline} style={{display:'inline-flex', marginTop:'1rem'}}>
+                     İletişime Geç
+                  </Link>
+               </div>
+               
+               {/* Sağ Taraf: Accordion */}
+               <div className={styles.faqList}>
+                  {faqs.map((faq, i) => (
+                    <AccordionItem 
+                      key={i} 
+                      question={faq.q} 
+                      answer={faq.a} 
+                      isOpen={i === openFaqIndex}
+                      onClick={() => setOpenFaqIndex(i === openFaqIndex ? null : i)}
+                    />
+                  ))}
+               </div>
+            </div>
+         </div>
       </section>
 
       {/* FOOTER */}
