@@ -1,0 +1,450 @@
+// --- VARIABLES (Kullanıcı Tanımlı Renk Paleti) ---
+$bg-dark: #050505;
+$violet: #7c3aed;
+$orange: #f97316;
+$indigo: #4f46e5;
+$green: #10b981;
+$blue: #3b82f6;
+$text-main: #f9fafb;
+$text-muted: #9ca3af;
+$border-color: rgba(255, 255, 255, 0.08);
+
+// --- MIXINS ---
+@mixin glass {
+  background: rgba(20, 20, 20, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid $border-color;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+}
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// --- STYLES ---
+
+.studioContainer {
+  min-height: 100vh;
+  padding: 2rem;
+  background-color: $bg-dark;
+  color: $text-main;
+  font-family: 'Inter', sans-serif;
+  
+  // Custom Scrollbar
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: $violet transparent;
+  }
+}
+
+// HEADER
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+
+  .titleGroup {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .iconBox {
+      @include flex-center;
+      width: 48px;
+      height: 48px;
+      background: rgba($violet, 0.1);
+      border-radius: 12px;
+      border: 1px solid rgba($violet, 0.2);
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      
+      .highlight {
+        color: transparent;
+        background: linear-gradient(to right, $violet, $indigo);
+        -webkit-background-clip: text;
+      }
+    }
+    
+    p {
+      color: $text-muted;
+      font-size: 0.9rem;
+      margin: 0;
+    }
+  }
+
+  .creditBadge {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    background: rgba($orange, 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba($orange, 0.2);
+    
+    span { font-size: 0.75rem; color: $text-muted; }
+    strong { color: $orange; font-size: 1.1rem; }
+  }
+}
+
+// GRID LAYOUT
+.mainGrid {
+  display: grid;
+  grid-template-columns: 320px 1fr 320px;
+  gap: 1.5rem;
+  height: calc(100vh - 140px);
+  
+  @media (max-width: 1200px) {
+    grid-template-columns: 1fr 1fr;
+    height: auto;
+    
+    .previewPanel {
+      grid-column: span 2;
+      height: 400px;
+    }
+  }
+}
+
+.glassPanel {
+  @include glass;
+  border-radius: 16px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+// SECTION STYLES
+.section {
+  h3 {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: $text-muted;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+}
+
+// 1. AVATAR GRID
+.avatarGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+
+  .avatarCard {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba($violet, 0.6);
+      @include flex-center;
+      opacity: 0;
+      transition: opacity 0.2s;
+      color: white;
+    }
+
+    &:hover { border-color: rgba($violet, 0.5); }
+    
+    &.active {
+      border-color: $violet;
+      .overlay { opacity: 1; }
+    }
+  }
+}
+.selectionLabel {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: $text-main;
+  text-align: center;
+}
+
+// 2. VOICE LIST
+.voiceList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  .voiceItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    .voiceInfo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.9rem;
+
+      .playBtn {
+        @include flex-center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: $violet;
+        border: none;
+        color: white;
+        cursor: pointer;
+        
+        &:hover { background: lighten($violet, 10%); }
+      }
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: $green;
+      box-shadow: 0 0 8px $green;
+    }
+
+    &.active {
+      background: rgba($violet, 0.1);
+      border-color: rgba($violet, 0.3);
+    }
+  }
+}
+
+// 3. DURATION TABS
+.durationTabs {
+  display: flex;
+  gap: 0.5rem;
+  
+  .tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.75rem 0.25rem;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid $border-color;
+    border-radius: 8px;
+    cursor: pointer;
+    color: $text-muted;
+    transition: all 0.2s;
+
+    .sec { font-size: 1rem; font-weight: 600; margin-bottom: 2px; }
+    .cred { font-size: 0.7rem; opacity: 0.7; }
+
+    &:hover { background: rgba(255,255,255,0.06); }
+
+    &.active {
+      background: $violet;
+      color: white;
+      border-color: $violet;
+      
+      .cred { color: rgba(255,255,255,0.8); }
+    }
+  }
+}
+
+// EDITOR PANEL (Center)
+.editorPanel {
+  .sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+
+    h3 { margin: 0; color: $text-main; display: flex; align-items: center; gap: 0.5rem; font-size: 1rem; }
+    
+    .charCount {
+      font-size: 0.8rem;
+      padding: 0.25rem 0.5rem;
+      background: rgba(255,255,255,0.05);
+      border-radius: 4px;
+      color: $text-muted;
+      
+      &.error { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+    }
+  }
+
+  .scriptArea {
+    flex: 1;
+    width: 100%;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid $border-color;
+    border-radius: 12px;
+    padding: 1.5rem;
+    color: $text-main;
+    font-size: 1rem;
+    line-height: 1.6;
+    resize: none;
+    outline: none;
+    font-family: inherit;
+
+    &:focus {
+      border-color: $violet;
+      box-shadow: 0 0 0 2px rgba($violet, 0.2);
+    }
+    
+    &::placeholder { color: rgba($text-muted, 0.5); }
+  }
+
+  .warning {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #ef4444;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+  }
+
+  .actionArea {
+    margin-top: auto;
+    
+    .generateBtn {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(135deg, $violet, $indigo);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.75rem;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba($violet, 0.4);
+
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba($violet, 0.5);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background: $border-color;
+        box-shadow: none;
+      }
+    }
+  }
+}
+
+// PREVIEW PANEL (Right)
+.previewPanel {
+  @include flex-center;
+  background: black; 
+  padding: 0; // Video tam otursun
+  overflow: hidden;
+  position: relative;
+
+  .emptyState {
+    text-align: center;
+    color: $text-muted;
+    
+    .placeholderAvatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin: 0 auto 1.5rem;
+      border: 4px solid rgba(255,255,255,0.05);
+      
+      img { width: 100%; height: 100%; object-fit: cover; opacity: 0.5; filter: grayscale(100%); }
+    }
+  }
+
+  .loadingState {
+    text-align: center;
+    z-index: 10;
+    
+    .spinner {
+      margin: 0 auto 1.5rem;
+      width: 50px;
+      height: 50px;
+      position: relative;
+      
+      .blob {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        border-radius: 50%;
+        background: $violet;
+        opacity: 0.6;
+        animation: pulse 2s infinite ease-in-out;
+        
+        &:nth-child(2) { animation-delay: -1s; background: $indigo; }
+      }
+    }
+  }
+
+  .resultState {
+    width: 100%;
+    height: 100%;
+    position: relative;
+
+    .finalVideo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; // 9:16 veya 16:9 uyumu
+    }
+
+    .downloadBtn {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.7);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 0.75rem 1.5rem;
+      border-radius: 30px;
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+      transition: all 0.2s;
+
+      &:hover { background: $violet; border-color: $violet; }
+    }
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(0); }
+  50% { transform: scale(1); }
+}
+
+.loader {
+  animation: dots 1.5s infinite;
+}
+
+@keyframes dots {
+  0%, 20% { content: '.'; }
+  40% { content: '..'; }
+  60%, 100% { content: '...'; }
+}
