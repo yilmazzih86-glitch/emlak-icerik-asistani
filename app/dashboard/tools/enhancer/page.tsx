@@ -114,7 +114,7 @@ export default function EnhancerPage() {
           <Sparkles size={32} />
         </div>
         <h1>AI Görsel <span className="highlight">İyileştirme</span></h1>
-        <p>Bulanık fotoğrafları saniyeler içinde 4K stüdyo kalitesine yükseltin.</p>
+        <p>Bulanık fotoğrafları saniyeler içinde iyileştirin. Şuanda BETA aşamasındadır.</p>
       </div>
 
       {/* Main Work Area */}

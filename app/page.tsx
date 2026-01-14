@@ -192,7 +192,7 @@ const testimonials = [
     role: "Broker / Owner",
     company: "Keller Williams",
     image: "CY",
-    content: "Ofisimdeki 15 danışmanın performansını tek ekrandan izleyebiliyorum. AI önerileri sayesinde geçen ay 'ölü' dediğimiz 3 satışı kapattık.",
+    content: "Emlak işinde hız her şeydir. EstateOS, karmaşık operasyonel süreçlerimizi tek bir ekrana topladı. Özellikle ilan açıklaması yazmak ve sosyal medya içeriği üretmek için harcadığımız saatleri artık tamamen satış kapamaya odaklanmak için kullanabiliyoruz.",
     rating: 5
   },
   {
@@ -209,19 +209,35 @@ const testimonials = [
 const faqs = [
   {
     q: "Ücretsiz deneme süresinde kredi kartı gerekiyor mu?",
-    a: "Hayır, EstateOS'u 14 gün boyunca kredi kartı bilgilerinizi girmeden, tüm özellikleriyle ücretsiz deneyebilirsiniz."
+    a: "Hayır, EstateOS'u 14 gün boyunca kredi kartı bilgilerinizi girmeden ücretsiz deneyebilirsiniz. Deneme süresinde 3 portföy ekleme hakkı, CRM altyapısı ve 3 adet AI İlan Metni oluşturma hakkı anında tanımlanır. 14 gün sonunda devam etmek isterseniz size uygun bir paket seçebilirsiniz."
+  },
+  {
+    q: "Bir portföyden hangi içerikleri üretebilirim?",
+    a: "Portföyünüzü sisteme girdiğinizde tek tıkla; emlak platformları için SEO uyumlu İlan Metni, Instagram Post Açıklaması, LinkedIn Paylaşım Metni ve video çekimleriniz için Reels Senaryo Metni otomatik olarak oluşturulur."
+  },
+  {
+    q: "Yapay zeka içerikleri ne kadar güvenilir ve güncel?",
+    a: "İçeriklerimiz tamamen emlakçılar için geliştirilmiş, 9.600+ verilik özel bir emlak uzmanlığı ve sosyal medya bilgi bankasını kullanır. Üretilen tüm metinler arama motoru (SEO) kriterlerine en uygun anahtar kelimelerle optimize edilir."
+  },
+  {
+    q: "Müşteri ve portföy eşleşmesi nasıl çalışıyor?",
+    a: "Manuel arama yapmak yerine, sistem müşterilerinizin kriterlerini portföylerinizle otomatik kıyaslar. Bütçe, oda sayısı ve konum gibi detayları analiz ederek her müşteri için 'Uyumluluk Skoru' çıkarır ve en doğru eşleşmeleri önünüze getirir."
   },
   {
     q: "Mevcut portföylerimi Excel'den aktarabilir miyim?",
-    a: "Evet, 'Toplu İçe Aktar' özelliği sayesinde Excel veya CSV formatındaki müşteri ve portföy listenizi saniyeler içinde sisteme yükleyebilirsiniz."
+    a: "Şu an için sistemimizde Excel üzerinden toplu aktarım yöntemi bulunmamaktadır. Portföylerinizi, yapay zekanın en doğru analizi yapabilmesi için sistem üzerinden manuel olarak girmeniz önerilir."
+  },
+  {
+    q: "Paketlerdeki kullanım limitleri bir sonraki aya devreder mi?",
+    a: "Hayır, paketinizde tanımlanan içerik üretim, görsel ve video limitleri 1 aylık kullanım içindir. Ay sonunda kullanılmayan limitler sıfırlanır ve yeni ayda paket limitleriniz tekrar tanımlanır."
   },
   {
     q: "Aboneliğimi istediğim zaman iptal edebilir miyim?",
-    a: "Kesinlikle. Hiçbir taahhüt yoktur. Paneliniz üzerinden tek tıkla aboneliğinizi dondurabilir veya iptal edebilirsiniz."
+    a: "Evet, hiçbir taahhüt bulunmamaktadır. Aboneliğinizi dilediğiniz zaman panel üzerinden iptal edebilirsiniz. İptal edilmediği sürece otomatik yenileme ile çekim yapılır. Ayrıca ihtiyacınıza göre istediğiniz zaman paket yükseltme veya düşürme işlemi yapabilirsiniz."
   },
   {
-    q: "Yapay zeka içerikleri SEO uyumlu mu?",
-    a: "Evet, oluşturulan ilan metinleri emlak platformlarının algoritmalarına ve Google SEO kriterlerine uygun anahtar kelimelerle optimize edilir."
+    q: "Sosyal medya görselleri ve videoları pakete dahil mi?",
+    a: "Evet, seçtiğiniz paketin limitlerine göre girilen portföylerden otomatik Sosyal Medya Görseli ve UGC (Kullanıcı Tarafından Oluşturulan) Emlak Videoları üretebilirsiniz. Her paketin üretim limiti farklılık göstermektedir."
   }
 ];
 
@@ -269,6 +285,49 @@ export default function Home() {
   const textY = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
   const floatAnimation = (delay: number, yOffset: number) => ({ y: [0, yOffset, 0], transition: { repeat: Infinity, duration: 4 + delay, ease: "easeInOut" as const, delay: delay } });
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+const [isSubmitting, setIsSubmitting] = useState(false);
+const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+const handleContactSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsSubmitting(true);
+  
+  // n8n Webhook URL'inizi buraya tanımlayabilirsiniz
+  const WEBHOOK_URL = process.env.NEXT_PUBLIC_CONTACT_WEBHOOK_URL; 
+
+  if (!WEBHOOK_URL) {
+    console.error("Hata: Webhook URL tanımlanmamış. .env.local dosyasını kontrol edin.");
+    setSubmitStatus('error');
+    setIsSubmitting(false);
+    return;
+  }
+
+  try {
+    const response = await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'landing_contact_form',
+        ...formData,
+        sentAt: new Date().toISOString()
+      }),
+    });
+
+    if (response.ok) {
+      setSubmitStatus('success');
+      setFormData({ name: '', email: '', message: '' });
+    } else {
+      setSubmitStatus('error');
+    }
+  } catch (error) {
+    console.error("Bağlantı hatası:", error);
+    setSubmitStatus('error');
+  } finally {
+    setIsSubmitting(false);
+    setTimeout(() => setSubmitStatus('idle'), 5000);
+  }
+};
 
 useEffect(() => {
     const handleScroll = () => {
@@ -931,13 +990,58 @@ useEffect(() => {
             <div className={styles.faqLayout}>
                {/* Sol Taraf: Başlık */}
                <div className={styles.faqInfo}>
-                  <div className={styles.miniLabel} style={{color:'#a78bfa', borderColor:'rgba(124, 58, 237, 0.3)', background:'rgba(124, 58, 237, 0.1)'}}>DESTEK</div>
-                  <h2>Aklınıza takılanlar mı var?</h2>
-                  <p>Sıkça sorulan soruları derledik. Başka bir sorunuz varsa canlı destekten bize yazabilirsiniz.</p>
-                  <Link href="/contact" className={styles.btnOutline} style={{display:'inline-flex', marginTop:'1rem'}}>
-                     İletişime Geç
-                  </Link>
-               </div>
+  <div className={styles.badge}>DESTEK</div> 
+  <h2>Aklınıza takılanlar mı var?</h2>
+  <p>Sorularınızı aşağıdaki form üzerinden iletebilirsiniz. Ekibimiz en kısa sürede size geri dönüş yapacaktır.</p>
+  
+  <form className={styles.contactForm} onSubmit={handleContactSubmit}>
+    <div className={styles.inputGroup}>
+      <input 
+        type="text" 
+        placeholder="Adınız ve Soyadınız" 
+        required 
+        value={formData.name}
+        onChange={(e) => setFormData({...formData, name: e.target.value})}
+      />
+    </div>
+    <div className={styles.inputGroup}>
+      <input 
+        type="email" 
+        placeholder="E-posta Adresiniz" 
+        required 
+        value={formData.email}
+        onChange={(e) => setFormData({...formData, email: e.target.value})}
+      />
+    </div>
+    <div className={styles.inputGroup}>
+      <textarea 
+        placeholder="Nasıl yardımcı olabiliriz?" 
+        rows={3}
+        required 
+        value={formData.message}
+        onChange={(e) => setFormData({...formData, message: e.target.value})}
+      ></textarea>
+    </div>
+    
+    <button type="submit" className={styles.submitBtn} disabled={isSubmitting}>
+      {isSubmitting ? 'Gönderiliyor...' : 'Mesajı Gönder'}
+      <ArrowRight size={16} />
+    </button>
+
+    <AnimatePresence>
+      {submitStatus === 'success' && (
+        <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className={styles.successMsg}>
+          <Check size={14} /> Mesajınız iletildi!
+        </motion.p>
+      )}
+      {submitStatus === 'error' && (
+        <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className={styles.errorMsg}>
+          <X size={14} /> Gönderim başarısız, tekrar deneyin.
+        </motion.p>
+      )}
+    </AnimatePresence>
+  </form>
+</div>
                
                {/* Sağ Taraf: Accordion */}
                <div className={styles.faqList}>

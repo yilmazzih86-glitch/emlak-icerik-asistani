@@ -15,8 +15,8 @@ export default function Sidebar({ user, profile }: { user: any, profile: any }) 
   const planLabels: any = {
     free: "Demo Paket",
     freelance: "Freelance",
-    pro: "Pro Plan",
-    office: "Ofis / Ekip"
+    pro: "Profesyonel",
+    office: "Elite Broker"
   };
 
   const hasAccess = (requiredPlans: string[]) => {
