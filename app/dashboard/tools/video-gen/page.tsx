@@ -47,14 +47,50 @@ const DURATION_OPTS = [
   { seconds: 30, credit: 2, charLimit: 450 },
   { seconds: 45, credit: 3, charLimit: 650 },
 ];
+interface UgcAvatar {
+  id: string;
+  gender: 'female' | 'male';
+  label: string;
+  image_url: string;
+  sort_order: number;
+}
+
+interface VoicePreset {
+  id: string;
+  gender: 'female' | 'male';
+  label: string;
+  preview_url: string;
+  sort_order: number;
+}
+const DEFAULT_AVATAR: UgcAvatar = {
+  id: "",
+  gender: "female",
+  label: "Seçiniz",
+  image_url: "",
+  sort_order: 0
+};
+
+const DEFAULT_VOICE: VoicePreset = {
+  id: "",
+  gender: "female",
+  label: "Seçiniz",
+  preview_url: "",
+  sort_order: 0
+};
 
 export default function UGCStudioPage() {
   const supabase = createClient();
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // State Yönetimi
-  const [selectedAvatar, setSelectedAvatar] = useState(AVATARS[0]);
-  const [selectedVoice, setSelectedVoice] = useState(VOICES[1]); // Lina default
+  const [avatarList, setAvatarList] = useState<UgcAvatar[]>([]);
+  const [voiceList, setVoiceList] = useState<VoicePreset[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+  const [filterGender, setFilterGender] = useState<'female' | 'male'>('female'); // Yeni Filtre
+
+  // Seçili öğeler artık başlangıçta null olabilir veya yüklenince set edilecek
+  const [selectedAvatar, setSelectedAvatar] = useState<UgcAvatar>(DEFAULT_AVATAR);
+  const [selectedVoice, setSelectedVoice] = useState<VoicePreset>(DEFAULT_VOICE);
   const [durationConfig, setDurationConfig] = useState(DURATION_OPTS[0]); // Default 15s
   const [script, setScript] = useState("");
   const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null);
@@ -76,6 +112,43 @@ export default function UGCStudioPage() {
       audioRef.current.onended = () => setPlayingVoiceId(null);
     }
   };
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoadingData(true);
+      
+      const { data: avatars } = await supabase
+        .from('ugc_avatars')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true });
+
+      const { data: voices } = await supabase
+        .from('voice_presets')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true });
+
+      if (avatars) setAvatarList(avatars as UgcAvatar[]);
+      if (voices) setVoiceList(voices as VoicePreset[]);
+      
+      setIsLoadingData(false);
+    };
+
+    fetchData();
+  }, []);
+
+  // Cinsiyet değişince ilk seçenekleri otomatik seç
+  useEffect(() => {
+    if (isLoadingData) return;
+
+    const firstAvatar = avatarList.find(a => a.gender === filterGender);
+    // Bulamazsa DEFAULT_AVATAR'a geri dön
+    setSelectedAvatar(firstAvatar || DEFAULT_AVATAR);
+
+    const firstVoice = voiceList.find(v => v.gender === filterGender);
+    setSelectedVoice(firstVoice || DEFAULT_VOICE);
+
+  }, [filterGender, avatarList, voiceList, isLoadingData]);
   // Realtime Dinleme İçin Düzeltilmiş useEffect
   useEffect(() => {
     if (!generating) return;
@@ -125,9 +198,14 @@ export default function UGCStudioPage() {
 
   // Video Üretim, Kredi Düşme ve Webhook Gönderimi
   const handleGenerate = async () => {
-    // Validasyonlar
+    // 1. Validasyonlar
     if (!script.trim()) return alert("Lütfen konuşma metni giriniz.");
     if (script.length > durationConfig.charLimit) return alert("Karakter sınırı aşıldı!");
+    
+    // YENİ: Avatar veya Ses seçili değilse uyarı ver
+    if (!selectedAvatar.id || !selectedVoice.id) {
+      return alert("Lütfen verilerin yüklenmesini bekleyin veya bir seçim yapın.");
+    }
 
     setGenerating(true);
     setVideoUrl(null);
@@ -136,14 +214,14 @@ export default function UGCStudioPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Oturum açmalısınız.");
 
-      // 1. KREDİ DÜŞ (RPC) - Aynı kalıyor
+      // 2. KREDİ DÜŞ (RPC)
       const { data: success, error: rpcError } = await supabase.rpc('use_video_ai_credit', {
         p_user_id: user.id,
         p_count: durationConfig.credit 
       });
       if (rpcError || !success) throw new Error("Yetersiz Kredi!");
 
-      // 2. ÖNCE SUPABASE'E "PROCESSING" KAYDI AT
+      // 3. ÖNCE SUPABASE'E "PROCESSING" KAYDI AT
       const { data: insertData, error: insertError } = await supabase
         .from('generated_videos')
         .insert({
@@ -155,14 +233,16 @@ export default function UGCStudioPage() {
         .single();
 
       if (insertError) throw insertError;
-      const recordId = insertData.id;
-
-      // 3. API'YI TETİKLE (Artık yanıt beklemiyoruz, sadece tetikliyoruz)
+      
+      // 4. API'YI TETİKLE (ID'leri buraya ekliyoruz)
       const payload = {
-        video_record_id: recordId, // ID'yi n8n'e yolluyoruz
+        video_record_id: insertData.id,
         user_id: user.id,
-        avatar_id: selectedAvatar.id,
+        
+        // YENİ: State'ten gelen ID'leri payload'a ekle
+        avatar_id: selectedAvatar.id, 
         voice_preset_id: selectedVoice.id,
+        
         script_text: script,
         duration_sec: durationConfig.seconds
       };
@@ -172,9 +252,6 @@ export default function UGCStudioPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-
-      // Burada işlem bitmedi! "generating" state'i true kaldı.
-      // Yukarıdaki useEffect, Supabase'den "completed" haberi gelince bitirecek.
 
     } catch (error: any) {
       alert(error.message);
@@ -207,53 +284,79 @@ export default function UGCStudioPage() {
         {/* --- SOL PANEL: AYARLAR --- */}
         <div className={`${styles.glassPanel} ${styles.controlPanel}`}>
           
-          {/* 1. AVATAR SEÇİMİ */}
-          <section className={styles.section}>
-            <h3><User size={16} /> Avatar Seçimi</h3>
-            <div className={styles.avatarGrid}>
-              {AVATARS.map((avatar) => (
-                <div 
-                  key={avatar.id}
-                  onClick={() => setSelectedAvatar(avatar)}
-                  className={`${styles.avatarCard} ${selectedAvatar.id === avatar.id ? styles.active : ''}`}
-                >
-                  <img src={avatar.image_url} alt={avatar.label} />
-                  <div className={styles.overlay}>
-                    <CheckCircle2 size={16} />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <p className={styles.selectionLabel}>{selectedAvatar.label}</p>
-          </section>
+          {/* YENİ: CİNSİYET SEKMELERİ */}
+          <div className={styles.genderTabs}>
+            <button 
+              className={`${styles.genderTab} ${filterGender === 'female' ? styles.active : ''}`}
+              onClick={() => setFilterGender('female')}
+            >
+              Kadın
+            </button>
+            <button 
+              className={`${styles.genderTab} ${filterGender === 'male' ? styles.active : ''}`}
+              onClick={() => setFilterGender('male')}
+            >
+              Erkek
+            </button>
+          </div>
 
-          {/* 2. SES SEÇİMİ */}
-          <section className={styles.section}>
-            <h3><Mic size={16} /> Seslendirmen</h3>
-            <div className={styles.voiceList}>
-              {VOICES.map((voice) => (
-                <div 
-                  key={voice.id} 
-                  className={`${styles.voiceItem} ${selectedVoice.id === voice.id ? styles.active : ''}`}
-                  onClick={() => setSelectedVoice(voice)}
-                >
-                  <div className={styles.voiceInfo}>
-                    <button 
-                      className={styles.playBtn}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleAudio(voice.preview_url, voice.id);
-                      }}
+          {isLoadingData ? (
+             <div style={{textAlign:'center', padding:'2rem', color:'#666'}}>Veriler yükleniyor...</div>
+          ) : (
+            <>
+              {/* 1. DİNAMİK AVATAR LİSTESİ */}
+              <section className={styles.section}>
+                <h3><User size={16} /> Avatar Seçimi</h3>
+                <div className={styles.avatarGrid}>
+                  {avatarList
+                    .filter(a => a.gender === filterGender)
+                    .map((avatar) => (
+                    <div 
+                      key={avatar.id}
+                      onClick={() => setSelectedAvatar(avatar)}
+                      className={`${styles.avatarCard} ${selectedAvatar?.id === avatar.id ? styles.active : ''}`}
                     >
-                      {playingVoiceId === voice.id ? <Pause size={14} /> : <Play size={14} />}
-                    </button>
-                    <span>{voice.label}</span>
-                  </div>
-                  {selectedVoice.id === voice.id && <div className={styles.dot} />}
+                      <img src={avatar.image_url} alt={avatar.label} />
+                      <div className={styles.overlay}>
+                        <CheckCircle2 size={16} />
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </section>
+                <p className={styles.selectionLabel}>{selectedAvatar?.label || 'Seçim Yapınız'}</p>
+              </section>
+
+              {/* 2. DİNAMİK SES LİSTESİ */}
+              <section className={styles.section}>
+                <h3><Mic size={16} /> Seslendirmen</h3>
+                <div className={styles.voiceList}>
+                  {voiceList
+                    .filter(v => v.gender === filterGender)
+                    .map((voice) => (
+                    <div 
+                      key={voice.id} 
+                      className={`${styles.voiceItem} ${selectedVoice?.id === voice.id ? styles.active : ''}`}
+                      onClick={() => setSelectedVoice(voice)}
+                    >
+                      <div className={styles.voiceInfo}>
+                        <button 
+                          className={styles.playBtn}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleAudio(voice.preview_url, voice.id);
+                          }}
+                        >
+                          {playingVoiceId === voice.id ? <Pause size={14} /> : <Play size={14} />}
+                        </button>
+                        <span>{voice.label}</span>
+                      </div>
+                      {selectedVoice?.id === voice.id && <div className={styles.dot} />}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </>
+          )}
 
           {/* 3. SÜRE SEÇİMİ */}
           <section className={styles.section}>
