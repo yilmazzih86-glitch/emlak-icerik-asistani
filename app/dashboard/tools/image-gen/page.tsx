@@ -5,9 +5,11 @@ import { createClient } from "@/lib/supabase/client";
 import { 
   LayoutTemplate, UploadCloud, X, Sparkles, Loader2, 
   Smartphone, Instagram, RefreshCcw, Download, CheckCircle2, Zap, Copy, Check, Edit,
-  Palette, ChevronDown, ChevronUp
+  Palette, ChevronDown, ChevronUp, History, 
+  Trash2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import styles from "./image-gen.module.scss";
 
 // Helper ve Tipleri İçe Aktar
 import { buildSocialMediaPayload } from "../../../../lib/n8n/payload-builder";
@@ -21,6 +23,14 @@ const FORMATS: { id: FormatType; label: string; icon: any }[] = [
   { id: 'instagram_post', label: 'Post (4:5)', icon: Instagram },
   { id: 'instagram_story', label: 'Story (9:16)', icon: Smartphone },
 ];
+interface GeneratedImage {
+  id: string;
+  image_url: string;
+  prompt: string;
+  caption: string;
+  format: string;
+  created_at: string;
+}
 
 export default function ImageGenPage() {
   const supabase = createClient();
@@ -54,6 +64,9 @@ export default function ImageGenPage() {
     cta_text: "Detaylı bilgi ve sunum için DM gönderin.",
     hashtag_prefix: null
   });
+  const [showHistory, setShowHistory] = useState(false);
+  const [historyList, setHistoryList] = useState<GeneratedImage[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   useEffect(() => {
     async function initData() {
@@ -122,6 +135,24 @@ export default function ImageGenPage() {
     } catch (error) {
       window.open(result.image, '_blank');
     }
+  };
+  const fetchHistory = async () => {
+    setLoadingHistory(true);
+    setShowHistory(true);
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('generated_images')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (data) {
+      setHistoryList(data as GeneratedImage[]);
+    }
+    setLoadingHistory(false);
   };
 
   const handleGenerate = async () => {
@@ -196,6 +227,13 @@ export default function ImageGenPage() {
         setResult({
           image: data.image_url,
           caption: finalCaption
+        });
+        await supabase.from('generated_images').insert({
+          user_id: user.id,
+          image_url: data.image_url,
+          prompt: prompt || `Portföy: ${selectedPortfolio.title}`,
+          caption: finalCaption,
+          format: selectedFormat // 'instagram_post' veya 'instagram_story'
         });
 
         const { data: profile } = await supabase.from('profiles').select('social_ai_used').eq('id', user.id).single();
@@ -400,6 +438,106 @@ export default function ImageGenPage() {
                   )}
                 </AnimatePresence>
               </div>
+
+              <div className="control-section">
+  <button 
+    onClick={fetchHistory} 
+    className={styles.historyBtn} // <-- GÜNCELLENEN KISIM
+  >
+    <History size={18} />
+    <span>Geçmiş Tasarımlar</span>
+  </button>
+  <AnimatePresence>
+        {showHistory && (
+          <motion.div 
+            className={styles.modalOverlay} // SCSS class
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }}
+            onClick={() => setShowHistory(false)}
+          >
+            <motion.div 
+              className={styles.modalContent} // SCSS class
+              initial={{ scale: 0.95, opacity: 0 }} 
+              animate={{ scale: 1, opacity: 1 }} 
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className={styles.modalHeader}>
+                <h3>
+                  <History size={20} /> Tasarım Geçmişi
+                </h3>
+                <button onClick={() => setShowHistory(false)} className={styles.closeBtn}>
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Grid Content */}
+              <div className={styles.historyGrid}>
+                {loadingHistory ? (
+                  <div className={styles.loadingState}>
+                    <Loader2 className="animate-spin" size={32} />
+                    <p>Geçmiş yükleniyor...</p>
+                  </div>
+                ) : historyList.length === 0 ? (
+                  <div className={styles.emptyState}>
+                    <History size={48} strokeWidth={1} style={{ opacity: 0.3 }} />
+                    <p>Henüz kaydedilmiş görseliniz yok.</p>
+                  </div>
+                ) : (
+                  // LİSTELEME
+                  historyList.map((item) => (
+                    <div key={item.id} className={styles.historyCard}>
+                      {/* Görsel Alanı */}
+                      <div 
+                        className={`${styles.imageWrapper} ${item.format === 'instagram_story' ? styles.story : styles.post}`}
+                        onClick={() => {
+                          setResult({ image: item.image_url, caption: item.caption });
+                          setShowHistory(false);
+                        }}
+                      >
+                        <img src={item.image_url} alt="History Item" loading="lazy" />
+                        
+                        {/* Hover Overlay */}
+                        <div className={styles.overlayActions}>
+                           <button className={styles.openBtn}>
+                             <Edit size={14} /> Düzenleyiciye Al
+                           </button>
+                        </div>
+                      </div>
+                      
+                      {/* Bilgi Alanı */}
+                      <div className={styles.cardInfo}>
+                        <p className={styles.promptText} title={item.prompt}>
+                          {item.prompt || "Otomatik Portföy Paylaşımı"}
+                        </p>
+                        <div className={styles.metaRow}>
+                           <span className={styles.date}>
+                             {new Date(item.created_at).toLocaleDateString('tr-TR')}
+                           </span>
+                           <a 
+                             href={item.image_url} 
+                             target="_blank" 
+                             rel="noreferrer" 
+                             className={styles.downloadLink}
+                             title="Orijinali Aç"
+                             onClick={(e) => e.stopPropagation()}
+                           >
+                             <Download size={16} />
+                           </a>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+</div>
+
 
               <div className="control-section expanded">
                 <label className="flex-split">Yapay Zeka Talimatı<span className="badge-opt">Opsiyonel</span></label>
