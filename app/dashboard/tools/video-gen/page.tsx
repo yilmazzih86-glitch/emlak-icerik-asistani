@@ -4,7 +4,8 @@ import { useState, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { 
   Play, Pause, Wand2, Download, AlertCircle, 
-  CheckCircle2, Clock, Type, User, Mic, LayoutTemplate 
+  CheckCircle2, Clock, Type, User, Mic, LayoutTemplate,
+  History, X
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import styles from "./ugc-studio.module.scss";
@@ -62,6 +63,15 @@ interface VoicePreset {
   preview_url: string;
   sort_order: number;
 }
+
+interface GeneratedVideo {
+  id: string;
+  video_url: string;
+  prompt: string;
+  created_at: string;
+  status: string;
+}
+
 const DEFAULT_AVATAR: UgcAvatar = {
   id: "",
   gender: "female",
@@ -98,6 +108,11 @@ export default function UGCStudioPage() {
   // İşlem Stateleri
   const [generating, setGenerating] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
+
+  // YENİ STATE'LER (Geçmiş için)
+  const [showHistory, setShowHistory] = useState(false);
+  const [historyList, setHistoryList] = useState<GeneratedVideo[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   // Ses Önizleme Mantığı
   const toggleAudio = (url: string, id: string) => {
@@ -195,6 +210,27 @@ export default function UGCStudioPage() {
       if (channel) supabase.removeChannel(channel);
     };
   }, [generating, supabase]);
+  // YENİ FONKSİYON: Geçmişi Getir
+  const fetchHistory = async () => {
+    setLoadingHistory(true);
+    setShowHistory(true); // Modalı aç
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // CSV yapısına göre sorgu: user_id ve status='COMPLETED'
+    const { data, error } = await supabase
+      .from('generated_videos')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('status', 'COMPLETED') // Sadece tamamlananlar
+      .order('created_at', { ascending: false }); // En yeniden eskiye
+
+    if (data) {
+      setHistoryList(data as GeneratedVideo[]);
+    }
+    setLoadingHistory(false);
+  };
 
   // Video Üretim, Kredi Düşme ve Webhook Gönderimi
   const handleGenerate = async () => {
@@ -417,6 +453,15 @@ export default function UGCStudioPage() {
                 <><Wand2 size={18} /> UGC Video Üret (-{durationConfig.credit} Kredi)</>
               )}
             </button>
+            {/* YENİ BUTON: GEÇMİŞ */}
+            <button 
+              className={styles.historyBtn} // Yeni stil sınıfı
+              onClick={fetchHistory}
+              disabled={generating}
+            >
+              <History size={18} />
+              Geçmiş
+            </button>
           </div>
         </div>
 
@@ -461,6 +506,68 @@ export default function UGCStudioPage() {
             )}
           </AnimatePresence>
         </div>
+        {/* YENİ: GEÇMİŞ MODALI (En alta ekleyin, ana div kapanmadan önce) */}
+      <AnimatePresence>
+        {showHistory && (
+          <motion.div 
+            className={styles.modalOverlay}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowHistory(false)} // Dışarı tıklayınca kapat
+          >
+            <motion.div 
+              className={styles.modalContent}
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()} // İçeri tıklayınca kapanmasın
+            >
+              <div className={styles.modalHeader}>
+                <h3><History size={20} /> Video Geçmişi</h3>
+                <button onClick={() => setShowHistory(false)} className={styles.closeBtn}>
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className={styles.historyGrid}>
+                {loadingHistory ? (
+                   <div className={styles.loadingState}>Yükleniyor...</div>
+                ) : historyList.length === 0 ? (
+                   <div className={styles.emptyState}>Henüz tamamlanmış video yok.</div>
+                ) : (
+                  historyList.map((video) => (
+                    <div key={video.id} className={styles.historyCard}>
+                      <div className={styles.videoWrapper}>
+                        <video src={video.video_url} controls preload="metadata" />
+                      </div>
+                      <div className={styles.cardInfo}>
+                        <div className={styles.promptText}>
+                          <strong>Konuşma Metni:</strong>
+                          <p>{video.prompt}</p>
+                        </div>
+                        <span className={styles.date}>
+                          {new Date(video.created_at).toLocaleDateString('tr-TR', { 
+                            day: 'numeric', month: 'long', hour: '2-digit', minute:'2-digit' 
+                          })}
+                        </span>
+                        <a 
+                          href={video.video_url} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className={styles.downloadLink}
+                        >
+                          <Download size={14} /> İndir
+                        </a>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       </div>
     </div>
